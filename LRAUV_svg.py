@@ -1,7 +1,7 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
 <!-- March 3, 2020 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="120 170 543 266" xml:space="preserve">
+	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#CFDEE2;} <!-- WaveColor -->
 	.st1{fill:none;stroke:#000000; }
@@ -40,8 +40,8 @@ svgtext = '''
 			s3.19,9.61,16.79,9.09c13.6-0.52,14.98-8.01,14.98-8.01S628.59,201.27,640.68,200.81"/>
 	</g>
 </g>
-<rect desc="backgroundbox" x="126.91" y="161.76" class="st1" width="514.08" height="156.08"/>
 <rect desc="dirtbox" x="126.91" y="281.76" class="{color_dirtbox}" width="514.08" height="36.08"/>
+<rect desc="backgroundbox" x="126.91" y="161.76" class="st1" width="514.08" height="156.08"/>
 
 <!-- AUV Body -->
 <path class="st2" d="M554.57,292.12l-279.27,0l0-60.4l279.27,0c16.68,0,30.2,13.52,30.2,30.2v0

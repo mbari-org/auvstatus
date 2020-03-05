@@ -185,6 +185,7 @@ def parseCritical(recordlist):
 
 def getImportant(starttime):
 	qString = runQuery(VEHICLE,"logImportant","",starttime)
+	retstring = ""
 	if qString:
 		retstring = qString
 	return retstring
@@ -298,6 +299,7 @@ def parseMission(recordlist):
 			break
 	return MissionName,MissionTime
 
+
 def parseImptMisc(recordlist):
 	'''TODO: Pull mission parsing out of this, run that first to get mission time, then use mission time to load Impt events'''
 
@@ -324,7 +326,7 @@ def parseImptMisc(recordlist):
 			elif Record["text"].startswith("No ground fault"):
 				GF = "None"
 				GFtime = Record["unixTime"]
-
+		
 		## PARSE UBAT (make vehicle-specific)
 		if ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record["text"] and "WetLabsUBAT.loadAtStartup" in Record["text"]:
 			ubatBool = bool(float(Record["text"].split("loadAtStartup ")[1].split(" ")[0]))
