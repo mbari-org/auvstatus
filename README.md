@@ -23,3 +23,5 @@ Usage:
 ## TODO
 
   * Long list of TODOs in the code, but caching GPS so it is robust between `restart logs`
+
+![Widget Preview](./auv_widget.png)
