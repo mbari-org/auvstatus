@@ -24,7 +24,9 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st18{fill:none;stroke:none; } <!--invisible-->
 	</style>
 '''
-svgtext = '''<!-- Background wave -->
+svgtext = '''
+<rect desc="backgroundbox" x="126.91" y="161.76" class="st1" width="514.08" height="156.08"/>
+<!-- Background wave -->
 <g transform="translate(0 8)">
 	<g>
 		<path class="{color_wavecolor}" d="M640.68,200.81v108.71H126.47V198.07l5.36,0.98c10.57-0.98,15.74-8.04,15.74-8.04l0.18,0.2
@@ -38,7 +40,6 @@ svgtext = '''<!-- Background wave -->
 			s3.19,9.61,16.79,9.09c13.6-0.52,14.98-8.01,14.98-8.01S628.59,201.27,640.68,200.81"/>
 	</g>
 </g>
-<rect desc="backgroundbox" x="126.91" y="161.76" class="st1" width="514.08" height="156.08"/>
 <rect desc="dirtbox" x="126.91" y="281.76" class="{color_dirtbox}" width="514.08" height="36.08"/>
 
 <!-- AUV Body -->
@@ -113,7 +114,7 @@ svgtext = '''<!-- Background wave -->
 
 <!-- Static labels -->
 <text desc="" transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
-<text desc="" transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">Amps:</text>
+<text desc="" transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
 <text desc="" transform="matrix(1 0 0 1 289.7587 302.4895)" class="st9 st10">Drop Weight</text>
 <text desc="" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text desc="" transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
