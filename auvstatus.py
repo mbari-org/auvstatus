@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
+	Version 1.0 - works for pontus
 	Usage: auvstatus.py -v pontus -r  (see a summary of reports)
 	       auvstatus.py -v pontus > pontusfile.svg  (save svg display)
 			 
@@ -12,6 +13,10 @@
 	  
 	 	  
 	  Ground faults - check with Erik about what is most useful for GF reporting
+	  
+	  TODO: query missions to get the defaults:
+	  https://okeanids.mbari.org/TethysDash/api/git/mission/Science/isotherm_depth_sampling.xml?tag=2019-12-03'
+	  
 	  
 	  '''
 
@@ -26,13 +31,16 @@ import math
 from collections import deque
 from LRAUV_svg import svgtext,svghead   # define the svg text?
 
+# Default timeouts for selected missions
+
 def get_options():
 	parser = argparse.ArgumentParser(usage = __doc__) 
 #	parser.add_argument('infile', type = argparse.FileType('rU'), nargs='?',default = sys.stdin, help="output of vars_retrieve")
-	parser.add_argument("-b", "--DEBUG",	action="store_true",	 help="Print debug info")
-	parser.add_argument("-r", "--report",	action="store_true",	 help="print results")
-	parser.add_argument("-f", "--savefile",	action="store_true",	 help="save to SVG named by vehicle at default location")
-	parser.add_argument("-v", "--vehicle",	default="pontus"  ,	 help="specify vehicle")
+	parser.add_argument("-b", "--DEBUG",	action="store_true", help="Print debug info")
+	parser.add_argument("-r", "--report",	action="store_true", help="print results")
+	parser.add_argument("-f", "--savefile",	action="store_true", help="save to SVG named by vehicle at default location")
+	parser.add_argument("-v", "--vehicle",	default="pontus"  , help="specify vehicle")
+	parser.add_argument("-m", "--missions",action="store_true"  , help="spit out mission defaults")
 	parser.add_argument("Args", nargs='*')
 	options = parser.parse_args()
 	return options
@@ -70,7 +78,29 @@ def sendMessage(MessageText="EV Status"):
 	server.sendmail(me, you, msg.as_string() )
 	server.quit()
 
-
+def getMissionDefaults():
+	missions=["Science/profile_station","Science/sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
+	for mission in missions:
+		URL = "https://okeanids.mbari.org/TethysDash/api/git/mission/{}.xml".format(mission)
+		print "\n#===========================\n",mission, "\n"
+		try:
+			connection = urllib2.urlopen(URL,timeout=5)
+		except urllib2.HTTPError:
+			print >> sys.stderr, "\n###", mission, "not found"
+			connection=False
+			
+		if connection:
+			raw = connection.read()
+			structured = json.loads(raw)
+			connection.close()
+			result = structured['result']
+			
+			print URL
+			try: 
+				print result
+			except KeyError:
+				print "NA"
+	
 
 def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 	vehicle = VEHICLE
@@ -236,7 +266,7 @@ Full Scale Calc: 4.765 mA, -1.589 mA
 	for Line in gfstring.split("\n"):
 		if Line.startswith("CHAN") and ":" in Line:
 			GFlist.append(float(Line.split(":")[1]))
-	return max(GFlist)
+	return "%.2f" % max(GFlist)
 
 '''
 Commanded speed may not show up in Important if it is default for mission
@@ -256,17 +286,27 @@ git tag -
 
 
 '''
-def parseImportant(recordlist):
+
+def parseMission(recordlist):
+	MissionName=False
+	MissionTime=False
+	## PARSE MISSION NAME
+	for Record in recordlist:
+		if Record["name"]=="MissionManager":
+			MissionName = Record["text"].split("mission ")[1]
+			MissionTime = Record["unixTime"]
+			break
+	return MissionName,MissionTime
+
+def parseImptMisc(recordlist):
+	'''TODO: Pull mission parsing out of this, run that first to get mission time, then use mission time to load Impt events'''
+
 	GF = False
 	GFtime = False
-	TimeoutDuration=False
-	TimeoutStart   =False
-	NeedComms = False
+
 	ubatStatus = "st3"
 	ubatTime = False
-	MissionName = False
-	MissionTime = False
-	Speed = "Default"
+
 	FlowRate = False
 	FlowTime = False
 	
@@ -275,29 +315,17 @@ def parseImportant(recordlist):
 			print Record["name"],"<-->",Record["text"]
 			
 		## PARSE GROUND FAULTS
-		if Record["name"]=="CBIT" and GF == False:
-			if Record["text"].startswith("Ground fault detected"):
+		if GF == False and Record["name"]=="CBIT":
+			if Record["text"].startswith("Ground fault detected") or Record["text"].startswith("Low side ground fault detected"):
+				# print "\n####\n",Record["text"]
 				GF = parseGF(Record["text"])
 				GFtime = Record["unixTime"]
+				
 			elif Record["text"].startswith("No ground fault"):
 				GF = "None"
 				GFtime = Record["unixTime"]
 
-		## PARSE TIMEOUTS
-		if TimeoutDuration == False and Record["name"]=="CommandLine" and ".MissionTimeout" in Record["text"]:
-			'''got command set profile_station.MissionTimeout 24.000000 hour'''
-			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
-			TimeoutStart    = Record["unixTime"]
-		
-		## PARSE UBAT
-		if NeedComms == False and Record["name"]=="CommandLine" and ".NeedCommsTime" in Record["text"]:
-			'''command set keepstation.NeedCommsTime 60.000000 minute	'''
-			NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
-			
-			## ADD FLOW RATE FOR UBAT...
-			
-			### For the moment this will just go from the start of the mission, but once we get SatComms, use that time
-
+		## PARSE UBAT (make vehicle-specific)
 		if ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record["text"] and "WetLabsUBAT.loadAtStartup" in Record["text"]:
 			ubatBool = bool(float(Record["text"].split("loadAtStartup ")[1].split(" ")[0]))
 			ubatStatus = ["st6","st4"][ubatBool]
@@ -307,24 +335,60 @@ def parseImportant(recordlist):
 			FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 			FlowTime   = Record["unixTime"]
 
-		## PARSE MISSION NAME
-		if Record["name"]=="MissionManager" and MissionName == False:
-			MissionName = Record["text"].split("mission ")[1]
-			MissionTime = Record["unixTime"]
+			
+	return GF, GFtime, ubatStatus, ubatTime, FlowRate,FlowTime 
+	
+def parseDefaults(recordlist,MissionName,MissionTime):
+	'''TODO: Pull mission parsing out of this, run that first to get mission time, then use mission time to load Impt events'''
+	mission_defaults = {
+		"profile_station"  : {"MissionTimeout": 4,   "NeedCommsTime":60, "Speed":1 },
+		"sci2"             : {"MissionTimeout": 2,   "NeedCommsTime":60, "Speed":1 },
+		"keepstation"      : {"MissionTimeout": 4,   "NeedCommsTime":45, "Speed":.75 },
+		"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45, "Speed":0.1 },
+		"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45, "Speed":.75 },
+		"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30, "Speed":1 },
+		"spiral_cast"      : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 }
+	}
+	
+	TimeoutDuration=False
+	TimeoutStart   =False
+	NeedComms = False
+	Speed = "Default"
+
+	
+	for Record in recordlist:
+		## PARSE TIMEOUTS Assumes HOURS
+		if TimeoutDuration == False and Record["name"]=="CommandLine" and ".MissionTimeout" in Record["text"] and Record["text"].startswith("got"):
+			'''got command set profile_station.MissionTimeout 24.000000 hour'''
+			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
+			TimeoutStart    = Record["unixTime"]
+		
+		## PARSE NEED COMMS Assumes MINUTES
+		if NeedComms == False and Record["name"]=="CommandLine" and ".NeedCommsTime" in Record["text"]:
+			'''command set keepstation.NeedCommsTime 60.000000 minute	'''
+			NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
+			
+			## ADD FLOW RATE FOR UBAT...
+			
+			### For the moment this will just go from the start of the mission, but once we get SatComms, use that time
+			
+		## PARSE UBAT (make vehicle-specific)
 		## PARSE SPEED
-		if Speed == "Default" and Record["name"]=="CommandLine" and ".Speed" in Record["text"]:
+		if Speed == False and Record["name"]=="CommandLine" and ".Speed" in Record["text"]:
 			Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].strip().split(" ")[0]))
 			
 			# Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].split(" ")[0]))
-
-
-		#configSet load at startup DVL name (one of three)
-		# configSet DVL_micro.loadAtStartup 0 bool persist
-		# configSet RDI_Pathfinder.loadAtStartup 1 bool persist
-		# configSet Rowe_600.loadAtStartup 0 bool persist
-		# restart app require
 		
-	return "%.2f" % GF, GFtime, TimeoutDuration, TimeoutStart, NeedComms,ubatStatus, ubatTime, FlowRate,FlowTime,MissionName,MissionTime,Speed 
+	if not Speed:
+			Speed = mission_defaults.get(MissionName,{}).get("Speed","na")
+	if not NeedComms:
+			NeedComms = mission_defaults.get(MissionName,{}).get("NeedCommsTime",0)
+	if not TimeoutDuration:
+			TimeoutDuration = mission_defaults.get(MissionName,{}).get("MissionTimeout",0)
+			TimeoutStart = MissionTime
+	
+			
+	return TimeoutDuration, TimeoutStart, NeedComms,Speed 
 	
 def elapsed(rawdur):
 	'''input in millis not seconds'''
@@ -383,6 +447,10 @@ DEBUG = Opt.DEBUG
 global VEHICLE
 VEHICLE = Opt.vehicle
 
+if Opt.missions:
+	getMissionDefaults()
+	sys.exit("Done")
+
 if 'jellywatch' in os.uname():
 	OutPath       = '/home/jellywatch/jellywatch.org/misc/auv_{}.svg'
 	StartTimePath = '/home/jellywatch/jellywatch.org/misc/auvstats_{}.csv'
@@ -408,9 +476,15 @@ oldsite,oldgpstime = parseGPS(getOldGPS(gpstime,startTime))
 
 deltadist,deltat,speedmadegood = distance(site,gpstime,oldsite,oldgpstime)
 
+# FULL RANGE OF RECORDS
 important = getImportant(startTime)
+missionName,missionTime = parseMission(important)
 
-gf,gftime, duration,timeoutstart,needcomms,ubatStatus,ubatTime,flowrate,flowtime,missionName,missiontime,speed  = parseImportant(important)
+gf,gftime,ubatStatus,ubatTime,flowrate,flowtime  = parseImptMisc(important)
+
+# ONLY RECORDS AFTER MISSION
+postmission = getImportant(missionTime)
+duration,timeoutstart,needcomms,speed  = parseDefaults(postmission,missionName,missionTime)
 
 #this is volt, amp, time
 volt,amphr,batttime = getData(startTime)
@@ -433,7 +507,7 @@ if Opt.report:
 	print "CellComms:",cellcomms
 	print "UBAT: ", ubatStatus, hours(ubatTime)
 	print "FLOW: ",flowrate, hours(flowtime)
-	print "Mission: ",missionName,hours(missiontime)
+	print "Mission: ",missionName,hours(missionTime)
 	print "SPEED: ",speed  
 	print "GPS",site
 	print "GPSTIme",hours(gpstime)
@@ -484,7 +558,7 @@ colornames=[
 "color_bat5",
 "color_bat6",
 "color_bat7",
-"color_bat8",
+# "color_bat8",
 "color_satcomm",
 "color_cell",
 "color_gps",
@@ -560,7 +634,7 @@ cdd["text_gftime"] = elapsed(ago_gftime)
 
 # This in in hours
 # cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000)
-cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000) + " - " + elapsed((missiontime+duration*3600*1000) - now )
+cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000) + " - " + elapsed((missionTime+duration*3600*1000) - now )
 
 #Change this to use sat comms time
 # This is typically in minutes
@@ -571,26 +645,30 @@ cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((c
 ###
 ###   UBAT FLOW DISPLAY
 ###
+if VEHICLE == 'pontus':
+	if flowrate:
+		if (.25 < flowrate <.45):
+			cdd["color_flow"]= 'st4'
+		else:
+			cdd["color_flow"]= 'st6'
 
-if flowrate:
-	if (.25 < flowrate <.45):
-		cdd["color_flow"]= 'st4'
+	if flowtime:
+		cdd["text_flowago"] = elapsed(flowtime-now)
 	else:
-		cdd["color_flow"]= 'st6'
+		cdd["text_flowago"]=""
 
-if flowtime:
-	cdd["text_flowago"] = elapsed(flowtime-now)
+	cdd["color_ubat"] = ubatStatus
 else:
-	cdd["text_flowago"]=""
-
-cdd["color_ubat"] = ubatStatus
+	cdd["color_ubat"] = 'st3'
+	cdd["color_flow"] = 'st3'
+	
 # ubatTime TO ADD?
 
 ###
 ###   MISSION OVERVIEW DISPLAY
 ###
 
-cdd["text_mission"]=missionName + " - " + hours(missiontime)
+cdd["text_mission"]=missionName + " - " + hours(missionTime)
 cdd["text_speed"]= speed + "m/s"
 
 ###
@@ -608,8 +686,8 @@ ago_satcomms = satcomms - now
 cdd["text_commago"] = elapsed(ago_satcomms)
 cdd["text_sat"] = hours(satcomms)
 
-# more than 10 minutes (underwater) = yellow. Beyone needcomms time by 20 mins: orange
-satnum=int(4 + 1*(abs(ago_satcomms) > (10*60*1000)) + 1*(abs(ago_satcomms) > ((needcomms+20)*60*1000)) )
+# more than 13 minutes (underwater) = yellow. Beyond needcomms time by 20 mins: orange
+satnum=int(4 + 1*(abs(ago_satcomms) > (13*60*1000)) + 1*(abs(ago_satcomms) > ((needcomms+20)*60*1000)) )
 cdd["color_satcomm"] = "st{}".format(satnum)
 
 ###
@@ -620,7 +698,7 @@ ago_cellcomms = cellcomms - now
 cdd["text_cellago"] = elapsed(ago_cellcomms)
 cdd["text_cell"] = hours(cellcomms)
 
-cellnum=int(4 + 1*(abs(ago_cellcomms) > (1.3 * needcomms*60*1000)) + 1*(abs(ago_cellcomms) > ((needcomms+45)*60*1000)) )
+cellnum=int(4 + 1*(abs(ago_cellcomms) > (10*60*1000)) + 1*(abs(ago_cellcomms) > ((needcomms+45)*60*1000)) )
 cdd["color_cell"] = "st{}".format(cellnum)
 
 
@@ -635,7 +713,7 @@ if recovered:
 		cdd[cname]='st18'
 	for tname in textnames:
 		cdd[tname]=''
-		
+	cdd["text_mission"] = "RECOVERED at " + hours(recovered)
 	cdd["color_wavecolor"] = 'st18' # invisible
 	cdd["color_dirtbox"] = 'st17'   # brown
 	
@@ -660,14 +738,14 @@ else:
 	cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range
 	cdd["color_volts"] = "st{}".format(voltnum)
 
-	cdd["color_bat1"] = ['st4','st6'][volt < 13.0]
-	cdd["color_bat2"] = ['st4','st6'][volt < 13.5]
-	cdd["color_bat3"] = ['st4','st6'][volt < 14.0]
-	cdd["color_bat4"] = ['st4','st6'][volt < 14.5]
-	cdd["color_bat5"] = ['st4','st6'][volt < 15.0]
-	cdd["color_bat6"] = ['st4','st6'][volt < 15.5]
-	cdd["color_bat7"] = ['st4','st6'][volt < 16.0]
-	cdd["color_bat8"] = ['st4','st6'][volt < 16.5]
+	cdd["color_bat1"] = ['st4','st6'][volt <= 13.5]
+	cdd["color_bat2"] = ['st4','st6'][volt < 14.0]
+	cdd["color_bat3"] = ['st4','st6'][volt < 14.5]
+	cdd["color_bat4"] = ['st4','st6'][volt < 15.0]
+	cdd["color_bat5"] = ['st4','st6'][volt < 15.5]
+	cdd["color_bat6"] = ['st4','st6'][volt < 16.0]
+	cdd["color_bat7"] = ['st4','st6'][volt < 16.5]
+	# cdd["color_bat8"] = ['st4','st6'][volt < 16.5]
 
 
 	cdd["color_thrust"] = ['st4','st6'][(ThrusterServo>100)]

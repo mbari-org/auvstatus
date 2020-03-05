@@ -25,7 +25,7 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	</style>
 '''
 svgtext = '''
-<rect desc="backgroundbox" x="126.91" y="161.76" class="st1" width="514.08" height="156.08"/>
+<rect desc="backgroundbox" x="126.91" y="161.76" class="st3" width="514.08" height="156.08"/>
 <!-- Background wave -->
 <g transform="translate(0 8)">
 	<g>
@@ -40,6 +40,7 @@ svgtext = '''
 			s3.19,9.61,16.79,9.09c13.6-0.52,14.98-8.01,14.98-8.01S628.59,201.27,640.68,200.81"/>
 	</g>
 </g>
+<rect desc="backgroundbox" x="126.91" y="161.76" class="st1" width="514.08" height="156.08"/>
 <rect desc="dirtbox" x="126.91" y="281.76" class="{color_dirtbox}" width="514.08" height="36.08"/>
 
 <!-- AUV Body -->
@@ -67,7 +68,7 @@ svgtext = '''
 <circle desc="bat5" class="{color_bat5}" cx="343.12" cy="241.38" r="4.07"/>
 <circle desc="bat6" class="{color_bat6}" cx="353.43" cy="241.38" r="4.07"/>
 <circle desc="bat7" class="{color_bat7}" cx="363.74" cy="241.38" r="4.07"/>
-<circle desc="bat8" class="{color_bat8}" cx="374.05" cy="241.38" r="4.07"/>
+<!--<circle desc="bat8" class="st2" cx="374.05" cy="241.38" r="4.07"/>-->
 
 <rect desc="satcomm" x="261.49" y="182.98" class="{color_satcomm}" width="24.43" height="11.5"/>
 <rect desc="cell"    x="260.15" y="212.24" class="{color_cell}" width="26.43" height="11.31"/>
@@ -84,7 +85,7 @@ svgtext = '''
 <circle desc="BT1" class="{color_bt1}" cx="535.99" cy="225.78" r="4.07"/>
 -->
 
-<!-- vehicle-specific shapes-->
+<!-- vehicle-specific shapes -->
 <circle desc="UBAT" class="{color_ubat}" cx="543.96" cy="246.8" r="4.07" /> 
 <circle desc="flow" class="{color_flow}" cx="544.33" cy="259.45" r="4.07"/>
 <text desc="" transform="matrix(1 0 0 1 551.3628 250.3636)" class="st9 st10">UBAT</text>
