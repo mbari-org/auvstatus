@@ -22,6 +22,11 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st16{fill:#929090;} <!-- Arrow gray-->
 	.st17{fill:#e3cfa7;} <!-- DirtBrown-->
 	.st18{fill:none;stroke:none; } <!--invisible-->
+	.st19{fill:#555555;stroke:#000000;stroke-miterlimit:10;}  <!-- Cart color -->
+	.st20{fill:#e3cfa7;stroke:#000000;stroke-miterlimit:10;}  <!-- Circle color -->
+	.st21{fill:none;stroke:#777777;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color -->
+	.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
+	
 	</style>
 '''
 svgtext = '''
@@ -42,6 +47,9 @@ svgtext = '''
 </g>
 <rect desc="dirtbox" x="126.91" y="281.76" class="{color_dirtbox}" width="514.08" height="36.08"/>
 <rect desc="backgroundbox" x="126.91" y="161.76" class="st1" width="514.08" height="156.08"/>
+<line desc="bigcable" class="{color_bigcable}" x1="248.33" y1="309.03" x2="268.98" y2="285.59"/> 
+<path desc="smallcable" class="{color_smallcable}" d="M138.38,319.08c0,0,11.72-4.47,25.12-4.47s22.33,12.28,43.53,12.28s34.64-11.31,40.22-16.34"/> 
+
 
 <!-- AUV Body -->
 <path class="st2" d="M554.57,292.12l-279.27,0l0-60.4l279.27,0c16.68,0,30.2,13.52,30.2,30.2v0
@@ -77,6 +85,13 @@ svgtext = '''
 <rect desc="volts"   x="336.28" y="249.85" class="{color_volts}" width="25.5" height="10.5"/>
 <rect desc="gf_rect" x="480" y="254.0" class="{color_gf}" width="24.43" height="10.5"/>
 <polygon desc="sonar" class="{color_sonar}" points="541.91,287.26 553.41,287.26 558.97,295.79 541.52,295.79 "/>
+
+<!--cart-->
+<polygon desc="cart" class="{color_cart}" points="348.8,282.24 348.8,315.73 524.05,315.73 524.05,282.24 503.4,282.24 496.15,301.22 381.17,301.22 
+	369.22,282.74 "/>
+<circle desc="circle1" class="{color_cartcircle}" cx="362.59" cy="298.44" r="5.86"/>
+<circle desc="circle2" class="{color_cartcircle}" cx="510.1" cy="298.44" r="5.86"/>
+
 <!-- end shapes -->
 
 
@@ -126,6 +141,7 @@ svgtext = '''
 <text desc="" transform="matrix(1 0 0 1 439.0 191.2224)" class="st9 st10">MISSION:</text>
 <text desc="" transform="matrix(1 0 0 1 291.6499 221.6039)" class="st9 st10">Cell comms</text>
 <text desc="" transform="matrix(1 0 0 1 193.9667 264.552)" class="st9 st10">Thruster</text>
+
 
 <g desc="arrow">
 	<rect x="594.14" y="256.24" class="st16" width="11.73" height="7"/>

@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
+	Version 1.1 - adding cart
 	Version 1.0 - works for pontus
 	Usage: auvstatus.py -v pontus -r  (see a summary of reports)
 	       auvstatus.py -v pontus > pontusfile.svg  (save svg display)
@@ -135,6 +136,14 @@ def getRecovery(starttime):
 	
 	return recover
 
+def getPlugged(starttime):
+	launchString = runQuery(VEHICLE,"deploy","&limit=1",starttime)
+	plugged = False
+	if launchString:
+		plugged = launchString[0]['unixTime']
+	
+	return plugged
+ 
 def getGPS(starttime):
 	''' TODO Might need to go way back to get two spots to compare -- these two are consecutive fixes so not the speed.
 	Have the second older fix be at least 20+ minutes before'''
@@ -470,6 +479,8 @@ startTime = getDeployment()
 
 recovered = getRecovery(starttime=startTime)
 
+plugged = getPlugged(recovered)
+	
 critical  = getCritical(startTime)
 
 site,gpstime = parseGPS(getGPS(startTime))
@@ -523,6 +534,8 @@ if Opt.report:
 	print "Launched:  ", hours(startTime)
 	if recovered:
 		print "Recovered: ",hours(recovered)
+		if plugged:
+			print "Plugged in: ",hours(plugged)
 	else:
 		print "Still out there..."
 
@@ -574,10 +587,22 @@ colornames=[
 "color_flow",
 "color_wavecolor",
 "color_dirtbox",
-]
+"color_bigcable",
+"color_smallcable",
+"color_cart",
+"color_cartcircle"]
+
 for cname in colornames:
 	cdd[cname]='st3'
-	
+
+cartcolors=["color_bigcable",
+"color_smallcable",
+"color_cart",
+"color_cartcircle"]
+
+for cname in cartcolors:
+	cdd[cname]='st18'
+
 textnames=[
 "text_mission",
 "text_cell",
@@ -715,9 +740,19 @@ if recovered:
 		cdd[cname]='st18'
 	for tname in textnames:
 		cdd[tname]=''
-	cdd["text_mission"] = "RECOVERED at " + hours(recovered)
+	
 	cdd["color_wavecolor"] = 'st18' # invisible
 	cdd["color_dirtbox"] = 'st17'   # brown
+	if plugged:
+		cdd["text_mission"]     = "PLUGGED IN at " + hours(plugged)
+		cdd["color_cart"]       = 'st19'
+		cdd["color_cartcircle"] = 'st20'
+		cdd["color_smallcable"] = 'st21'
+		cdd["color_bigcable"]   = 'st22'
+		
+	else:
+		cdd["text_mission"] = "RECOVERED at " + hours(recovered)
+		
 	
 	
 else:
