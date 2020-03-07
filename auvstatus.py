@@ -408,10 +408,6 @@ def parseDefaults(recordlist,MissionName,MissionTime):
 			
 	return TimeoutDuration, TimeoutStart, NeedComms,Speed 
 
-def test():
-	ts = [1,2,59,60,61,119,120,121,3650,3600,3601,86399,87400,90910,186400,11864001]
-	for t in ts:
-		print elapsed(t*1000),":",t
 		
 def elapsed(rawdur):
 	'''input in millis not seconds'''
