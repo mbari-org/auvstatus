@@ -193,7 +193,7 @@ def parseCritical(recordlist):
 	
 
 def getImportant(starttime):
-	qString = runQuery(VEHICLE,"logImportant","",starttime)
+	qString = runQuery(VEHICLE,"logImportant","&limit=2000",starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
@@ -310,7 +310,7 @@ def parseMission(recordlist):
 
 
 def parseImptMisc(recordlist):
-	'''TODO: Pull mission parsing out of this, run that first to get mission time, then use mission time to load Impt events'''
+	'''Loads events that persist across missions'''
 
 	GF = False
 	GFtime = False
@@ -320,6 +320,8 @@ def parseImptMisc(recordlist):
 
 	FlowRate = False
 	FlowTime = False
+	
+	LogTime = False
 	
 	for Record in recordlist:
 		if DEBUG:
@@ -335,7 +337,10 @@ def parseImptMisc(recordlist):
 			elif Record["text"].startswith("No ground fault"):
 				GF = "None"
 				GFtime = Record["unixTime"]
-		
+				
+		if not LogTime and Record["name"] =='CommandLine' and 'got command restart logs' in Record["text"]:
+			LogTime = Record["unixTime"]
+			
 		## PARSE UBAT (make vehicle-specific)
 		if ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record["text"] and "WetLabsUBAT.loadAtStartup" in Record["text"]:
 			ubatBool = bool(float(Record["text"].split("loadAtStartup ")[1].split(" ")[0]))
@@ -346,11 +351,11 @@ def parseImptMisc(recordlist):
 			FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 			FlowTime   = Record["unixTime"]
 
-			
-	return GF, GFtime, ubatStatus, ubatTime, FlowRate,FlowTime 
+	return GF, GFtime, ubatStatus, ubatTime, FlowRate,FlowTime, LogTime
 	
 def parseDefaults(recordlist,MissionName,MissionTime):
-	'''TODO: Pull mission parsing out of this, run that first to get mission time, then use mission time to load Impt events'''
+	''' parse events that get reset after missions and might be default'''
+	''' todo, need to move the ubat here and change the ubat on command parsing'''
 	mission_defaults = {
 		"profile_station"  : {"MissionTimeout": 4,   "NeedCommsTime":60, "Speed":1 },
 		"sci2"             : {"MissionTimeout": 2,   "NeedCommsTime":60, "Speed":1 },
@@ -364,7 +369,7 @@ def parseDefaults(recordlist,MissionName,MissionTime):
 	TimeoutDuration=False
 	TimeoutStart   =False
 	NeedComms = False
-	Speed = "Default"
+	Speed = 0
 
 	
 	for Record in recordlist:
@@ -400,19 +405,30 @@ def parseDefaults(recordlist,MissionName,MissionTime):
 	
 			
 	return TimeoutDuration, TimeoutStart, NeedComms,Speed 
-	
+
+def test():
+	ts = [1,2,59,60,61,119,120,121,3650,3600,3601,86399,87400,90910,186400,11864001]
+	for t in ts:
+		print elapsed(t*1000),":",t
+		
 def elapsed(rawdur):
 	'''input in millis not seconds'''
-	DurationBase = '{}{}m'
+	DurationBase = '{}{}{}'
 	duration = abs(rawdur/1000)
-	minutes = int(duration/60)+1
+	minutes = int(duration/60)
+	hours = int(minutes/60)
+	days = int(hours/24)
 	MinuteString = minutes
 	HourString = ""
+	DayString  = ""
 	if minutes>59:
-		MinuteString = minutes%60
+		MinuteString = str(minutes%60) + "m"
 		HourString = str(minutes//60) + "h " 
-
-	DurationString = DurationBase.format(HourString,MinuteString)
+		hours = minutes//60
+	if (hours)>23:
+		HourString = str(hours%24) + "h "
+		DayString = str(hours//24) + "d " 
+	DurationString = DurationBase.format(DayString,HourString,MinuteString)
 	if rawdur < 1:
 		DurationString += " ago"
 	else:
@@ -473,7 +489,7 @@ else:
 ##
 ## LOAD AND PARSE EVENTS
 ##
-now = time.mktime(time.localtime())  # (*1000?)
+now = 1000 * time.mktime(time.localtime())  # (*1000?)
 
 startTime = getDeployment()
 
@@ -491,10 +507,13 @@ deltadist,deltat,speedmadegood = distance(site,gpstime,oldsite,oldgpstime)
 
 # FULL RANGE OF RECORDS
 important = getImportant(startTime)
+
 missionName,missionTime = parseMission(important)
+gf,gftime,ubatStatus,ubatTime,flowrate,flowtime,logtime  = parseImptMisc(important)
 
-gf,gftime,ubatStatus,ubatTime,flowrate,flowtime  = parseImptMisc(important)
-
+if not logtime:
+	logtime = startTime
+	
 # ONLY RECORDS AFTER MISSION
 postmission = getImportant(missionTime)
 duration,timeoutstart,needcomms,speed  = parseDefaults(postmission,missionName,missionTime)
@@ -512,12 +531,15 @@ if (critical):
 
 
 if Opt.report:
+	print "Now: " ,hours(now)
 	print "GroundFault: ",gf,hours(gftime)
 	print "Duration:    ",duration
 	print "TimeoutStart:",hours(timeoutstart)
 	print "NeedComms:",needcomms
 	print "SatComms:",satcomms
 	print "CellComms:",cellcomms
+	ago_log = logtime - now
+	print "LogRestart",hours(logtime), elapsed(ago_log), logtime
 	print "UBAT: ", ubatStatus, hours(ubatTime)
 	print "FLOW: ",flowrate, hours(flowtime)
 	print "Mission: ",missionName,hours(missionTime)
@@ -531,9 +553,9 @@ if Opt.report:
 	print "Battery: ",volt, amphr, batttime
 	print "DropWeight:",dropWeight
 	print "Thruster:  ",ThrusterServo
-	print "Launched:  ", hours(startTime)
+	print "Deployed:  ", hours(startTime), elapsed(startTime - now)
 	if recovered:
-		print "Recovered: ",hours(recovered)
+		print "Recovered: ",hours(recovered), elapsed(recovered - now), recovered
 		if plugged:
 			print "Plugged in: ",hours(plugged)
 	else:
@@ -622,6 +644,8 @@ textnames=[
 "text_ampago",
 "text_cellago",
 "text_flowago",
+"text_logago",
+"text_logtime",
 "text_lastupdate"]
 
 for tname in textnames:
@@ -712,6 +736,10 @@ cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
 ago_satcomms = satcomms - now 
 cdd["text_commago"] = elapsed(ago_satcomms)
 cdd["text_sat"] = hours(satcomms)
+
+ago_log = logtime - now
+cdd["text_logago"] = elapsed(ago_log)
+cdd["text_logtime"] = hours(logtime)
 
 # more than 13 minutes (underwater) = yellow. Beyond needcomms time by 20 mins: orange
 satnum=int(4 + 1*(abs(ago_satcomms) > (13*60*1000)) + 1*(abs(ago_satcomms) > ((needcomms+20)*60*1000)) )
