@@ -1,8 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
+	Version 1.2 - making UBAT pontus-specific (move to svg["pontus"] for more vehicles)
 	Version 1.1 - adding cart
 	Version 1.0 - works for pontus
+	
 	Usage: auvstatus.py -v pontus -r  (see a summary of reports)
 	       auvstatus.py -v pontus > pontusfile.svg  (save svg display)
 			 
@@ -30,7 +32,7 @@ import requests
 import json
 import math
 from collections import deque
-from LRAUV_svg import svgtext,svghead   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svgtail   # define the svg text?
 
 # Default timeouts for selected missions
 
@@ -830,9 +832,17 @@ if Opt.savefile:
 	with open(OutPath.format(VEHICLE),'w') as outfile:
 		outfile.write(svghead)
 		outfile.write(svgtext.format(**cdd))
+		if VEHICLE=="pontus":
+			outfile.write(svgpontus)
+		outfile.write(svgtail)
+		
 		
 elif not Opt.report:
 	print svghead
 	print svgtext.format(**cdd)
+	if VEHICLE=="pontus":
+		print svgpontus
+	print svgtail
+	
 	
 # svgDictionary = dict(x.items() + y.items())

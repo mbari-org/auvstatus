@@ -92,6 +92,11 @@ svgtext = '''
 <circle desc="circle1" class="{color_cartcircle}" cx="362.59" cy="298.44" r="5.86"/>
 <circle desc="circle2" class="{color_cartcircle}" cx="510.1" cy="298.44" r="5.86"/>
 
+<!--pontus specific but can be made invisible-->
+<circle desc="UBAT" class="{color_ubat}" cx="543.96" cy="246.8" r="4.07" /> 
+<circle desc="flow" class="{color_flow}" cx="544.33" cy="259.45" r="4.07"/>
+<text desc="text_flowago" transform="matrix(1 0 0 1 541.0 272.0)" class="st12 st9 st13">{text_flowago}</text>
+
 <!-- end shapes -->
 
 
@@ -100,12 +105,6 @@ svgtext = '''
 <circle desc="BT1" class="{color_bt1}" cx="535.99" cy="225.78" r="4.07"/>
 -->
 
-<!-- vehicle-specific shapes -->
-<circle desc="UBAT" class="{color_ubat}" cx="543.96" cy="246.8" r="4.07" /> 
-<circle desc="flow" class="{color_flow}" cx="544.33" cy="259.45" r="4.07"/>
-<text desc="" transform="matrix(1 0 0 1 551.3628 250.3636)" class="st9 st10">UBAT</text>
-<text desc="" transform="matrix(1 0 0 1 551.3628 263.259)" class="st9 st10">FLOW</text>
-<text desc="text_flowago" transform="matrix(1 0 0 1 541.0 272.0)" class="st12 st9 st13">{text_flowago}</text>
 
 <!-- Dynamic values -->
 <text desc="mission" transform="matrix(1 0 0 1 482.0 191.2224)" class="st9 st10 st12">{text_mission}</text>
@@ -145,6 +144,13 @@ svgtext = '''
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
 
+'''
+svgpontus='''
+<!-- vehicle-specific shapes -->
+<text desc="" transform="matrix(1 0 0 1 551.3628 250.3636)" class="st9 st10">UBAT</text>
+<text desc="" transform="matrix(1 0 0 1 551.3628 263.259)" class="st9 st10">FLOW</text>
+'''
+svgtail = '''
 
 <g desc="arrow">
 	<rect x="594.14" y="256.24" class="st16" width="11.73" height="7"/>
@@ -152,5 +158,6 @@ svgtext = '''
 		<polygon class="st16" points="618.22,259.74 600.81,266.86 604.94,259.74 600.81,252.63 		"/>
 	</g>
 </g>
+
 </svg>
 '''
