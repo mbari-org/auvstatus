@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
 	Version 1.2 - making UBAT pontus-specific (move to svg["pontus"] for more vehicles)
