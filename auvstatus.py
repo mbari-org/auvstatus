@@ -474,13 +474,16 @@ VEHICLE = Opt.vehicle
 if Opt.missions:
 	getMissionDefaults()
 	sys.exit("Done")
-
+	
+# TODO: If running on tethys, use '/var/www/html/widget/auv_{}.svg' as the outpath
 if 'jellywatch' in os.uname():
 	OutPath       = '/home/jellywatch/jellywatch.org/misc/auv_{}.svg'
 	StartTimePath = '/home/jellywatch/jellywatch.org/misc/auvstats_{}.csv'
 else:
 	OutPath = './auv_{}.svg'
 	StartTimePath = "./auvstats_{}.csv" # make this .py for importing or .json?
+	
+	
 	
 #########
 ##
