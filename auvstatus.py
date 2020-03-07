@@ -407,7 +407,7 @@ def parseDefaults(recordlist,MissionName,MissionTime):
 			
 	return TimeoutDuration, TimeoutStart, NeedComms,Speed 
 
-que		
+	
 def elapsed(rawdur):
 	'''input in millis not seconds'''
 	DurationBase = '{}{}{}'
