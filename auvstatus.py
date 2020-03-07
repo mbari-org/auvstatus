@@ -28,7 +28,6 @@ import sys
 import time
 import os
 import urllib2
-import requests
 import json
 import math
 from collections import deque
@@ -408,7 +407,7 @@ def parseDefaults(recordlist,MissionName,MissionTime):
 			
 	return TimeoutDuration, TimeoutStart, NeedComms,Speed 
 
-		
+que		
 def elapsed(rawdur):
 	'''input in millis not seconds'''
 	DurationBase = '{}{}{}'
