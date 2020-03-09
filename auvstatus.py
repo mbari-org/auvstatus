@@ -343,12 +343,12 @@ def parseImptMisc(recordlist):
 			LogTime = Record["unixTime"]
 			
 		## PARSE UBAT (make vehicle-specific)
-		if ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record["text"] and "WetLabsUBAT.loadAtStartup" in Record["text"]:
+		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record["text"] and "WetLabsUBAT.loadAtStartup" in Record["text"]:
 			ubatBool = bool(float(Record["text"].split("loadAtStartup ")[1].split(" ")[0]))
 			ubatStatus = ["st6","st4"][ubatBool]
 			ubatTime   = Record["unixTime"]
 			
-		if FlowRate == False and Record["name"]=="CommandLine" and Record["text"].startswith("WetLabsUBAT.flow_rate"):
+		if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record["text"].startswith("WetLabsUBAT.flow_rate"):
 			FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 			FlowTime   = Record["unixTime"]
 
@@ -477,6 +477,7 @@ if Opt.missions:
 	
 # TODO: If running on tethys, use '/var/www/html/widget/auv_{}.svg' as the outpath
 if 'tethysdash' in os.uname()[1]:
+	print 'In tethysdash'
 	OutPath       = '/var/www/html/widget/auv_{}.svg'
 	StartTimePath = '/var/www/html/widget/auvstats_{}.csv'
 elif 'jellywatch' in os.uname():
