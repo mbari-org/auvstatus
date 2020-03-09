@@ -476,7 +476,10 @@ if Opt.missions:
 	sys.exit("Done")
 	
 # TODO: If running on tethys, use '/var/www/html/widget/auv_{}.svg' as the outpath
-if 'jellywatch' in os.uname():
+if 'tethysdash' in os.uname()[1]:
+	OutPath       = '/var/www/html/widget/auv_{}.svg'
+	StartTimePath = '/var/www/html/widget/auvstats_{}.csv'
+elif 'jellywatch' in os.uname():
 	OutPath       = '/home/jellywatch/jellywatch.org/misc/auv_{}.svg'
 	StartTimePath = '/home/jellywatch/jellywatch.org/misc/auvstats_{}.csv'
 else:
