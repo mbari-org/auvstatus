@@ -49,9 +49,12 @@ def get_options():
 
 
 def hours(unixtime):
-	t1=time.localtime(unixtime/1000)
-	TimeString = time.strftime('%H:%M',t1)
-	return TimeString
+	if unixtime:
+		t1=time.localtime(unixtime/1000)
+		TimeString = time.strftime('%H:%M',t1)
+		return TimeString
+	else:
+		return "99:99"
 
 def sendMessage(MessageText="EV Status"):
 	import smtplib
@@ -157,7 +160,7 @@ def getGPS(starttime):
 def getOldGPS(starttime,missionstart):
 	previoustime = starttime - 30*60*1000
 	qString = runQuery(VEHICLE,"gpsFix","&limit=1&to={}".format(previoustime),missionstart)
-	retstring=False
+	retstring=""
 	if qString:
 		retstring = qString
 	return retstring
@@ -173,9 +176,11 @@ def getCritical(starttime):
 
 def parseGPS(recordlist):
 	# print "GPS record", recordlist
+	site=False
+	gpstime=False
 	'''[{u'eventId': 12283560, u'unixTime': 1583301462000, u'vehicleName': u'pontus', u'fix': {u'latitude': 36.757467833070464, u'date': u'Wed Mar 04 05:57:42 GMT 2020', u'longitude': -122.02584799923866}, u'eventType': u'gpsFix'},'''
 	if not recordlist:
-		return(36.0,122.0,1573301462000)
+		return((False,False),False)
 	site =    (recordlist[0]['fix']['latitude'],recordlist[0]['fix']['longitude'])
 	gpstime = recordlist[0]['unixTime']
 	return site,gpstime
@@ -194,7 +199,7 @@ def parseCritical(recordlist):
 	
 
 def getImportant(starttime):
-	qString = runQuery(VEHICLE,"logImportant","&limit=2000",starttime)
+	qString = runQuery(VEHICLE,"logImportant","",starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
@@ -225,7 +230,7 @@ def parseComms(recordlist):
 		# Direct Comms event type for cell comms
 	return satCommTime,directCommTime 
 
-def getData(starttime):
+def getDataAsc(starttime):
 	'''NOTE this walks through the whole file to get the right field. Not very slick'''
 	''' IBIT will show battery thresholds that could be used to determine warning colors'''
 	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
@@ -242,14 +247,16 @@ def getData(starttime):
 	saveline="na,na,na"
 	'''https://okeanids.mbari.org/TethysDash/data/pontus/realtime/sbdlogs/2020/202003/20200303T074113/shore.csv
 	2020/202003/20200303T074113'''
-	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.csv'
+	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
 	
 	record = runQuery(VEHICLE,"dataProcessed","&limit=1",starttime)
 	extrapath = record[0]['path']
 	NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
 	datacon = urllib2.urlopen(NewURL,timeout=5)
-	lastlines = deque(datacon, 10)
+	lastlines = deque(datacon, 100)
 	for nextline in lastlines:
+		if DEBUG:
+			print >> sys.stderr, nextline
 		if "V," in nextline:
 			fields = nextline.split(",")
 			volt     = float(fields[8].split(" ")[0])
@@ -259,6 +266,46 @@ def getData(starttime):
 
 	return volt,amp,volttime
 
+def getData(starttime):
+	'''NOTE this walks through the whole file to get the right field. Not very slick'''
+	''' IBIT will show battery thresholds that could be used to determine warning colors'''
+	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
+	
+	Entries from shore.asc use same deque "trick" to get values. get maybe 150 lines
+	2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_charge=126.440002 Ah
+	2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_voltage=14.332275 V
+	
+	'''
+	volt="0"
+	amp ="0"
+	volttime="0"
+	saveline="na,na,na"
+	'''https://okeanids.mbari.org/TethysDash/data/pontus/realtime/sbdlogs/2020/202003/20200303T074113/shore.csv
+	2020/202003/20200303T074113'''
+	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.csv'
+	
+	record = runQuery(VEHICLE,"dataProcessed","&limit=1",starttime)
+	extrapath = record[0]['path']
+	NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
+	datacon = urllib2.urlopen(NewURL,timeout=5)
+	lastlines = deque(datacon, 10)
+	for nextline in lastlines:
+		if "V," in nextline:
+			try:
+				fields = nextline.split(",")
+				volt     = float(fields[8].split(" ")[0])
+				amp      = float(fields[7].split(" ")[0])
+				volttime = int(float(fields[1])*1000)  # in seconds not MS
+			except IndexError:
+				print >> sys.stderr, "VOLT parsing error"
+				volt=False
+				amp=False
+				volttime=False
+			break
+
+	return volt,amp,volttime
+	
+	
 def parseGF(gfstring):
 	GFlist = []
 	'''multi-line input, find max value after colon
@@ -326,7 +373,7 @@ def parseImptMisc(recordlist):
 	
 	for Record in recordlist:
 		if DEBUG:
-			print Record["name"],"<-->",Record["text"]
+			print Record["name"],"<-->",Record.get("text","NO TEXT FIELD")
 			
 		## PARSE GROUND FAULTS
 		if GF == False and Record["name"]=="CBIT":
@@ -410,27 +457,30 @@ def parseDefaults(recordlist,MissionName,MissionTime):
 	
 def elapsed(rawdur):
 	'''input in millis not seconds'''
-	DurationBase = '{}{}{}'
-	duration = abs(rawdur/1000)
-	minutes = int(duration/60)
-	hours = int(minutes/60)
-	days = int(hours/24)
-	MinuteString = minutes
-	HourString = ""
-	DayString  = ""
-	if minutes>59:
-		MinuteString = str(minutes%60) + "m"
-		HourString = str(minutes//60) + "h " 
-		hours = minutes//60
-	if (hours)>23:
-		HourString = str(hours%24) + "h "
-		DayString = str(hours//24) + "d " 
-	DurationString = DurationBase.format(DayString,HourString,MinuteString)
-	if rawdur < 1:
-		DurationString += " ago"
+	if rawdur:
+		DurationBase = '{}{}{}'
+		duration = abs(rawdur/1000)
+		minutes = int(duration/60)
+		hours = int(minutes/60)
+		days = int(hours/24)
+		MinuteString = minutes
+		HourString = ""
+		DayString  = ""
+		if minutes>59:
+			MinuteString = str(minutes%60) + "m"
+			HourString = str(minutes//60) + "h " 
+			hours = minutes//60
+		if (hours)>23:
+			HourString = str(hours%24) + "h "
+			DayString = str(hours//24) + "d " 
+		DurationString = DurationBase.format(DayString,HourString,MinuteString)
+		if rawdur < 1:
+			DurationString += " ago"
+		else:
+			DurationString = "in " + DurationString
+		return DurationString
 	else:
-		DurationString = "in " + DurationString
-	return DurationString
+		return "NA"
 
 def distance(site,time,oldsite,oldtime):
 	"""
@@ -477,7 +527,6 @@ if Opt.missions:
 	
 # TODO: If running on tethys, use '/var/www/html/widget/auv_{}.svg' as the outpath
 if 'tethysdash' in os.uname()[1]:
-	print 'In tethysdash'
 	OutPath       = '/var/www/html/widget/auv_{}.svg'
 	StartTimePath = '/var/www/html/widget/auvstats_{}.csv'
 elif 'jellywatch' in os.uname():
@@ -500,41 +549,70 @@ startTime = getDeployment()
 recovered = getRecovery(starttime=startTime)
 
 plugged = getPlugged(recovered)
-	
-critical  = getCritical(startTime)
 
-site,gpstime = parseGPS(getGPS(startTime))
+if not recovered:
+	critical  = getCritical(startTime)
 
-oldsite,oldgpstime = parseGPS(getOldGPS(gpstime,startTime))
+	site,gpstime = parseGPS(getGPS(startTime))
 
-deltadist,deltat,speedmadegood = distance(site,gpstime,oldsite,oldgpstime)
+	oldsite,oldgpstime = parseGPS(getOldGPS(gpstime,startTime))
+
+	deltadist,deltat,speedmadegood = distance(site,gpstime,oldsite,oldgpstime)
 
 # FULL RANGE OF RECORDS
-important = getImportant(startTime)
+	important = getImportant(startTime)
 
-missionName,missionTime = parseMission(important)
-gf,gftime,ubatStatus,ubatTime,flowrate,flowtime,logtime  = parseImptMisc(important)
+	missionName,missionTime = parseMission(important)
+	gf,gftime,ubatStatus,ubatTime,flowrate,flowtime,logtime  = parseImptMisc(important)
 
-if not logtime:
-	logtime = startTime
+	if not logtime:
+		logtime = startTime
 	
-# ONLY RECORDS AFTER MISSION
-postmission = getImportant(missionTime)
-duration,timeoutstart,needcomms,speed  = parseDefaults(postmission,missionName,missionTime)
+	# ONLY RECORDS AFTER MISSION
+	postmission = getImportant(missionTime)
+	duration,timeoutstart,needcomms,speed  = parseDefaults(postmission,missionName,missionTime)
 
-#this is volt, amp, time
-volt,amphr,batttime = getData(startTime)
-satcomms,cellcomms = parseComms(getComms(startTime))
+	#this is volt, amp, time
+	volt,amphr,batttime = getData(startTime)
+	satcomms,cellcomms = parseComms(getComms(startTime))
 
-if not needcomms: 
-	needcomms = 60  #default
+	if not needcomms: 
+		needcomms = 60  #default
 	
 	
-if (critical):
-	dropWeight,ThrusterServo= parseCritical(critical)
-
+	if (critical):
+		dropWeight,ThrusterServo= parseCritical(critical)
+else:
+	gf = False
+	gftime = False
+	duration = False
+	timeoutstart = False
+	needcomms = False
+	satcomms = False
+	cellcomms = False
+	ubatTime = False
+	flowtime = False
+	missionTime = False
+	speed = False
+	site = False
+	gpstime = False
+	oldsite = False
+	oldgpstime = False
+	deltadist=False
+	deltat=False
+	speedmadegood = False
+	volt, amphr = (False,False)
+	batttime = False
+	dropWeight = False
+	ThrusterServo = False
+	logtime = now
+	startTime = now
+	missionName = "Out of the water"
+	
+	
 
 if Opt.report:
+	print "###############\nVehicle: " ,VEHICLE.upper()
 	print "Now: " ,hours(now)
 	print "GroundFault: ",gf,hours(gftime)
 	print "Duration:    ",duration
@@ -544,9 +622,9 @@ if Opt.report:
 	print "CellComms:",cellcomms
 	ago_log = logtime - now
 	print "LogRestart",hours(logtime), elapsed(ago_log), logtime
-	print "UBAT: ", ubatStatus, hours(ubatTime)
-	print "FLOW: ",flowrate, hours(flowtime)
-	print "Mission: ",missionName,hours(missionTime)
+	if VEHICLE=="pontus" and not recovered:
+		print "UBAT: ", ubatStatus, hours(ubatTime)
+		print "FLOW: ",flowrate, hours(flowtime)
 	print "SPEED: ",speed  
 	print "GPS",site
 	print "GPSTIme",hours(gpstime)
@@ -557,6 +635,7 @@ if Opt.report:
 	print "Battery: ",volt, amphr, batttime
 	print "DropWeight:",dropWeight
 	print "Thruster:  ",ThrusterServo
+	print "Mission: ",missionName,hours(missionTime)
 	print "Deployed:  ", hours(startTime), elapsed(startTime - now)
 	if recovered:
 		print "Recovered: ",hours(recovered), elapsed(recovered - now), recovered
@@ -564,292 +643,303 @@ if Opt.report:
 			print "Plugged in: ",hours(plugged)
 	else:
 		print "Still out there..."
+	print "#####   ", VEHICLE, "######"
 
-# print svgtext  # from importing
-'''	
-	.st0{fill:#CFDEE2;} <!-- WaveColor -->
-	.st1{fill:none;stroke:#000000; }
-	.st2{fill:#D4D2D2;stroke:#000000; } <!-- Background wave -->
-	.st3{fill:#FFFFFF;stroke:#000000; } <!--White Fill -->
-	.st4{fill:#5AC1A4;stroke:#000000; } <!--Green Fill -->
-	.st5{fill:#FFE850;stroke:#000000; } <!--Yellow Fill -->
-	.st6{fill:#EF9D30;stroke:#000000; } <!--Orange Fill -->
-	.st7{fill:#FFFFFF;stroke:#000000;stroke-linecap:round; }
-	.st8{fill:#C6C4C4;stroke:#000000;stroke-linecap:round; }
-	.st9{font-family:'HelveticaNeue';}
-	.st10{font-size:9px;}
-	.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
-	.st12{fill:#606060;}  <!--MidGray text -->
-	.st13{font-size:7px;}
-	.st14{font-family:'HelveticaNeue-Medium';}
-	.st15{font-size:11px;}
-	.st16{fill:#929090;} <!-- Arrow gray-->
-	.st17{fill:#e3cfa7;} <!-- DirtBrown-->
-	.st18{fill:none;stroke:none; } <!--invisible-->
-	.st19{fill:#555555;stroke:#000000;stroke-miterlimit:10;}  <!-- Cart color -->
-	.st20{fill:#e3cfa7;stroke:#000000;stroke-miterlimit:10;}  <!-- Circle color -->
-	.st21{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color -->
-	.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
-	.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
+
+else:   #not opt report
+
+	# print svgtext  # from importing
+	'''	
+		.st0{fill:#CFDEE2;} <!-- WaveColor -->
+		.st1{fill:none;stroke:#000000; }
+		.st2{fill:#D4D2D2;stroke:#000000; } <!-- Background wave -->
+		.st3{fill:#FFFFFF;stroke:#000000; } <!--White Fill -->
+		.st4{fill:#5AC1A4;stroke:#000000; } <!--Green Fill -->
+		.st5{fill:#FFE850;stroke:#000000; } <!--Yellow Fill -->
+		.st6{fill:#EF9D30;stroke:#000000; } <!--Orange Fill -->
+		.st7{fill:#FFFFFF;stroke:#000000;stroke-linecap:round; }
+		.st8{fill:#C6C4C4;stroke:#000000;stroke-linecap:round; }
+		.st9{font-family:'HelveticaNeue';}
+		.st10{font-size:9px;}
+		.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
+		.st12{fill:#606060;}  <!--MidGray text -->
+		.st13{font-size:7px;}
+		.st14{font-family:'HelveticaNeue-Medium';}
+		.st15{font-size:11px;}
+		.st16{fill:#929090;} <!-- Arrow gray-->
+		.st17{fill:#e3cfa7;} <!-- DirtBrown-->
+		.st18{fill:none;stroke:none; } <!--invisible-->
+		.st19{fill:#555555;stroke:#000000;stroke-miterlimit:10;}  <!-- Cart color -->
+		.st20{fill:#e3cfa7;stroke:#000000;stroke-miterlimit:10;}  <!-- Circle color -->
+		.st21{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color -->
+		.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
+		.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
+	
+		'''
+	cdd={}
+	colornames=[
+	"color_drop",
+	"color_thrust",
+	"color_bat1",
+	"color_bat2",
+	"color_bat3",
+	"color_bat4",
+	"color_bat5",
+	"color_bat6",
+	"color_bat7",
+	# "color_bat8",
+	"color_satcomm",
+	"color_cell",
+	"color_gps",
+	"color_amps",
+	"color_volts",
+	"color_gf",
+	"color_sonar",
+	"color_bt2",
+	"color_bt1",
+	"color_ubat",
+	"color_flow",
+	"color_wavecolor",
+	"color_dirtbox",
+	"color_bigcable",
+	"color_smallcable",
+	"color_cart",
+	"color_cartcircle"]
+
+	for cname in colornames:
+		cdd[cname]='st3'
+
+	cartcolors=["color_bigcable",
+	"color_smallcable",
+	"color_cart",
+	"color_cartcircle"]
+
+	for cname in cartcolors:
+		cdd[cname]='st18'
+
+	textnames=[
+	"text_mission",
+	"text_cell",
+	"text_sat",
+	"text_gps",
+	"text_speed",
+	"text_nextcomm",
+	"text_timeout",
+	"text_amps",
+	"text_volts",
+	"text_droptime",
+	"text_gftime",
+	"text_gf",
+	"text_thrusttime",
+	"text_commago",
+	"text_ampago",
+	"text_cellago",
+	"text_flowago",
+	"text_logago",
+	"text_logtime"
+]
+
+	for tname in textnames:
+		cdd[tname]='na'
+		
+	cdd["text_vehicle"] = 'NA'
+	cdd["text_lastupdate"] = 'NA'
 	
 	'''
-cdd={}
-colornames=[
-"color_drop",
-"color_thrust",
-"color_bat1",
-"color_bat2",
-"color_bat3",
-"color_bat4",
-"color_bat5",
-"color_bat6",
-"color_bat7",
-# "color_bat8",
-"color_satcomm",
-"color_cell",
-"color_gps",
-"color_amps",
-"color_volts",
-"color_gf",
-"color_sonar",
-"color_bt2",
-"color_bt1",
-"color_ubat",
-"color_flow",
-"color_wavecolor",
-"color_dirtbox",
-"color_bigcable",
-"color_smallcable",
-"color_cart",
-"color_cartcircle"]
+	 _            _       
+	| |_ ___   __| | ___  
+	| __/ _ \ / _` |/ _ \ 
+	| || (_) | (_| | (_) |
+	 \__\___/ \__,_|\___/ 
 
-for cname in colornames:
-	cdd[cname]='st3'
-
-cartcolors=["color_bigcable",
-"color_smallcable",
-"color_cart",
-"color_cartcircle"]
-
-for cname in cartcolors:
-	cdd[cname]='st18'
-
-textnames=[
-"text_mission",
-"text_cell",
-"text_sat",
-"text_gps",
-"text_speed",
-"text_nextcomm",
-"text_timeout",
-"text_amps",
-"text_volts",
-"text_droptime",
-"text_gftime",
-"text_gf",
-"text_thrusttime",
-"text_vehicle",
-"text_commago",
-"text_ampago",
-"text_cellago",
-"text_flowago",
-"text_logago",
-"text_logtime",
-"text_lastupdate"]
-
-for tname in textnames:
-	cdd[tname]='na'
-
-'''
- _            _       
-| |_ ___   __| | ___  
-| __/ _ \ / _` |/ _ \ 
-| || (_) | (_| | (_) |
- \__\___/ \__,_|\___/ 
-
- transparent for vehicle-specific features
- TODO: Check thruster color to make sure it detects a fault
- Change GPS calculation to look over a longer time scale
- add more time ago fields
- GO HOME
+	 transparent for vehicle-specific features
+	 TODO: Check thruster color to make sure it detects a fault
+	 Change GPS calculation to look over a longer time scale
+	 add more time ago fields
+	 GO HOME
  
- '''
-commreftime = max(cellcomms,satcomms)
+	 '''
 
-now = time.time() * 1000  # localtime in unix
-gfnum=int(4+ 1*(float(gf)>0.2) + 1*(float(gf)>0.6))
+	commreftime = max(cellcomms,satcomms)
 
-###
-###   GROUND FAULT DISPLAY
-###
+	now = time.time() * 1000  # localtime in unix
+	
+	if gf and gf != "None":
+		gfnum=int(4+ 1*(float(gf)>0.2) + 1*(float(gf)>0.6))
+	else:
+		gfnum=6    # No groundfault data, use orange.
 
-cdd["color_gf"]= "st{}".format(gfnum)
-cdd["text_gf"] = gf
-ago_gftime = gftime - now 
-cdd["text_gftime"] = elapsed(ago_gftime)
+	###
+	###   GROUND FAULT DISPLAY
+	###
 
-###
-###   MISSION TIMEOUTS DISPLAY
-###
+	cdd["color_gf"]= "st{}".format(gfnum)
+	cdd["text_gf"] = gf
+	ago_gftime = gftime - now 
+	cdd["text_gftime"] = elapsed(ago_gftime)
 
-# This in in hours
-# cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000)
-cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000) + " - " + elapsed((missionTime+duration*3600*1000) - now )
+	###
+	###   MISSION TIMEOUTS DISPLAY
+	###
 
-#Change this to use sat comms time
-# This is typically in minutes
+	# This in in hours
+	# cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000)
+	cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000) + " - " + elapsed((missionTime+duration*3600*1000) - now )
 
-# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
-cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
+	#Change this to use sat comms time
+	# This is typically in minutes
 
-###
-###   UBAT FLOW DISPLAY
-###
-if VEHICLE == 'pontus':
-	if flowrate:
-		if (.25 < flowrate <.45):
-			cdd["color_flow"]= 'st4'
+	# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
+	cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
+
+
+	###
+	###   MISSION OVERVIEW DISPLAY
+	###
+
+	cdd["text_vehicle"] = VEHICLE.upper()
+	cdd["text_lastupdate"] = time.strftime('%H:%M')
+
+	
+	if recovered:
+	###
+	###   CELL COMM DISPLAY
+	###
+		for cname in colornames:
+			cdd[cname]='st18'
+		for tname in textnames:
+			cdd[tname]=''
+	
+		cdd["color_wavecolor"] = 'st18' # invisible
+		cdd["color_dirtbox"] = 'st17'   # brown
+		if plugged:
+			cdd["text_mission"]     = "PLUGGED IN at " + hours(plugged)
+			cdd["color_cart"]       = 'st19'
+			cdd["color_cartcircle"] = 'st20'
+			cdd["color_smallcable"] = 'st23'
+			cdd["color_bigcable"]   = 'st22'
+		
 		else:
-			cdd["color_flow"]= 'st6'
-
-	if flowtime:
-		cdd["text_flowago"] = elapsed(flowtime-now)
+			cdd["text_mission"] = "RECOVERED at " + hours(recovered)
+			
+	# NOT RECOVERED
 	else:
-		cdd["text_flowago"]=""
+		cdd["text_mission"]=missionName + " - " + hours(missionTime)
+		cdd["text_speed"]= speed + "m/s"
 
-	cdd["color_ubat"] = ubatStatus
-else:
-	cdd["color_ubat"] = 'st3'
-	cdd["color_flow"] = 'st3'
+		###
+		###   GPS DISPLAY
+		###
+		cdd["text_gps"] = hours(gpstime)
+		cdd["color_gps"] = ['st4','st5'][(now - gpstime > 3600000)]
+		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
+
+
+		###
+		###   UBAT FLOW DISPLAY
+		###
+		if VEHICLE == 'pontus':
+			if flowrate:
+				if (.25 < flowrate <.45):
+					cdd["color_flow"]= 'st4'
+				else:
+					cdd["color_flow"]= 'st6'
+
+			if flowtime:
+				cdd["text_flowago"] = elapsed(flowtime-now)
+			else:
+				cdd["text_flowago"]=""
+
+			cdd["color_ubat"] = ubatStatus
+		else:
+			cdd["color_ubat"] = 'st3'
+			cdd["color_flow"] = 'st3'
 	
-# ubatTime TO ADD?
+		# ubatTime TO ADD?
 
-###
-###   MISSION OVERVIEW DISPLAY
-###
+		###
+		###   SAT COMM DISPLAY
+		###
+		ago_satcomms = satcomms - now 
+		cdd["text_commago"] = elapsed(ago_satcomms)
+		cdd["text_sat"] = hours(satcomms)
 
-cdd["text_mission"]=missionName + " - " + hours(missionTime)
-cdd["text_speed"]= speed + "m/s"
+		ago_log = logtime - now
+		cdd["text_logago"] = elapsed(ago_log)
+		cdd["text_logtime"] = hours(logtime)
 
-###
-###   GPS DISPLAY
-###
+		# more than 13 minutes (underwater) = yellow. Beyond needcomms time by 20 mins: orange
+		satnum=int(4 + 1*(abs(ago_satcomms) > (13*60*1000)) + 1*(abs(ago_satcomms) > ((needcomms+20)*60*1000)) )
+		cdd["color_satcomm"] = "st{}".format(satnum)
 
-cdd["text_gps"] = hours(gpstime)
-cdd["color_gps"] = ['st4','st5'][(now - gpstime > 3600000)]
-cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
+		###
+		###   CELL COMM DISPLAY
+		###
 
-###
-###   SAT COMM DISPLAY
-###
-ago_satcomms = satcomms - now 
-cdd["text_commago"] = elapsed(ago_satcomms)
-cdd["text_sat"] = hours(satcomms)
+		ago_cellcomms = cellcomms - now 
+		cdd["text_cellago"] = elapsed(ago_cellcomms)
+		cdd["text_cell"] = hours(cellcomms)
 
-ago_log = logtime - now
-cdd["text_logago"] = elapsed(ago_log)
-cdd["text_logtime"] = hours(logtime)
-
-# more than 13 minutes (underwater) = yellow. Beyond needcomms time by 20 mins: orange
-satnum=int(4 + 1*(abs(ago_satcomms) > (13*60*1000)) + 1*(abs(ago_satcomms) > ((needcomms+20)*60*1000)) )
-cdd["color_satcomm"] = "st{}".format(satnum)
-
-###
-###   CELL COMM DISPLAY
-###
-
-ago_cellcomms = cellcomms - now 
-cdd["text_cellago"] = elapsed(ago_cellcomms)
-cdd["text_cell"] = hours(cellcomms)
-
-cellnum=int(4 + 1*(abs(ago_cellcomms) > (10*60*1000)) + 1*(abs(ago_cellcomms) > ((needcomms+45)*60*1000)) )
-cdd["color_cell"] = "st{}".format(cellnum)
-
-
-###
-###   CELL COMM DISPLAY
-###
-
-
-
-if recovered:
-	for cname in colornames:
-		cdd[cname]='st18'
-	for tname in textnames:
-		cdd[tname]=''
+		cellnum=int(4 + 1*(abs(ago_cellcomms) > (10*60*1000)) + 1*(abs(ago_cellcomms) > ((needcomms+45)*60*1000)) )
+		cdd["color_cell"] = "st{}".format(cellnum)
 	
-	cdd["color_wavecolor"] = 'st18' # invisible
-	cdd["color_dirtbox"] = 'st17'   # brown
-	if plugged:
-		cdd["text_mission"]     = "PLUGGED IN at " + hours(plugged)
-		cdd["color_cart"]       = 'st19'
-		cdd["color_cartcircle"] = 'st20'
-		cdd["color_smallcable"] = 'st23'
-		cdd["color_bigcable"]   = 'st22'
+		### BATTERY INFO
+	
+		cdd["color_wavecolor"] = 'st0'
+		cdd["color_dirtbox"] = 'st18'
+	
+		if batttime:
+			cdd["text_ampago"] = elapsed(batttime-now)
+		else:
+			cdd["text_flowago"]="Default"
+	
+
+		cdd["text_volts"]= "%.1f" % volt
+		cdd["text_amps"]= "%.1f" % amphr 
+	
+		voltnum=int(4 + 1*(volt<15) + 1*(volt<14))
+		cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range
+		cdd["color_volts"] = "st{}".format(voltnum)
+
+		cdd["color_bat1"] = ['st4','st6'][volt <= 13.5]
+		cdd["color_bat2"] = ['st4','st6'][volt < 14.0]
+		cdd["color_bat3"] = ['st4','st6'][volt < 14.5]
+		cdd["color_bat4"] = ['st4','st6'][volt < 15.0]
+		cdd["color_bat5"] = ['st4','st6'][volt < 15.5]
+		cdd["color_bat6"] = ['st4','st6'][volt < 16.0]
+		cdd["color_bat7"] = ['st4','st6'][volt < 16.5]
+		# cdd["color_bat8"] = ['st4','st6'][volt < 16.5]
+
+
+		cdd["color_thrust"] = ['st4','st6'][(ThrusterServo>100)]
+
+		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
+		if dropWeight > 100:
+			cdd["text_droptime"] = hours(dropWeight)
+		else:
+			cdd["text_droptime"] =""
+			
+			
+
+	# print "Launched:  ", hours(startTime)  
+	# if recovered:
+	# 	print "Recovered: ",hours(recovered)
+
+	if Opt.savefile:
+		with open(OutPath.format(VEHICLE),'w') as outfile:
+			outfile.write(svghead)
+			outfile.write(svgtext.format(**cdd))
+			if VEHICLE=="pontus":
+				outfile.write(svgpontus)
+			outfile.write(svgtail)
 		
-	else:
-		cdd["text_mission"] = "RECOVERED at " + hours(recovered)
 		
-	
-	
-else:
-	
-	### BATTERY INFO
-	
-	cdd["color_wavecolor"] = 'st0'
-	cdd["color_dirtbox"] = 'st18'
-	
-	if batttime:
-		cdd["text_ampago"] = elapsed(batttime-now)
-	else:
-		cdd["text_flowago"]="Default"
-	
-
-	cdd["text_volts"]= "%.1f" % volt
-	cdd["text_amps"]= "%.1f" % amphr 
-	
-	voltnum=int(4 + 1*(volt<15) + 1*(volt<14))
-	cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range
-	cdd["color_volts"] = "st{}".format(voltnum)
-
-	cdd["color_bat1"] = ['st4','st6'][volt <= 13.5]
-	cdd["color_bat2"] = ['st4','st6'][volt < 14.0]
-	cdd["color_bat3"] = ['st4','st6'][volt < 14.5]
-	cdd["color_bat4"] = ['st4','st6'][volt < 15.0]
-	cdd["color_bat5"] = ['st4','st6'][volt < 15.5]
-	cdd["color_bat6"] = ['st4','st6'][volt < 16.0]
-	cdd["color_bat7"] = ['st4','st6'][volt < 16.5]
-	# cdd["color_bat8"] = ['st4','st6'][volt < 16.5]
-
-
-	cdd["color_thrust"] = ['st4','st6'][(ThrusterServo>100)]
-
-	cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
-	if dropWeight > 100:
-		cdd["text_droptime"] = hours(dropWeight)
-	else:
-		cdd["text_droptime"] =""
-cdd["text_vehicle"] = VEHICLE.upper()
-cdd["text_lastupdate"] = time.strftime('%H:%M')
-
-# print "Launched:  ", hours(startTime)  
-# if recovered:
-# 	print "Recovered: ",hours(recovered)
-if Opt.savefile:
-	with open(OutPath.format(VEHICLE),'w') as outfile:
-		outfile.write(svghead)
-		outfile.write(svgtext.format(**cdd))
+	elif not Opt.report:
+		print svghead
+		print svgtext.format(**cdd)
 		if VEHICLE=="pontus":
-			outfile.write(svgpontus)
-		outfile.write(svgtail)
-		
-		
-elif not Opt.report:
-	print svghead
-	print svgtext.format(**cdd)
-	if VEHICLE=="pontus":
-		print svgpontus
-	print svgtail
+			print svgpontus
+		print svgtail
 	
 	
 # svgDictionary = dict(x.items() + y.items())
