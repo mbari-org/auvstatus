@@ -53,7 +53,7 @@ svgtext = '''
 <rect desc="dirtbox" x="126.91" y="281.76" class="{color_dirtbox}" width="514.08" height="36.08"/>
 <rect desc="backgroundbox" x="126.91" y="161.76" class="st1" width="514.08" height="156.08"/>
 <line desc="bigcable" class="{color_bigcable}" x1="250.77" y1="292.21" x2="268.73" y2="281.71"/>
-<path desc="smallcable" class="{color_smallcable}" d="M137.72,314.15c0,0,11.72-4.47,25.12-4.47s16.94,11.66,38.14,11.66s33.02-20.66,46.57-27.1"/>
+<path desc="smallcable" class="{color_smallcable}" d="M137.01,323.1c0,0,7.44-8.93,20.84-8.93s20.85,8.93,42.05,8.93s29.77-18.98,47.66-28.86"/>
 
 <!-- AUV Body -->
 <path class="st2" d="M554.57,292.12l-279.27,0l0-60.4l279.27,0c16.68,0,30.2,13.52,30.2,30.2v0
