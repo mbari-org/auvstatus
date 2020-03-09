@@ -188,7 +188,7 @@ def parseCritical(recordlist):
 		# 	print Record["name"],Record["text"]
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
-		if (not ThrusterServo) and Record["text"]=="ThrusterServo":
+		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
 			ThrusterServo = Record["unixTime"]
 	return Drop, ThrusterServo 
 	
@@ -304,7 +304,7 @@ def parseMission(recordlist):
 	## PARSE MISSION NAME
 	for Record in recordlist:
 		if Record["name"]=="MissionManager":
-			MissionName = Record["text"].split("mission ")[1]
+			MissionName = Record.get("text","mission NA").split("mission ")[1]
 			MissionTime = Record["unixTime"]
 			break
 	return MissionName,MissionTime
@@ -330,25 +330,25 @@ def parseImptMisc(recordlist):
 			
 		## PARSE GROUND FAULTS
 		if GF == False and Record["name"]=="CBIT":
-			if Record["text"].startswith("Ground fault detected") or Record["text"].startswith("Low side ground fault detected"):
+			if Record.get("text","NA").startswith("Ground fault detected") or Record.get("text","NA").startswith("Low side ground fault detected"):
 				# print "\n####\n",Record["text"]
-				GF = parseGF(Record["text"])
+				GF = parseGF(Record.get("text","NA"))
 				GFtime = Record["unixTime"]
 				
-			elif Record["text"].startswith("No ground fault"):
+			elif Record.get("text","NA").startswith("No ground fault"):
 				GF = "None"
 				GFtime = Record["unixTime"]
 				
-		if not LogTime and Record["name"] =='CommandLine' and 'got command restart logs' in Record["text"]:
+		if not LogTime and Record["name"] =='CommandLine' and 'got command restart logs' in Record.get("text","NA"):
 			LogTime = Record["unixTime"]
 			
 		## PARSE UBAT (make vehicle-specific)
-		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record["text"] and "WetLabsUBAT.loadAtStartup" in Record["text"]:
+		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
 			ubatBool = bool(float(Record["text"].split("loadAtStartup ")[1].split(" ")[0]))
 			ubatStatus = ["st6","st4"][ubatBool]
 			ubatTime   = Record["unixTime"]
 			
-		if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record["text"].startswith("WetLabsUBAT.flow_rate"):
+		if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("WetLabsUBAT.flow_rate"):
 			FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 			FlowTime   = Record["unixTime"]
 
@@ -375,13 +375,13 @@ def parseDefaults(recordlist,MissionName,MissionTime):
 	
 	for Record in recordlist:
 		## PARSE TIMEOUTS Assumes HOURS
-		if TimeoutDuration == False and Record["name"]=="CommandLine" and ".MissionTimeout" in Record["text"] and Record["text"].startswith("got"):
+		if TimeoutDuration == False and Record["name"]=="CommandLine" and ".MissionTimeout" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
 			TimeoutStart    = Record["unixTime"]
 		
 		## PARSE NEED COMMS Assumes MINUTES
-		if NeedComms == False and Record["name"]=="CommandLine" and ".NeedCommsTime" in Record["text"]:
+		if NeedComms == False and Record["name"]=="CommandLine" and ".NeedCommsTime" in Record.get("text","NA"):
 			'''command set keepstation.NeedCommsTime 60.000000 minute	'''
 			NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
 			
@@ -391,7 +391,7 @@ def parseDefaults(recordlist,MissionName,MissionTime):
 			
 		## PARSE UBAT (make vehicle-specific)
 		## PARSE SPEED
-		if Speed == False and Record["name"]=="CommandLine" and ".Speed" in Record["text"]:
+		if Speed == False and Record["name"]=="CommandLine" and ".Speed" in Record.get("text","NA"):
 			Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].strip().split(" ")[0]))
 			
 			# Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].split(" ")[0]))
