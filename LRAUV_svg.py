@@ -24,11 +24,16 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st18{fill:none;stroke:none; } <!--invisible-->
 	.st19{fill:#555555;stroke:#000000;stroke-miterlimit:10;}  <!-- Cart color -->
 	.st20{fill:#e3cfa7;stroke:#000000;stroke-miterlimit:10;}  <!-- Circle color -->
-	.st21{fill:none;stroke:#777777;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color -->
+	.st21{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- old small cable color -->
 	.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
+	.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
+
+
+
 	
 	</style>
 '''
+
 svgtext = '''
 <rect desc="backgroundbox" x="126.91" y="161.76" class="st3" width="514.08" height="156.08"/>
 <!-- Background wave -->
@@ -47,9 +52,8 @@ svgtext = '''
 </g>
 <rect desc="dirtbox" x="126.91" y="281.76" class="{color_dirtbox}" width="514.08" height="36.08"/>
 <rect desc="backgroundbox" x="126.91" y="161.76" class="st1" width="514.08" height="156.08"/>
-<line desc="bigcable" class="{color_bigcable}" x1="248.33" y1="309.03" x2="268.98" y2="285.59"/> 
-<path desc="smallcable" class="{color_smallcable}" d="M138.38,319.08c0,0,11.72-4.47,25.12-4.47s22.33,12.28,43.53,12.28s34.64-11.31,40.22-16.34"/> 
-
+<line desc="bigcable" class="{color_bigcable}" x1="250.77" y1="292.21" x2="268.73" y2="281.71"/>
+<path desc="smallcable" class="{color_smallcable}" d="M137.72,314.15c0,0,11.72-4.47,25.12-4.47s16.94,11.66,38.14,11.66s33.02-20.66,46.57-27.1"/>
 
 <!-- AUV Body -->
 <path class="st2" d="M554.57,292.12l-279.27,0l0-60.4l279.27,0c16.68,0,30.2,13.52,30.2,30.2v0
@@ -105,7 +109,6 @@ svgtext = '''
 <circle desc="BT1" class="{color_bt1}" cx="535.99" cy="225.78" r="4.07"/>
 -->
 
-
 <!-- Dynamic values -->
 <text desc="mission" transform="matrix(1 0 0 1 482.0 191.2224)" class="st9 st10 st12">{text_mission}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
@@ -145,11 +148,13 @@ svgtext = '''
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
 
 '''
+
 svgpontus='''
 <!-- vehicle-specific shapes -->
 <text desc="" transform="matrix(1 0 0 1 551.3628 250.3636)" class="st9 st10">UBAT</text>
 <text desc="" transform="matrix(1 0 0 1 551.3628 263.259)" class="st9 st10">FLOW</text>
 '''
+
 svgtail = '''
 
 <g desc="arrow">

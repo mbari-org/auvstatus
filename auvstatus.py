@@ -582,6 +582,11 @@ if Opt.report:
 	.st16{fill:#929090;} <!-- Arrow gray-->
 	.st17{fill:#e3cfa7;} <!-- DirtBrown-->
 	.st18{fill:none;stroke:none; } <!--invisible-->
+	.st19{fill:#555555;stroke:#000000;stroke-miterlimit:10;}  <!-- Cart color -->
+	.st20{fill:#e3cfa7;stroke:#000000;stroke-miterlimit:10;}  <!-- Circle color -->
+	.st21{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color -->
+	.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
+	.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
 	
 	'''
 cdd={}
@@ -775,7 +780,7 @@ if recovered:
 		cdd["text_mission"]     = "PLUGGED IN at " + hours(plugged)
 		cdd["color_cart"]       = 'st19'
 		cdd["color_cartcircle"] = 'st20'
-		cdd["color_smallcable"] = 'st21'
+		cdd["color_smallcable"] = 'st23'
 		cdd["color_bigcable"]   = 'st22'
 		
 	else:
