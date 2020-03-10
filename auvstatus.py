@@ -32,7 +32,7 @@ import urllib2
 import json
 import math
 from collections import deque
-from LRAUV_svg import svgtext,svghead,svgpontus,svgtail   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svgtail,svgerror,svgerrorhead   # define the svg text?
 
 # Default timeouts for selected missions
 
@@ -103,8 +103,8 @@ def getMissionDefaults():
 		URL = "https://okeanids.mbari.org/TethysDash/api/git/mission/{}.xml".format(mission)
 		print "\n#===========================\n",mission, "\n"
 		try:
-			connection = urllib2.urlopen(URL,timeout=5)			
-			if connection:
+			connection = urllib2.urlopen(URL,timeout=5)
+			if connection: # here?
 				raw = connection.read()
 				structured = json.loads(raw)
 				connection.close()
@@ -126,20 +126,21 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 	URL = BaseQuery.format(vehicle,events,limit,timeafter)
 	
 	try:
-		connection = urllib2.urlopen(URL,timeout=5)
+		connection = urllib2.urlopen(URL,timeout=5)		
+		if connection:
+			raw = connection.read()
+			structured = json.loads(raw)
+			connection.close()
+			result = structured['result']
+		else:
+			result = '# offline'
+		if DEBUG:
+			print URL
+			print result
+		return result
 	except urllib2.HTTPError:
+		handleURLerror()
 		
-	if connection:
-		raw = connection.read()
-		structured = json.loads(raw)
-		connection.close()
-		result = structured['result']
-	else:
-		result = '# offline'
-	if DEBUG:
-		print URL
-		print result
-	return result
 	
 	
 def getDeployment():
@@ -268,18 +269,10 @@ def getDataAsc(starttime):
 	
 	look for platform_battery_charge or platform_battery_voltage
 	
-for a in range(10):
-   for b in range(10,40,10):
-       print a,'=',b
-       if b > 20:
-              break
-	
-		'''
+'''
 
 	Bailout=False
 	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
-	
-	'TODO: run this with limit=2' save the result and then parse both
 	
 	record = runQuery(VEHICLE,"dataProcessed","&limit=2",starttime)
 	for pathpart in record:
@@ -294,7 +287,7 @@ for a in range(10):
 			if DEBUG:
 				print >> sys.stderr, nextline
 			if "platform_battery_" in nextline:
-					fields = nextline.split("=")
+				fields = nextline.split("=")
 				if (volt==0) and "voltage" in nextline:
 					volt     = float(fields[3].split(" ")[0])
 					volttime = int(float(fields[0].split(',')[1],split(" ")[0])*1000)  # in seconds not MS
@@ -444,10 +437,12 @@ def handleURLerror():
 	timestring = dates(now) + " - " +hours(now)
 	if Opt.savefile:
 		with open(OutPath.format(VEHICLE),'w') as outfile:
-			outfile.write(svgerror.format(VEHICLE,timestring))		
+			outfile.write(svgerrorhead)
+			outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
 		
 	elif not Opt.report:
-		print svgerror.format(VEHICLE,timestring)
+		print svgerrorhead
+		print svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring)
 		sys.exit("URL ACCESS ERROR:"+VEHICLE)
 	
 def parseDefaults(recordlist,MissionName,MissionTime):
