@@ -195,8 +195,8 @@ svgerrorhead =  '''<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://w
 	</style>
 '''
 svgerror ='''<rect desc="backgroundbox" class="st0" width="512" height="154"/>
-		<text desc="text_lastupdate" x="50%" y="55%" text-anchor="middle" class="st9 st10 st12">{text_vehicle}</text>
-		<text desc="text_vehicle" x="50%" y="40%" text-anchor="middle" class="st9 st10 st12">{text_lastupdate}</text>
+		<text desc="text_vehicle" x="50%" y="40%" text-anchor="middle" class="st9 st10 st12">NETWORK DOWN: {text_vehicle}</text>
+		<text desc="text_lastupdate" x="50%" y="55%" text-anchor="middle" class="st9 st10 st12">{text_lastupdate}</text>
 		
 </svg>
 '''
