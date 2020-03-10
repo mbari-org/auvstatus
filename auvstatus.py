@@ -103,22 +103,20 @@ def getMissionDefaults():
 		URL = "https://okeanids.mbari.org/TethysDash/api/git/mission/{}.xml".format(mission)
 		print "\n#===========================\n",mission, "\n"
 		try:
-			connection = urllib2.urlopen(URL,timeout=5)
+			connection = urllib2.urlopen(URL,timeout=5)			
+			if connection:
+				raw = connection.read()
+				structured = json.loads(raw)
+				connection.close()
+				result = structured['result']
+			
+				print URL
+				try: 
+					print result
+				except KeyError:
+					print "NA"
 		except urllib2.HTTPError:
-			print >> sys.stderr, "\n###", mission, "not found"
-			connection=False
-			
-		if connection:
-			raw = connection.read()
-			structured = json.loads(raw)
-			connection.close()
-			result = structured['result']
-			
-			print URL
-			try: 
-				print result
-			except KeyError:
-				print "NA"
+			handleURLerror()
 	
 
 def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
