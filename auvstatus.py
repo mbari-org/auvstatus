@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 1.3 - Streamlined code so it doesn't download data for recovered vehicles
 	Version 1.2 - making UBAT pontus-specific (move to svg["pontus"] for more vehicles)
 	Version 1.1 - adding cart
 	Version 1.0 - works for pontus
@@ -42,6 +43,7 @@ def get_options():
 	parser.add_argument("-r", "--report",	action="store_true", help="print results")
 	parser.add_argument("-f", "--savefile",	action="store_true", help="save to SVG named by vehicle at default location")
 	parser.add_argument("-v", "--vehicle",	default="pontus"  , help="specify vehicle")
+	parser.add_argument("--printhtml",action="store_true"  , help="print auv.html web links")
 	parser.add_argument("-m", "--missions",action="store_true"  , help="spit out mission defaults")
 	parser.add_argument("Args", nargs='*')
 	options = parser.parse_args()
@@ -55,6 +57,14 @@ def hours(unixtime):
 		return TimeString
 	else:
 		return "99:99"
+		
+def dates(unixtime):
+	if unixtime:
+		t1=time.localtime(unixtime/1000)
+		TimeString = time.strftime('%d%b%y',t1)
+		return TimeString
+	else:
+		return "9NaN99"
 
 def sendMessage(MessageText="EV Status"):
 	import smtplib
@@ -129,7 +139,8 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 def getDeployment():
 	startTime = 0
 	launchString = runQuery(VEHICLE,"launch","&limit=1",)
-	startTime = launchString[0]['unixTime']
+	if launchString:
+		startTime = launchString[0]['unixTime']
 	return startTime
 	
 def getRecovery(starttime):
@@ -454,6 +465,18 @@ def parseDefaults(recordlist,MissionName,MissionTime):
 			
 	return TimeoutDuration, TimeoutStart, NeedComms,Speed 
 
+def printhtmlutility():
+	''' Print the html for the auv.html web page'''
+	
+	vehicles = ["daphne","pontus","tethys","galene","sim","triton","makai"]
+
+	for v in vehicles:
+		print '''var myImageElement1 = document.getElementById('{0}');
+myImageElement1.src = 'https://okeanids.mbari.org/widget/auv_{0}.svg';'''.format(v)
+
+	for v in vehicles:
+		print '''<img src="https://okeanids.mbari.org/widget/auv_{0}.svg" id="{0}" width="100%"/>'''.format(v)
+	
 	
 def elapsed(rawdur):
 	'''input in millis not seconds'''
@@ -524,6 +547,10 @@ VEHICLE = Opt.vehicle
 if Opt.missions:
 	getMissionDefaults()
 	sys.exit("Done")
+
+if Opt.printhtml:
+	printhtmlutility()
+	sys.exit("Done")
 	
 # TODO: If running on tethys, use '/var/www/html/widget/auv_{}.svg' as the outpath
 if 'tethysdash' in os.uname()[1]:
@@ -545,6 +572,9 @@ else:
 now = 1000 * time.mktime(time.localtime())  # (*1000?)
 
 startTime = getDeployment()
+
+if not startTime:
+	sys.exit("##  Vehicle {} has no deployments".format(VEHICLE))
 
 recovered = getRecovery(starttime=startTime)
 
@@ -636,7 +666,7 @@ if Opt.report:
 	print "DropWeight:",dropWeight
 	print "Thruster:  ",ThrusterServo
 	print "Mission: ",missionName,hours(missionTime)
-	print "Deployed:  ", hours(startTime), elapsed(startTime - now)
+	print "Deployed:  ", hours(startTime), dates(startTime),elapsed(startTime - now)
 	if recovered:
 		print "Recovered: ",hours(recovered), elapsed(recovered - now), recovered
 		if plugged:
@@ -799,6 +829,8 @@ else:   #not opt report
 
 	cdd["text_vehicle"] = VEHICLE.upper()
 	cdd["text_lastupdate"] = time.strftime('%H:%M')
+	
+
 
 	
 	if recovered:
@@ -813,18 +845,18 @@ else:   #not opt report
 		cdd["color_wavecolor"] = 'st18' # invisible
 		cdd["color_dirtbox"] = 'st17'   # brown
 		if plugged:
-			cdd["text_mission"]     = "PLUGGED IN at " + hours(plugged)
+			cdd["text_mission"]     = "PLUGGED IN at " + hours(plugged) + "•" + dates(plugged)
 			cdd["color_cart"]       = 'st19'
 			cdd["color_cartcircle"] = 'st20'
 			cdd["color_smallcable"] = 'st23'
 			cdd["color_bigcable"]   = 'st22'
 		
 		else:
-			cdd["text_mission"] = "RECOVERED at " + hours(recovered)
+			cdd["text_mission"] = "RECOVERED at " + hours(recovered)+ "•" + dates(recovered)
 			
 	# NOT RECOVERED
 	else:
-		cdd["text_mission"]=missionName + " - " + hours(missionTime)
+		cdd["text_mission"]=missionName + " - " + hours(missionTime)+ "•" + dates(missionTime)
 		cdd["text_speed"]= speed + "m/s"
 
 		###
