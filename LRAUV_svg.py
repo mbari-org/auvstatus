@@ -167,20 +167,36 @@ svgtail = '''
 </svg>
 '''
 
-svgerrorhead =  '''<?xml version="1.0" encoding="utf-8"?>
-<!-- March 3, 2020 version  -->
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="120 155 534 176" xml:space="preserve">
+# svgerrorhead =  '''<?xml version="1.0" encoding="utf-8"?>
+# <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+# 	 viewBox="120 155 534 176" xml:space="preserve">
+# <style type="text/css">
+# 	.st0{fill:#CFDEE2;} <!-- WaveColor -->
+# 	.st9{font-family:'HelveticaNeue';}
+# 	.st10{font-size:14px;}
+# 	.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
+# 	.st12{fill:#606060;}  <!--MidGray text -->
+# 	</style>
+# 	'''
+# svgerror ='''
+# 	<rect desc="backgroundbox" x="126.91" y="161.76" class="st0" width="514.08" height="156.08"/>
+# 	<text desc="text_vehicle" transform="matrix(1 0 0 1 398.7397 254.7336)" class="st9 st10 st12">{text_vehicle}-OFFLINE</text>
+# 	<text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st9 st10 st12">{text_lastupdate}</text>
+# </svg>'''
+
+svgerrorhead =  '''<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" 
+	id="Layer_1" width="514" height="156" viewbox = "0 0 514 156" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#CFDEE2;} <!-- WaveColor -->
+	.st0{fill:#EEAA88;} <!-- WaveColor -->
 	.st9{font-family:'HelveticaNeue';}
 	.st10{font-size:14px;}
 	.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
 	.st12{fill:#606060;}  <!--MidGray text -->
 	</style>
-	'''
-svgerror ='''
-	<rect desc="backgroundbox" x="126.91" y="161.76" class="st0" width="514.08" height="156.08"/>
-	<text desc="text_vehicle" transform="matrix(1 0 0 1 398.7397 254.7336)" class="st9 st10 st12">{text_vehicle}-OFFLINE</text>
-	<text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st9 st10 st12">{text_lastupdate}</text>
-</svg>'''
+'''
+svgerror ='''<rect desc="backgroundbox" class="st0" width="512" height="154"/>
+		<text desc="text_lastupdate" x="50%" y="55%" text-anchor="middle" class="st9 st10 st12">{text_vehicle}</text>
+		<text desc="text_vehicle" x="50%" y="40%" text-anchor="middle" class="st9 st10 st12">{text_lastupdate}</text>
+		
+</svg>
+'''
