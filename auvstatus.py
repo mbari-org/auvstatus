@@ -51,6 +51,7 @@ def get_options():
 
 
 def hours(unixtime):
+	'''return epoch in HH:MM string'''
 	if unixtime:
 		t1=time.localtime(unixtime/1000)
 		TimeString = time.strftime('%H:%M',t1)
@@ -59,6 +60,7 @@ def hours(unixtime):
 		return "99:99"
 		
 def dates(unixtime):
+	'''return epoch in DDmonYY string'''
 	if unixtime:
 		t1=time.localtime(unixtime/1000)
 		TimeString = time.strftime('%d%b%y',t1)
@@ -67,6 +69,7 @@ def dates(unixtime):
 		return "9NaN99"
 
 def sendMessage(MessageText="EV Status"):
+	'''not presently used, but email / sms notification sending function'''
 	import smtplib
 	import settings
 
@@ -94,6 +97,7 @@ def sendMessage(MessageText="EV Status"):
 	server.quit()
 
 def getMissionDefaults():
+	'''print standard defaults for the listed missions. some must have inheritance because it doesn't get them all'''
 	missions=["Science/profile_station","Science/sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
 	for mission in missions:
 		URL = "https://okeanids.mbari.org/TethysDash/api/git/mission/{}.xml".format(mission)
@@ -118,11 +122,15 @@ def getMissionDefaults():
 	
 
 def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
+	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
 	vehicle = VEHICLE
 	BaseQuery = "http://okeanids.mbari.org/TethysDash/api/events?vehicles={0}&eventTypes={1}{2}&from={3}"
 	URL = BaseQuery.format(vehicle,events,limit,timeafter)
 	
-	connection = urllib2.urlopen(URL,timeout=5)
+	try:
+		connection = urllib2.urlopen(URL,timeout=5)
+	except urllib2.HTTPError:
+		
 	if connection:
 		raw = connection.read()
 		structured = json.loads(raw)
@@ -137,6 +145,7 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 	
 	
 def getDeployment():
+	'''return start time for deployment'''
 	startTime = 0
 	launchString = runQuery(VEHICLE,"launch","&limit=1",)
 	if launchString:
@@ -160,29 +169,21 @@ def getPlugged(starttime):
 	return plugged
  
 def getGPS(starttime):
-	''' TODO Might need to go way back to get two spots to compare -- these two are consecutive fixes so not the speed.
-	Have the second older fix be at least 20+ minutes before'''
+	''' extract the most recent GPS entry'''
 	qString = runQuery(VEHICLE,"gpsFix","&limit=1",starttime)
 	retstring=""
 	if qString:
 		retstring = qString	
 	return retstring
 	
-def getOldGPS(starttime,missionstart):
-	previoustime = starttime - 30*60*1000
+def getOldGPS(gpstime,missionstart):
+	'''using the date of the most recent entry [mission start], go back 30 minutes and get GPS fix'''
+	
+	previoustime = gpstime - 30*60*1000
 	qString = runQuery(VEHICLE,"gpsFix","&limit=1&to={}".format(previoustime),missionstart)
 	retstring=""
 	if qString:
 		retstring = qString
-	return retstring
-
-
-def getCritical(starttime):
-	qString = runQuery(VEHICLE,"logCritical","",starttime)
-	retstring = False
-	if qString:
-		retstring = qString
-	
 	return retstring
 
 def parseGPS(recordlist):
@@ -196,6 +197,15 @@ def parseGPS(recordlist):
 	gpstime = recordlist[0]['unixTime']
 	return site,gpstime
 	
+def getCritical(starttime):
+	'''get critical entries, like drop weight'''
+	qString = runQuery(VEHICLE,"logCritical","",starttime)
+	retstring = False
+	if qString:
+		retstring = qString
+	
+	return retstring
+
 def parseCritical(recordlist):
 	Drop = False
 	ThrusterServo=False
@@ -242,49 +252,68 @@ def parseComms(recordlist):
 	return satCommTime,directCommTime 
 
 def getDataAsc(starttime):
-	'''NOTE this walks through the whole file to get the right field. Not very slick'''
-	''' IBIT will show battery thresholds that could be used to determine warning colors'''
-	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
+	''' TODO: cache batteries for when there is a new log file
+	OR if you don't find it, rerun the Query with limit 2 and parse the second file
+
 	
 	Entries from shore.asc use same deque "trick" to get values. get maybe 150 lines
 	2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_charge=126.440002 Ah
 	2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_voltage=14.332275 V
+	Split on '='
+	
+	['2020-03-03T09:17:56.203Z,1583227076.203 Unknown', '', '>platform_battery_charge', '153.968887 Ah']
 	
 	'''
 	
-	volt="0"
-	amp ="0"
-	volttime="0"
-	saveline="na,na,na"
 	'''https://okeanids.mbari.org/TethysDash/data/pontus/realtime/sbdlogs/2020/202003/20200303T074113/shore.csv
-	2020/202003/20200303T074113'''
+	2020/202003/20200303T074113
+	
+	look for platform_battery_charge or platform_battery_voltage
+	
+for a in range(10):
+   for b in range(10,40,10):
+       print a,'=',b
+       if b > 20:
+              break
+	
+		'''
+
+	Bailout=False
 	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
 	
-	record = runQuery(VEHICLE,"dataProcessed","&limit=1",starttime)
-	extrapath = record[0]['path']
-	NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
-	datacon = urllib2.urlopen(NewURL,timeout=5)
-	lastlines = deque(datacon, 100)
-	for nextline in lastlines:
-		if DEBUG:
-			print >> sys.stderr, nextline
-		if "V," in nextline:
-			fields = nextline.split(",")
-			volt     = float(fields[8].split(" ")[0])
-			amp      = float(fields[7].split(" ")[0])
-			volttime = int(float(fields[1])*1000)  # in seconds not MS
+	'TODO: run this with limit=2' save the result and then parse both
+	
+	record = runQuery(VEHICLE,"dataProcessed","&limit=2",starttime)
+	for pathpart in record:
+		volt=0
+		amp =0
+		volttime="0"
+		extrapath = pathpart['path']
+		NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
+		datacon = urllib2.urlopen(NewURL,timeout=5)
+		lastlines = deque(datacon, 250)
+		for nextline in lastlines:
+			if DEBUG:
+				print >> sys.stderr, nextline
+			if "platform_battery_" in nextline:
+					fields = nextline.split("=")
+				if (volt==0) and "voltage" in nextline:
+					volt     = float(fields[3].split(" ")[0])
+					volttime = int(float(fields[0].split(',')[1],split(" ")[0])*1000)  # in seconds not MS
+				elif "charge" in nextline:
+					amp      = float(fields[3].split(" ")[0])
+			if (volt) and (amp):
+				Bailout = True
+				break
+		if Bailout == True:
 			break
-
 	return volt,amp,volttime
 
 def getData(starttime):
-	'''NOTE this walks through the whole file to get the right field. Not very slick'''
+	'''Walk through the file backwards'''
 	''' IBIT will show battery thresholds that could be used to determine warning colors'''
 	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
 	
-	Entries from shore.asc use same deque "trick" to get values. get maybe 150 lines
-	2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_charge=126.440002 Ah
-	2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_voltage=14.332275 V
 	
 	'''
 	volt="0"
@@ -411,6 +440,17 @@ def parseImptMisc(recordlist):
 			FlowTime   = Record["unixTime"]
 
 	return GF, GFtime, ubatStatus, ubatTime, FlowRate,FlowTime, LogTime
+
+def handleURLerror():
+	now = 1000 * time.mktime(time.localtime())
+	timestring = dates(now) + " - " +hours(now)
+	if Opt.savefile:
+		with open(OutPath.format(VEHICLE),'w') as outfile:
+			outfile.write(svgerror.format(VEHICLE,timestring))		
+		
+	elif not Opt.report:
+		print svgerror.format(VEHICLE,timestring)
+		sys.exit("URL ACCESS ERROR:"+VEHICLE)
 	
 def parseDefaults(recordlist,MissionName,MissionTime):
 	''' parse events that get reset after missions and might be default'''
@@ -545,10 +585,12 @@ global VEHICLE
 VEHICLE = Opt.vehicle
 
 if Opt.missions:
+	'''utility to show default values for selected missions'''
 	getMissionDefaults()
 	sys.exit("Done")
 
 if Opt.printhtml:
+	'''print format of auv.html auto-refreshing file'''
 	printhtmlutility()
 	sys.exit("Done")
 	
@@ -580,7 +622,8 @@ recovered = getRecovery(starttime=startTime)
 
 plugged = getPlugged(recovered)
 
-if not recovered:
+# vehicle not recovered
+if not recovered or DEBUG:
 	critical  = getCritical(startTime)
 
 	site,gpstime = parseGPS(getGPS(startTime))
@@ -603,7 +646,7 @@ if not recovered:
 	duration,timeoutstart,needcomms,speed  = parseDefaults(postmission,missionName,missionTime)
 
 	#this is volt, amp, time
-	volt,amphr,batttime = getData(startTime)
+	volt,amphr,batttime = getDataAsc(startTime)
 	satcomms,cellcomms = parseComms(getComms(startTime))
 
 	if not needcomms: 
@@ -612,7 +655,9 @@ if not recovered:
 	
 	if (critical):
 		dropWeight,ThrusterServo= parseCritical(critical)
-else:
+
+# vehicle has been recovered
+else:   
 	gf = False
 	gftime = False
 	duration = False
