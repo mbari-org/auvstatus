@@ -62,6 +62,18 @@ svgtext = '''
 <polygon class="st3" points="154.9,269.51 275.29,292.12 275.29,231.72 154.9,254.33 "/>
 <polygon class="st3" points="255.42,235.44 244.05,237.4 244.8,183.82 255.99,180.82 "/>
 
+<!-- add new overcurrent lights -->
+<text desc="HardwareLabel" text-anchor="right" transform="matrix(1 0 0 1 245 254)" class="st9 st10">HW</text>
+<text desc="SoftwareLabel" text-anchor="right" transform="matrix(1 0 0 1 245 267)" class="st9 st10">SW</text>
+<text desc="OtherLabel"    text-anchor="right" transform="matrix(1 0 0 1 245 280)" class="st9 st10">OT</text>
+<circle desc="HW" class="st3" cx="267" cy="251" r="4" /> 
+<circle desc="SW" class="st3" cx="267" cy="264" r="4"/>
+<circle desc="OT" class="st3" cx="267" cy="277" r="4" /> 
+
+
+
+
+
 <!-- status shapes -->
 
 <rect desc="drop" x="284.79" y="282.44" class="{color_drop}" width="24.43" height="9.5"/>
@@ -73,13 +85,13 @@ svgtext = '''
 <circle desc="thrust" class="{color_thrust}" cx="175.51" cy="261.61" r="8.15"/>
 <!--<circle desc="gf" class="st6" cx="488.44" cy="259.45" r="8.15"/>-->
 
-<circle desc="bat1" class="{color_bat1}" cx="301.88" cy="241.38" r="4.07"/>
-<circle desc="bat2" class="{color_bat2}" cx="312.19" cy="241.38" r="4.07"/>
-<circle desc="bat3" class="{color_bat3}" cx="322.5" cy="241.38" r="4.07"/>
-<circle desc="bat4" class="{color_bat4}" cx="332.81" cy="241.38" r="4.07"/>
-<circle desc="bat5" class="{color_bat5}" cx="343.12" cy="241.38" r="4.07"/>
-<circle desc="bat6" class="{color_bat6}" cx="353.43" cy="241.38" r="4.07"/>
-<circle desc="bat7" class="{color_bat7}" cx="363.74" cy="241.38" r="4.07"/>
+<circle desc="bat1" class="{color_bat1}" cx="301.88" cy="241.38" r="4"/>
+<circle desc="bat2" class="{color_bat2}" cx="312.19" cy="241.38" r="4"/>
+<circle desc="bat3" class="{color_bat3}" cx="322.5" cy="241.38" r="4"/>
+<circle desc="bat4" class="{color_bat4}" cx="332.81" cy="241.38" r="4"/>
+<circle desc="bat5" class="{color_bat5}" cx="343.12" cy="241.38" r="4"/>
+<circle desc="bat6" class="{color_bat6}" cx="353.43" cy="241.38" r="4"/>
+<circle desc="bat7" class="{color_bat7}" cx="363.74" cy="241.38" r="4"/>
 <!--<circle desc="bat8" class="st2" cx="374.05" cy="241.38" r="4.07"/>-->
 
 <circle desc="missiondefault" class="{color_missiondefault}" cx="435" cy="188" r="2"/>
