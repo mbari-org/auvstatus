@@ -27,6 +27,7 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st21{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- old small cable color -->
 	.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
 	.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
+	.st24{font-size:6px;}
 
 
 
@@ -112,9 +113,11 @@ svgtext = '''
 <!-- Dynamic values -->
 <text desc="mission" transform="matrix(1 0 0 1 482.0 191.2224)" class="st9 st10 st12">{text_mission}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
+<text desc="test_note" transform="matrix(1 0 0 1 133 174)" class="st12 st9 st13">{text_note}</text>
+<text desc="test_notetime" transform="matrix(1 0 0 1 134 180)" class="st12 st9 st24">{text_notetime}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
-<text desc="text_speed" transform="matrix(1 0 0 1 597.9696 276.3205)" class="st9 st10">{text_speed}</text>
+<text desc="text_speed" transform="matrix(1 0 0 1 598 276.3205)" class="st9 st10">{text_speed}</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 197.0165 298.3899)" class="st9 st10">{text_nextcomm}</text>
 <text desc="text_timeout" transform="matrix(1 0 0 1 197.0165 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
@@ -132,7 +135,12 @@ svgtext = '''
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
 
 <!-- Static labels -->
+<text transform="matrix(1 0 0 1 439.0 191.2224)" class="st9 st10">MISSION:</text>
 <text transform="matrix(1 0 0 1 404.0 268.0)" class="st12 st9 st13">UPDATED:</text>
+'''
+svglabels='''
+<!-- create new variable for these -->
+<text desc="speed_label" transform="matrix(1 0 0 1 599 281)" class="st12 st9 st24">commanded</text>
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
 <text transform="matrix(1 0 0 1 289.7587 302.4895)" class="st9 st10">Drop Weight</text>
@@ -142,11 +150,9 @@ svgtext = '''
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
 <text transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10">Sat comms</text>
-<text transform="matrix(1 0 0 1 439.0 191.2224)" class="st9 st10">MISSION:</text>
 <text transform="matrix(1 0 0 1 291.6499 221.6039)" class="st9 st10">Cell comms</text>
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
-
 '''
 
 svgpontus='''
@@ -155,9 +161,7 @@ svgpontus='''
 <text desc="" transform="matrix(1 0 0 1 551.3628 263.259)" class="st9 st10">FLOW</text>
 '''
 
-svgtail = '''
-
-<g desc="arrow">
+svgtail = '''<g desc="arrow">
 	<rect x="594.14" y="256.24" class="st16" width="11.73" height="7"/>
 	<g>
 		<polygon class="st16" points="618.22,259.74 600.81,266.86 604.94,259.74 600.81,252.63 		"/>

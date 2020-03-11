@@ -32,7 +32,7 @@ import urllib2
 import json
 import math
 from collections import deque
-from LRAUV_svg import svgtext,svghead,svgpontus,svgtail,svgerror,svgerrorhead   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svgtail,svglabels,svgerror,svgerrorhead   # define the svg text?
 
 # Default timeouts for selected missions
 
@@ -195,6 +195,27 @@ def parseGPS(recordlist):
 	site =    (recordlist[0]['fix']['latitude'],recordlist[0]['fix']['longitude'])
 	gpstime = recordlist[0]['unixTime']
 	return site,gpstime
+	
+def getNotes(starttime):
+	'''get notes with #widget in the text'''
+	qString = runQuery(VEHICLE,"note","&limit=10",starttime)
+	retstring = False
+	if qString:
+		retstring=qString
+
+	return retstring
+	
+def parseNotes(recordlist):
+	Note = ''
+	NoteTime = False
+	for Record in recordlist:
+		# if DEBUG:
+		# 	print Record["name"],Record["text"]
+		if "#widget" in Record["note"]:
+			Note = "NOTE " + Record["note"].replace("#widget","")[:120]
+			NoteTime = Record["unixTime"]
+			break
+	return Note,NoteTime 
 	
 def getCritical(starttime):
 	'''get critical entries, like drop weight'''
@@ -615,6 +636,8 @@ recovered = getRecovery(starttime=startTime)
 
 plugged = getPlugged(recovered)
 
+note,noteTime = parseNotes(getNotes(startTime))
+
 # vehicle not recovered
 if not recovered or DEBUG:
 	critical  = getCritical(startTime)
@@ -742,6 +765,7 @@ else:   #not opt report
 		.st21{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color -->
 		.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
 		.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
+		.st24{font-size:6px;}
 	
 		'''
 	cdd={}
@@ -806,13 +830,18 @@ else:   #not opt report
 	"text_logago",
 	"text_logtime"
 ]
-
 	for tname in textnames:
 		cdd[tname]='na'
-		
-	cdd["text_vehicle"] = 'NA'
-	cdd["text_lastupdate"] = 'NA'
+
+	# these should persist after recovery
+	specialnames=[
+	"text_vehicle","text_lastupdate",
+	"text_note", "text_notetime"	
+	]
+	for tname in specialnames:
+		cdd[tname]=''
 	
+
 	'''
 	 _            _       
 	| |_ ___   __| | ___  
@@ -868,6 +897,9 @@ else:   #not opt report
 	cdd["text_vehicle"] = VEHICLE.upper()
 	cdd["text_lastupdate"] = time.strftime('%H:%M')
 	
+	if noteTime:
+		cdd["text_note"] = note
+		cdd["text_notetime"] = noteTime
 
 
 	
@@ -875,22 +907,26 @@ else:   #not opt report
 	###
 	###   CELL COMM DISPLAY
 	###
+	
+	# The colors for boxes when vehicle is recovered
+	# Set this to st18 for invisible, and st3 for white filled
+	
 		for cname in colornames:
-			cdd[cname]='st18'
+			cdd[cname]='st3'
 		for tname in textnames:
 			cdd[tname]=''
 	
 		cdd["color_wavecolor"] = 'st18' # invisible
 		cdd["color_dirtbox"] = 'st17'   # brown
 		if plugged:
-			cdd["text_mission"]     = "PLUGGED IN at " + hours(plugged) + "•" + dates(plugged)
+			cdd["text_mission"]     = "PLUGGED IN " + hours(plugged) + "•" + dates(plugged)
 			cdd["color_cart"]       = 'st19'
 			cdd["color_cartcircle"] = 'st20'
 			cdd["color_smallcable"] = 'st23'
 			cdd["color_bigcable"]   = 'st22'
 		
 		else:
-			cdd["text_mission"] = "RECOVERED at " + hours(recovered)+ "•" + dates(recovered)
+			cdd["text_mission"] = "RECOVERED " + hours(recovered)+ "•" + dates(recovered)
 			
 	# NOT RECOVERED
 	else:
@@ -999,16 +1035,20 @@ else:   #not opt report
 		with open(OutPath.format(VEHICLE),'w') as outfile:
 			outfile.write(svghead)
 			outfile.write(svgtext.format(**cdd))
-			if VEHICLE=="pontus":
-				outfile.write(svgpontus)
+			if not recovered:
+				outfile.write(svglabels)
+				if VEHICLE=="pontus":
+					outfile.write(svgpontus)
 			outfile.write(svgtail)
 		
 		
 	elif not Opt.report:
 		print svghead
 		print svgtext.format(**cdd)
-		if VEHICLE=="pontus":
-			print svgpontus
+		if not recovered:
+			print svglabels
+			if VEHICLE=="pontus":
+				print svgpontus
 		print svgtail
 	
 	
