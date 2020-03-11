@@ -12,7 +12,7 @@ Usage:
     -r           prints report
     -f           save to SVG file directly
 
-To see the full "gallery" of vehicles being monitored, see ![this page](https://okeanids.mbari.org/widget/)
+To see the full "gallery" of vehicles being monitored, see [this page](https://okeanids.mbari.org/widget/)
 
 Scripts and cron jobs are run in the `widget` folder on the server.
 
@@ -26,5 +26,5 @@ Scripts and cron jobs are run in the `widget` folder on the server.
 
 ## TODO
 
-  * Long list of TODOs in the code, and see ![Issues](https://bitbucket.org/beroe/auvstatus/issues?status=new&status=open) for more
+  * Long list of TODOs in the code, and see [Issues](https://bitbucket.org/beroe/auvstatus/issues?status=new&status=open) for more
 
