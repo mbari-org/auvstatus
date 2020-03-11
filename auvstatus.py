@@ -199,7 +199,7 @@ def parseGPS(recordlist):
 def getNotes(starttime):
 	'''get notes with #widget in the text'''
 	qString = runQuery(VEHICLE,"note","&limit=10",starttime)
-	retstring = False
+	retstring = ''
 	if qString:
 		retstring=qString
 
