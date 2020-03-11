@@ -507,18 +507,9 @@ def handleURLerror():
 		print svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring)
 		sys.exit("URL ACCESS ERROR:"+VEHICLE)
 	
-def parseDefaults(recordlist,MissionName,MissionTime):
+def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	''' parse events that get reset after missions and might be default'''
 	''' todo, need to move the ubat here and change the ubat on command parsing'''
-	mission_defaults = {
-		"profile_station"  : {"MissionTimeout": 4,   "NeedCommsTime":60, "Speed":1 },
-		"sci2"             : {"MissionTimeout": 2,   "NeedCommsTime":60, "Speed":1 },
-		"keepstation"      : {"MissionTimeout": 4,   "NeedCommsTime":45, "Speed":.75 },
-		"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45, "Speed":0.1 },
-		"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45, "Speed":.75 },
-		"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30, "Speed":1 },
-		"spiral_cast"      : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 }
-	}
 	
 	TimeoutDuration=False
 	TimeoutStart   =False
@@ -661,7 +652,16 @@ else:
 	StartTimePath = "./auvstats_{}.csv" # make this .py for importing or .json?
 	
 	
-	
+mission_defaults = {
+	"profile_station"  : {"MissionTimeout": 4,   "NeedCommsTime":60, "Speed":1 },
+	"sci2"             : {"MissionTimeout": 2,   "NeedCommsTime":60, "Speed":1 },
+	"keepstation"      : {"MissionTimeout": 4,   "NeedCommsTime":45, "Speed":.75 },
+	"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45, "Speed":0.1 },
+	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45, "Speed":.75 },
+	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30, "Speed":1 },
+	"spiral_cast"      : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 }
+}
+
 #########
 ##
 ## LOAD AND PARSE EVENTS
@@ -700,7 +700,7 @@ if not recovered or DEBUG:
 	
 	# ONLY RECORDS AFTER MISSION
 	postmission = getImportant(missionTime)
-	duration,timeoutstart,needcomms,speed  = parseDefaults(postmission,missionName,missionTime)
+	duration,timeoutstart,needcomms,speed  = parseDefaults(postmission,mission_defaults,missionName,missionTime)
 
 	#this is volt, amp, time
 	volt,amphr,batttime = getDataAsc(startTime)
@@ -779,36 +779,36 @@ if Opt.report:
 
 
 else:   #not opt report
-
-	# print svgtext  # from importing
 	'''	
-		.st0{fill:#CFDEE2;} <!-- WaveColor -->
-		.st1{fill:none;stroke:#000000; }
-		.st2{fill:#D4D2D2;stroke:#000000; } <!-- Background wave -->
-		.st3{fill:#FFFFFF;stroke:#000000; } <!--White Fill -->
-		.st4{fill:#5AC1A4;stroke:#000000; } <!--Green Fill -->
-		.st5{fill:#FFE850;stroke:#000000; } <!--Yellow Fill -->
-		.st6{fill:#EF9D30;stroke:#000000; } <!--Orange Fill -->
-		.st7{fill:#FFFFFF;stroke:#000000;stroke-linecap:round; }
-		.st8{fill:#C6C4C4;stroke:#000000;stroke-linecap:round; }
-		.st9{font-family:'HelveticaNeue';}
-		.st10{font-size:9px;}
-		.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
-		.st12{fill:#606060;}  <!--MidGray text -->
-		.st13{font-size:7px;}
-		.st14{font-family:'HelveticaNeue-Medium';}
-		.st15{font-size:11px;}
-		.st16{fill:#929090;} <!-- Arrow gray-->
-		.st17{fill:#e3cfa7;} <!-- DirtBrown-->
-		.st18{fill:none;stroke:none; } <!--invisible-->
-		.st19{fill:#555555;stroke:#000000;stroke-miterlimit:10;}  <!-- Cart color -->
-		.st20{fill:#e3cfa7;stroke:#000000;stroke-miterlimit:10;}  <!-- Circle color -->
-		.st21{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color -->
-		.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
-		.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
-		.st24{font-size:6px;}
-	
-		'''
+	.st0{fill:#CFDEE2;} <!-- WaveColor -->
+	.st1{fill:none;stroke:#000000; }
+	.st2{fill:#D4D2D2;stroke:#000000; } <!-- Background wave -->
+	.st3{fill:#FFFFFF;stroke:#000000; } <!--White Fill -->
+	.st4{fill:#5AC1A4;stroke:#000000; } <!--Green Fill -->
+	.st5{fill:#FFE850;stroke:#000000; } <!--Yellow Fill -->
+	.st6{fill:#EF9D30;stroke:#000000; } <!--Orange Fill -->
+	.st7{fill:#FFFFFF;stroke:#000000;stroke-linecap:round; }
+	.st8{fill:#C6C4C4;stroke:#000000;stroke-linecap:round; }
+	.st9{font-family:'HelveticaNeue';}
+	.st10{font-size:9px;}
+	.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
+	.st12{fill:#606060;}  <!--MidGray text -->
+	.st13{font-size:7px;}
+	.st14{font-family:'HelveticaNeue-Medium';}
+	.st15{font-size:11px;}
+	.st16{fill:#929090;} <!-- Arrow gray-->
+	.st17{fill:#e3cfa7;} <!-- DirtBrown-->
+	.st18{fill:none;stroke:none; } <!--invisible-->
+	.st19{fill:#555555;stroke:#000000;stroke-miterlimit:10;}  <!-- Cart color -->
+	.st20{fill:#e3cfa7;stroke:#000000;stroke-miterlimit:10;}  <!-- Circle color -->
+	.st21{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color -->
+	.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
+	.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
+	.st24{font-size:6px;}
+	.st25{fill:#5AC1A4;stroke:none; } <!--Green No Stroke -->
+	.st26{fill:#FFE850;stroke:none; } <!--Yellow No Stroke -->
+	.st27{fill:#EF9D30;stroke:none; } <!--Orange No Stroke -->	
+	'''
 	cdd={}
 	colornames=[
 	"color_drop",
@@ -837,7 +837,8 @@ else:   #not opt report
 	"color_bigcable",
 	"color_smallcable",
 	"color_cart",
-	"color_cartcircle"]
+	"color_cartcircle",
+	"color_missiondefault"]
 
 	for cname in colornames:
 		cdd[cname]='st3'
@@ -937,7 +938,7 @@ else:   #not opt report
 
 	cdd["text_vehicle"] = VEHICLE.upper()
 	cdd["text_lastupdate"] = time.strftime('%H:%M')
-	
+	cdd["color_missiondefault"] = ['st4','st5'][missionName in mission_defaults]
 	if noteTime:
 		cdd["text_note"] = note
 		cdd["text_notetime"] = elapsed(noteTime)
@@ -945,9 +946,6 @@ else:   #not opt report
 
 	
 	if recovered:
-	###
-	###   CELL COMM DISPLAY
-	###
 	
 	# The colors for boxes when vehicle is recovered
 	# Set this to st18 for invisible, and st3 for white filled

@@ -28,10 +28,9 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
 	.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
 	.st24{font-size:6px;}
-
-
-
-	
+	.st25{fill:#5AC1A4;stroke:none; } <!--Green No Stroke -->
+	.st26{fill:#FFE850;stroke:none; } <!--Yellow No Stroke -->
+	.st27{fill:#EF9D30;stroke:none; } <!--Orange No Stroke -->	
 	</style>
 '''
 
@@ -83,6 +82,7 @@ svgtext = '''
 <circle desc="bat7" class="{color_bat7}" cx="363.74" cy="241.38" r="4.07"/>
 <!--<circle desc="bat8" class="st2" cx="374.05" cy="241.38" r="4.07"/>-->
 
+<circle desc="missiondefault" class="{color_missiondefault}" cx="435" cy="188" r="2"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="{color_satcomm}" width="24.43" height="11.5"/>
 <rect desc="cell"    x="260.15" y="212.24" class="{color_cell}" width="26.43" height="11.31"/>
 <rect desc="gps"     x="407.76" y="221.71" class="{color_gps}" width="26.93" height="10.17"/>
