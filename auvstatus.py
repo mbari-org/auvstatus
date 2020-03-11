@@ -899,7 +899,7 @@ else:   #not opt report
 	
 	if noteTime:
 		cdd["text_note"] = note
-		cdd["text_notetime"] = noteTime
+		cdd["text_notetime"] = elapsed(noteTime)
 
 
 	
