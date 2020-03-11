@@ -9,18 +9,19 @@
 	Usage: auvstatus.py -v pontus -r  (see a summary of reports)
 	       auvstatus.py -v pontus > pontusfile.svg  (save svg display)
 			 
-	  https://okeanids.mbari.org/TethysDash/api/events?vehicles=pontus&eventTypes=logImportant&limit=4
-	  
+	https://okeanids.mbari.org/TethysDash/api/events?vehicles=pontus&eventTypes=logImportant&limit=4
+	
 
-	  Battery thresholds:
-	  onfigSet IBIT.batteryVoltageThreshold 13 v persist;configSet IBIT.batteryCapacityThreshold 15 Ah persist
-	  
-	 	  
-	  Ground faults - check with Erik about what is most useful for GF reporting
-	  
-	  TODO: query missions to get the defaults:
-	  https://okeanids.mbari.org/TethysDash/api/git/mission/Science/isotherm_depth_sampling.xml?tag=2019-12-03'
-	  
+	Battery thresholds:
+	onfigSet IBIT.batteryVoltageThreshold 13 v persist;configSet IBIT.batteryCapacityThreshold 15 Ah persist
+	
+		  
+	Ground faults - check with Erik about what is most useful for GF reporting
+	
+	TODO: query missions to get the defaults:
+	https://okeanids.mbari.org/TethysDash/api/git/mission/Science/isotherm_depth_sampling.xml?tag=2019-12-03'
+	
+	
 	  
 	  '''
 
@@ -238,6 +239,43 @@ def parseCritical(recordlist):
 			ThrusterServo = Record["unixTime"]
 	return Drop, ThrusterServo 
 	
+def getFaults(starttime):
+	'''
+	Software Overcurrent Add swatch to thruster section? 
+	Hardware Overcurrent 
+	On overcurrent errors, the component varies. Probably worth having a special indicator and report what is flagged
+		LCB Fault
+		
+		2020-03-06T00:10:13.771Z,1583453413.771 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
+		
+	2020-03-06T00:09:26.051Z,1583453366.051 [RDI_Pathfinder](FAULT): DVL failed to acquire valid data within timeout.'''
+	qString = runQuery(VEHICLE,"logCritical","",starttime)
+	retstring = False
+	if qString:
+		retstring = qString
+	
+	return retstring
+
+def parseDVL(recordlist):
+	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
+	
+	DVL potential instruments: 
+		DVL_micro
+		Rowe_600
+		RDI_Pathfinder
+
+	'''
+	## All boilerplate
+	Drop = False
+	ThrusterServo=False
+	for Record in recordlist:
+		# if DEBUG:
+		# 	print Record["name"],Record["text"]
+		if Record["name"]=="DropWeight":
+			Drop=Record["unixTime"]
+		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
+			ThrusterServo = Record["unixTime"]
+	return Drop, ThrusterServo 
 
 def getImportant(starttime):
 	qString = runQuery(VEHICLE,"logImportant","",starttime)
@@ -440,8 +478,11 @@ def parseImptMisc(recordlist):
 				
 		if not LogTime and Record["name"] =='CommandLine' and 'got command restart logs' in Record.get("text","NA"):
 			LogTime = Record["unixTime"]
-			
+
+		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
+		
+		'''Change to got command ubat on'''
 		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
 			ubatBool = bool(float(Record["text"].split("loadAtStartup ")[1].split(" ")[0]))
 			ubatStatus = ["st6","st4"][ubatBool]
