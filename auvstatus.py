@@ -671,7 +671,10 @@ now = 1000 * time.mktime(time.localtime())  # (*1000?)
 startTime = getDeployment()
 
 if not startTime:
-	sys.exit("##  Vehicle {} has no deployments".format(VEHICLE))
+	if DEBUG:
+		sys.exit("##  Vehicle {} has no deployments".format(VEHICLE))
+	else:
+		sys.exit()
 
 recovered = getRecovery(starttime=startTime)
 
