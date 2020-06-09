@@ -576,10 +576,13 @@ def elapsed(rawdur):
 		MinuteString = minutes
 		HourString = ""
 		DayString  = ""
+		
 		if minutes>59:
 			MinuteString = str(minutes%60) + "m"
 			HourString = str(minutes//60) + "h " 
 			hours = minutes//60
+		else:
+			MinuteString = str(minutes) + "m"
 		if (hours)>23:
 			HourString = str(hours%24) + "h "
 			DayString = str(hours//24) + "d " 
