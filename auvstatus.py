@@ -18,10 +18,6 @@
 		  
 	Ground faults - check with Erik about what is most useful for GF reporting
 	
-	TODO: query missions to get the defaults:
-	https://okeanids.mbari.org/TethysDash/api/git/mission/Science/isotherm_depth_sampling.xml?tag=2019-12-03'
-	
-	
 	  
 	  '''
 
@@ -78,12 +74,12 @@ def sendMessage(MessageText="EV Status"):
 
 
 	# PCfB Stuff
-	me = 'steve@jellywatch.org'
+	me = 'XXXXXX@jellywatch.org'
 	port = 587
 	password = settings.pa
 	mailhost = 'smtp.dreamhost.com'
 
-	you = '8315667696@mms.att.net'
+	you = 'XXXXx@mms.att.net'
 	msg = MIMEText(MessageText)
 	msg['Subject'] = "EV Charger" 
 	msg['From'] = me
@@ -117,12 +113,15 @@ def getMissionDefaults():
 				except KeyError:
 					print "NA"
 		except urllib2.HTTPError:
-			handleURLerror()
+			print >> sys.stderr, "# FAILED TO FIND MISSION",mission
 	
 
 def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
 	vehicle = VEHICLE
+	if not timeafter:
+		timeafter="1234567890123"
+		
 	BaseQuery = "http://okeanids.mbari.org/TethysDash/api/events?vehicles={0}&eventTypes={1}{2}&from={3}"
 	URL = BaseQuery.format(vehicle,events,limit,timeafter)
 	
@@ -140,6 +139,7 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 			print result
 		return result
 	except urllib2.HTTPError:
+		print >> sys.stderr, "# FAILURE IN QUERY:",URL
 		handleURLerror()
 		
 	
@@ -501,6 +501,7 @@ def handleURLerror():
 		with open(OutPath.format(VEHICLE),'w') as outfile:
 			outfile.write(svgerrorhead)
 			outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
+		print >> sys.stderr ("URL ACCESS ERROR:"+VEHICLE)
 		
 	elif not Opt.report:
 		print svgerrorhead
@@ -941,7 +942,8 @@ else:   #not opt report
 
 	cdd["text_vehicle"] = VEHICLE.upper()
 	cdd["text_lastupdate"] = time.strftime('%H:%M')
-	cdd["color_missiondefault"] = ['st4','st5'][missionName in mission_defaults]
+	# Green = 5 if in defaults Lets go orange for not in
+	cdd["color_missiondefault"] = ['st6','st4'][missionName in mission_defaults]   
 	if noteTime:
 		cdd["text_note"] = note
 		cdd["text_notetime"] = elapsed(noteTime)
