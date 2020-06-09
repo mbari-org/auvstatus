@@ -349,7 +349,7 @@ def getDataAsc(starttime):
 				fields = nextline.split("=")
 				if (volt==0) and "voltage" in nextline:
 					volt     = float(fields[3].split(" ")[0])
-					volttime = int(float(fields[0].split(',')[1],split(" ")[0])*1000)  # in seconds not MS
+					volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  # in seconds not MS
 				elif "charge" in nextline:
 					amp      = float(fields[3].split(" ")[0])
 			if (volt) and (amp):
@@ -972,8 +972,8 @@ else:   #not opt report
 			
 	# NOT RECOVERED
 	else:
-		cdd["text_mission"]=missionName + " - " + hours(missionTime)+ "•" + dates(missionTime)
-		cdd["text_speed"]= speed + "m/s"
+		cdd["text_mission"]=missionName + " - " + hours(missionTime)+ ":" + dates(missionTime)
+		cdd["text_speed"]= "%.1f" % speed + "m/s"
 
 		###
 		###   GPS DISPLAY
