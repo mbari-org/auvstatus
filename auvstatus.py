@@ -913,7 +913,7 @@ else:   #not opt report
 	if gf and gf != "None":
 		gfnum=int(4+ 1*(float(gf)>0.2) + 1*(float(gf)>0.6))
 	else:
-		gfnum=6    # No groundfault data, use orange.
+		gfnum=4    # None means no GF. Figure out what means no data.
 
 	###
 	###   GROUND FAULT DISPLAY
@@ -966,19 +966,22 @@ else:   #not opt report
 		cdd["color_wavecolor"] = 'st18' # invisible
 		cdd["color_dirtbox"] = 'st17'   # brown
 		if plugged:
-			cdd["text_mission"]     = "PLUGGED IN " + hours(plugged) + "•" + dates(plugged)
+			cdd["text_mission"]     = "PLUGGED IN " + hours(plugged) + " &#x2022; " + dates(plugged)
 			cdd["color_cart"]       = 'st19'
 			cdd["color_cartcircle"] = 'st20'
 			cdd["color_smallcable"] = 'st23'
 			cdd["color_bigcable"]   = 'st22'
 		
 		else:
-			cdd["text_mission"] = "RECOVERED " + hours(recovered)+ "•" + dates(recovered)
+			cdd["text_mission"] = "RECOVERED " + hours(recovered)+ " &#x2022; " + dates(recovered)
 			
 	# NOT RECOVERED
-	else:
-		cdd["text_mission"]=missionName + " - " + hours(missionTime)+ ":" + dates(missionTime)
-		cdd["text_speed"]= "%.1f" % speed + "m/s"
+	else:                                                                  # unicode bullet
+		cdd["text_mission"]=missionName + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
+		if speed != 'na':
+			if DEBUG:
+				print >> sys.stderr, "#SPEED:",speed
+			cdd["text_speed"]= "%.1f" % speed + "m/s"
 
 		###
 		###   GPS DISPLAY

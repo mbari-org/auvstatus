@@ -141,7 +141,7 @@ svgtext = '''
 <text desc="text_ampago" transform="matrix(1 0 0 1 330.0 280.0)" class="st12 st9 st13">{text_ampago}</text>
 <text desc="text_droptime" transform="matrix(1 0 0 1 342.619 301.9217)" class="st12 st9 st13">{text_droptime}</text>
 <text desc="text_gftime" transform="matrix(1 0 0 1 479.3629 247.7823)" class="st12 st9 st13">{text_gftime}</text>
-<text desc="text_gf" transform="matrix(1 0 0 1 484 262.4973)" class="st9 st10">{text_gf}</text>
+<text desc="text_gf" transform="matrix(1 0 0 1 482 262.4973)" class="st9 st10">{text_gf}</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 198.0612 272.3985)" class="st12 st9 st13">{text_thrusttime}</text>
 <text desc="text_vehicle" transform="matrix(1 0 0 1 398.7397 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
