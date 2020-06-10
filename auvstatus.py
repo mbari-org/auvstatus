@@ -764,7 +764,7 @@ if not recovered or DEBUG:
 		dropWeight,ThrusterServo = parseCritical(critical)
 		
 	if faults:
-		BadBattery,DVLError = parseFaults()
+		BadBattery,DVLError = parseFaults(faults)
 
 # vehicle has been recovered
 else:   
