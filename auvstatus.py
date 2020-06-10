@@ -625,8 +625,8 @@ def elapsed(rawdur):
 		if (hours)>23:
 			HourString = str(hours%24) + "h "
 			DayString = str(hours//24) + "d " 
-		if hours > 600:
-			DurationString = "long time ago"
+		if days > 30:
+			DurationString = "long time"
 		DurationString = DurationBase.format(DayString,HourString,MinuteString)
 		if rawdur < 1:
 			DurationString += " ago"
