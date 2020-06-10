@@ -125,7 +125,7 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 	if not timeafter:
 		timeafter="1234567890123"
 		
-	BaseQuery = "http://okeanids.mbari.org/TethysDash/api/events?vehicles={0}&eventTypes={1}{2}&from={3}"
+	BaseQuery = "https://okeanids.mbari.org/TethysDash/api/events?vehicles={0}&eventTypes={1}{2}&from={3}"
 	URL = BaseQuery.format(vehicle,events,limit,timeafter)
 	
 	if DEBUG:
@@ -231,28 +231,25 @@ def getCritical(starttime):
 	return retstring
 
 def parseCritical(recordlist):
+	'''Maybe some of these are in logFault?'''
 	Drop          = False
 	ThrusterServo = False
 	BadBattery    = False
 	
-	if DEBUG:
-		print "### Start Recordlist"
-		print recordlist
-		print "### End Recordlist"
-		# need to split this record?
+	# if DEBUG:
+	# 	print "### Start Recordlist"
+	# 	print recordlist
+	# 	print "### End Recordlist"
+	# 	# need to split this record?
 	for Record in recordlist:
 		if DEBUG:
-			print "NAME:",Record["name"],"===> ", Record["text"]
+			print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
 		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
 			ThrusterServo = Record["unixTime"]
 		# if Record["name"]=="CBIT" and Record.get("text","NA").startswith("LAST"):
-		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"):
-			BadBattery=Record["unixTime"]
-			if DEBUG:
-				print >> sys.stderr,"BAD BATTERY"
-	return Drop, ThrusterServo, BadBattery 
+	return Drop, ThrusterServo
 	
 def getFaults(starttime):
 	'''
@@ -264,12 +261,35 @@ def getFaults(starttime):
 		2020-03-06T00:10:13.771Z,1583453413.771 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
 		
 	2020-03-06T00:09:26.051Z,1583453366.051 [RDI_Pathfinder](FAULT): DVL failed to acquire valid data within timeout.'''
-	qString = runQuery(VEHICLE,"logCritical","",starttime)
+	qString = runQuery(VEHICLE,"logFault","",starttime)
 	retstring = False
 	if qString:
-		retstring = qString
-	
+		retstring = qString	
 	return retstring
+
+def parseFaults(recordlist):
+	'''https://okeanids.mbari.org/TethysDash/api/events?vehicles=brizo&eventTypes=logFault&from=1591731032512
+	
+	Also includes RudderServo and DVL_Micro, RDI_Pathfinder'''
+	BadBattery    = False
+	DVLError = False
+	
+	# if DEBUG:
+	# 	print "### Start Recordlist"
+	# 	print recordlist
+	# 	print "### End Recordlist"
+	# 	# need to split this record?
+	for Record in recordlist:
+		if DEBUG:
+			print "NAME:",Record["name"],"===> ", Record["text"]
+		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"):
+			BadBattery=Record["unixTime"]
+			if DEBUG:
+				print >> sys.stderr,"\n\n## BAD BATTERY in FAULT\n\n"
+		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
+		# if Record["name"] in ["DVL_Micro", "RDI_Pathfinder"] and "failed" in Record.get("text","NA").lower():
+		# 	DVLError=Record["unixTime"]
+	return BadBattery,DVLError
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -500,6 +520,11 @@ def parseImptMisc(recordlist):
 		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
 		
+		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"):
+			BadBattery=Record["unixTime"]
+			if DEBUG:
+				print >> sys.stderr,"\n\n## BAD BATTERY in IMPORTANT\n\n"
+		
 		'''Change to got command ubat on'''
 		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
 			ubatBool = bool(float(Record["text"].split("loadAtStartup ")[1].split(" ")[0]))
@@ -707,7 +732,9 @@ note,noteTime = parseNotes(getNotes(startTime))
 # vehicle not recovered
 if not recovered or DEBUG:
 	critical  = getCritical(startTime)
-
+	
+	BadBattery,DVLError = parseFaults(getFaults(startTime))
+	
 	site,gpstime = parseGPS(getGPS(startTime))
 
 	oldsite,oldgpstime = parseGPS(getOldGPS(gpstime,startTime))
@@ -736,7 +763,7 @@ if not recovered or DEBUG:
 	
 	
 	if (critical):
-		dropWeight,ThrusterServo,BadBattery = parseCritical(critical)
+		dropWeight,ThrusterServo = parseCritical(critical)
 
 # vehicle has been recovered
 else:   
@@ -763,6 +790,7 @@ else:
 	dropWeight = False
 	ThrusterServo = False
 	BadBattery = False
+	DVLError = False
 	logtime = now
 	startTime = now
 	missionName = "Out of the water"
@@ -1097,8 +1125,8 @@ else:   #not opt report
 				print >> sys.stderr, "# BAD BATTERY:",elapsed(BadBattery)
 			cdd["color_badbatt"]=''
 			cdd["color_bat1"] = 'st11'  #gray
-			cdd["color_bat3"] = 'st11'
-			cdd["color_bat5"] = 'st11'
+			# cdd["color_bat3"] = 'st11'
+			# cdd["color_bat5"] = 'st11'
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
 		if dropWeight > 100:
