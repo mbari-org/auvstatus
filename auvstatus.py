@@ -287,7 +287,8 @@ def parseFaults(recordlist):
 			if DEBUG:
 				print >> sys.stderr,"\n\n## BAD BATTERY in FAULT\n\n"
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
-		# if Record["name"] in ["DVL_Micro", "RDI_Pathfinder"] and "failed" in Record.get("text","NA").lower():
+
+		# if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder"] and "failed" in Record.get("text","NA").lower():
 		# 	DVLError=Record["unixTime"]
 	return BadBattery,DVLError
 
@@ -519,12 +520,7 @@ def parseImptMisc(recordlist):
 
 		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
-		
-		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"):
-			BadBattery=Record["unixTime"]
-			if DEBUG:
-				print >> sys.stderr,"\n\n## BAD BATTERY in IMPORTANT\n\n"
-		
+				
 		'''Change to got command ubat on'''
 		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
 			ubatBool = bool(float(Record["text"].split("loadAtStartup ")[1].split(" ")[0]))
@@ -1091,7 +1087,7 @@ else:   #not opt report
 	
 		cdd["color_wavecolor"] = 'st0'
 		cdd["color_dirtbox"] = 'st18'
-		cdd["color_badbatt"]= 'st18'
+		cdd["color_badbatt"]= 'st18'  #  invisible
 	
 		if batttime:
 	#		if DEBUG:
@@ -1123,7 +1119,7 @@ else:   #not opt report
 		if BadBattery > 100:
 			if DEBUG:
 				print >> sys.stderr, "# BAD BATTERY:",elapsed(BadBattery)
-			cdd["color_badbatt"]=''
+			cdd["color_badbatt"]='st26'
 			cdd["color_bat1"] = 'st11'  #gray
 			# cdd["color_bat3"] = 'st11'
 			# cdd["color_bat5"] = 'st11'

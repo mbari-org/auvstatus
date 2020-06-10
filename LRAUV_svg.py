@@ -85,14 +85,17 @@ svgtext = '''
 <circle desc="thrust" class="{color_thrust}" cx="175.51" cy="261.61" r="8.15"/>
 <!--<circle desc="gf" class="st6" cx="488.44" cy="259.45" r="8.15"/>-->
 
-<circle desc="bat1" class="{color_bat1}" cx="301.88" cy="241.38" r="4"/>
-<circle desc="bat2" class="{color_bat2}" cx="312.19" cy="241.38" r="4"/>
-<circle desc="bat3" class="{color_bat3}" cx="322.5" cy="241.38" r="4"/>
-<circle desc="bat4" class="{color_bat4}" cx="332.81" cy="241.38" r="4"/>
-<circle desc="bat5" class="{color_bat5}" cx="343.12" cy="241.38" r="4"/>
-<circle desc="bat6" class="{color_bat6}" cx="353.43" cy="241.38" r="4"/>
-<circle desc="bat7" class="{color_bat7}" cx="363.74" cy="241.38" r="4"/>
-<!--<circle desc="bat8" class="st2" cx="374.05" cy="241.38" r="4.07"/>-->
+<!--<circle desc="bat1" class="{color_bat1}" cx="295" cy="241.38" r="4"/>-->
+<circle desc="bat1" class="{color_bat1}" cx="309" cy="241.38" r="4"/>
+<circle desc="bat2" class="{color_bat2}" cx="319" cy="241.38" r="4"/>
+<circle desc="bat3" class="{color_bat3}" cx="329" cy="241.38" r="4"/>
+<circle desc="bat4" class="{color_bat4}" cx="339" cy="241.38" r="4"/>
+<circle desc="bat5" class="{color_bat5}" cx="349" cy="241.38" r="4"/>
+<circle desc="bat6" class="{color_bat6}" cx="359" cy="241.38" r="4"/>
+<circle desc="bat7" class="{color_bat7}" cx="369" cy="241.38" r="4"/>
+<!-- X for bad battery stick-->
+<text transform="matrix(1 0 0 1 305.5 245)" class="st14 st15 {color_badbatt}">X</text>
+
 
 <circle desc="missiondefault" class="{color_missiondefault}" cx="435" cy="188" r="2"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="{color_satcomm}" width="24.43" height="11.5"/>
@@ -144,8 +147,6 @@ svgtext = '''
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 198.0612 272.3985)" class="st12 st9 st13">{text_thrusttime}</text>
 <text desc="text_vehicle" transform="matrix(1 0 0 1 398.7397 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
-<!-- X for bad battery stick-->
-<text transform="matrix(1 0 0 1 298.5 245)" class="st14 st15 {color_badbatt}">X</text>
 
 <!-- Static labels -->
 <text transform="matrix(1 0 0 1 439.0 191.2224)" class="st9 st10">MISSION:</text>
