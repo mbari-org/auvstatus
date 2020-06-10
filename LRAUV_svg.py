@@ -77,7 +77,7 @@ svgtext = '''
 <!-- status shapes -->
 
 <rect desc="drop" x="284.79" y="282.44" class="{color_drop}" width="24.43" height="9.5"/>
-<line class="st7" x1="475.36" y1="256.18" x2="475.36" y2="267.72"/>
+<line class="st7" x1="475.36" y1="256.18" x2="475.36" y2="267.72"/> <!-- Ground fault -->
 <line class="st7" x1="468.58" y1="268.37" x2="482.15" y2="268.37"/>
 <line class="st7" x1="469.91" y1="270.59" x2="480.82" y2="270.59"/>
 <line class="st7" x1="471.24" y1="272.82" x2="479.49" y2="272.82"/>
@@ -132,8 +132,8 @@ svgtext = '''
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
 <text desc="text_speed" transform="matrix(1 0 0 1 598 276.3205)" class="st9 st10">{text_speed}</text>
-<text desc="text_nextcomm" transform="matrix(1 0 0 1 197.0165 298.3899)" class="st9 st10">{text_nextcomm}</text>
-<text desc="text_timeout" transform="matrix(1 0 0 1 197.0165 309.1899)" class="st9 st10">{text_timeout}</text>
+<text desc="text_nextcomm" transform="matrix(1 0 0 1 193 298.3899)" class="st9 st10">{text_nextcomm}</text>
+<text desc="text_timeout" transform="matrix(1 0 0 1 193 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">{text_logtime}</text>
 <text desc="text_logago" transform="matrix(1 0 0 1 185.0 231.2224)" class="st12 st9 st13">{text_logago}</text>
@@ -161,7 +161,7 @@ svglabels='''
 <text transform="matrix(1 0 0 1 289.7587 302.4895)" class="st9 st10">Drop Weight</text>
 <text transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
-<text transform="matrix(1 0 0 1 482.912 279.8586)" class="st9 st10">GF</text>
+<text transform="matrix(1 0 0 1 482.912 279.8586)" class="st9 st10"><title>Ground Fault</title>GF</text>
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
 <text transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10">Sat comms</text>
