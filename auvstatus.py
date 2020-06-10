@@ -982,7 +982,7 @@ else:   #not opt report
 
 	# This in in hours
 	# cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000)
-	cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000) + " - " + def elasd((missionTime+duration*3600*1000) - now )
+	cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000) + " - " + elapsed((missionTime+duration*3600*1000) - now )
 
 	#Change this to use sat comms time
 	# This is typically in minutes
