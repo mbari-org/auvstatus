@@ -128,6 +128,9 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 	BaseQuery = "http://okeanids.mbari.org/TethysDash/api/events?vehicles={0}&eventTypes={1}{2}&from={3}"
 	URL = BaseQuery.format(vehicle,events,limit,timeafter)
 	
+	if DEBUG:
+		print "### QUERY:",URL
+
 	try:
 		connection = urllib2.urlopen(URL,timeout=5)		
 		if connection:
@@ -137,9 +140,6 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 			result = structured['result']
 		else:
 			result = '# offline'
-	#	if DEBUG:
-	#		print URL
-	#		print result
 		return result
 	except urllib2.HTTPError:
 		print >> sys.stderr, "# FAILURE IN QUERY:",URL
@@ -235,9 +235,10 @@ def parseCritical(recordlist):
 	ThrusterServo = False
 	BadBattery    = False
 	
+	# need to split this record?
 	for Record in recordlist:
-		# if DEBUG:
-		# 	print Record["name"],Record["text"]
+		if DEBUG:
+			print Record["name"],Record["text"]
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
 		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
