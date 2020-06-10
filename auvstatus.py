@@ -1069,16 +1069,17 @@ else:   #not opt report
 		cdd["text_amps"]= "%.1f" % amphr 
 	
 		voltnum=int(4 + 1*(volt<15) + 1*(volt<14))
-		cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range
-		cdd["color_volts"] = "st{}".format(voltnum)
-
-		cdd["color_bat1"] = ['st4','st6'][volt <= 13.5]
-		cdd["color_bat2"] = ['st4','st6'][volt < 14.0]
-		cdd["color_bat3"] = ['st4','st6'][volt < 14.5]
-		cdd["color_bat4"] = ['st4','st6'][volt < 15.0]
-		cdd["color_bat5"] = ['st4','st6'][volt < 15.5]
-		cdd["color_bat6"] = ['st4','st6'][volt < 16.0]
-		cdd["color_bat7"] = ['st4','st6'][volt < 16.5]
+		if volt > 0:
+			cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range
+			cdd["color_volts"] = "st{}".format(voltnum)
+			cdd["color_bat1"] = ['st4','st6'][volt <= 13.5]
+			cdd["color_bat2"] = ['st4','st6'][volt < 14.0]
+			cdd["color_bat3"] = ['st4','st6'][volt < 14.5]
+			cdd["color_bat4"] = ['st4','st6'][volt < 15.0]
+			cdd["color_bat5"] = ['st4','st6'][volt < 15.5]
+			cdd["color_bat6"] = ['st4','st6'][volt < 16.0]
+			cdd["color_bat7"] = ['st4','st6'][volt < 16.5]
+		
 		# cdd["color_bat8"] = ['st4','st6'][volt < 16.5]
 
 
