@@ -965,7 +965,6 @@ else:   #not opt report
 		gfnum=int(4+ 1*(float(gf)>0.2) + 1*(float(gf)>0.6))
 	else:
 		gfnum=4    # None means no GF. Figure out what means no data.
-		gf="NA"
 
 	###
 	###   GROUND FAULT DISPLAY
