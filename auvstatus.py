@@ -228,8 +228,10 @@ def getCritical(starttime):
 	return retstring
 
 def parseCritical(recordlist):
-	Drop = False
-	ThrusterServo=False
+	Drop          = False
+	ThrusterServo = False
+	BadBattery    = False
+	
 	for Record in recordlist:
 		# if DEBUG:
 		# 	print Record["name"],Record["text"]
@@ -237,7 +239,9 @@ def parseCritical(recordlist):
 			Drop=Record["unixTime"]
 		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
 			ThrusterServo = Record["unixTime"]
-	return Drop, ThrusterServo 
+		if Record["name"]=="BPC1" and Record.get("text"."NA").startswith("Battery stick"): 
+			BadBattery=Record["unixTime"]
+	return Drop, ThrusterServo, BadBattery 
 	
 def getFaults(starttime):
 	'''
@@ -265,7 +269,7 @@ def parseDVL(recordlist):
 		RDI_Pathfinder
 
 	'''
-	## All boilerplate
+	## All boilerplate DON'T USE!!
 	Drop = False
 	ThrusterServo=False
 	for Record in recordlist:
@@ -718,7 +722,7 @@ if not recovered or DEBUG:
 	
 	
 	if (critical):
-		dropWeight,ThrusterServo= parseCritical(critical)
+		dropWeight,ThrusterServo,BadBattery = parseCritical(critical)
 
 # vehicle has been recovered
 else:   
@@ -744,6 +748,7 @@ else:
 	batttime = False
 	dropWeight = False
 	ThrusterServo = False
+	BadBattery = False
 	logtime = now
 	startTime = now
 	missionName = "Out of the water"
@@ -1068,6 +1073,7 @@ else:   #not opt report
 
 
 		cdd["color_thrust"] = ['st4','st6'][(ThrusterServo>100)]
+		cdd["color_bat1"] = [cdd["color_bat1"],'st6'][(BadBattery>100)]
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
 		if dropWeight > 100:
