@@ -113,7 +113,6 @@ svgtext = '''
 <circle desc="UBAT" class="{color_ubat}" cx="543.96" cy="246.8" r="4.07" /> 
 <circle desc="flow" class="{color_flow}" cx="544.33" cy="259.45" r="4.07"/>
 <text desc="text_flowago" transform="matrix(1 0 0 1 541.0 272.0)" class="st12 st9 st13">{text_flowago}</text>
-
 <!-- end shapes -->
 
 
@@ -145,6 +144,8 @@ svgtext = '''
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 198.0612 272.3985)" class="st12 st9 st13">{text_thrusttime}</text>
 <text desc="text_vehicle" transform="matrix(1 0 0 1 398.7397 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
+<!-- X for bad battery stick-->
+<text transform="matrix(1 0 0 1 298.5 245)" class="st14 st15 {color_badbatt}">X</text>
 
 <!-- Static labels -->
 <text transform="matrix(1 0 0 1 439.0 191.2224)" class="st9 st10">MISSION:</text>

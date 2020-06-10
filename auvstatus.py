@@ -235,15 +235,20 @@ def parseCritical(recordlist):
 	ThrusterServo = False
 	BadBattery    = False
 	
-	# need to split this record?
+	if DEBUG:
+		print "### Start Recordlist"
+		print recordlist
+		print "### End Recordlist"
+		# need to split this record?
 	for Record in recordlist:
 		if DEBUG:
-			print Record["name"],Record["text"]
+			print "NAME:",Record["name"],"===> ", Record["text"]
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
 		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
 			ThrusterServo = Record["unixTime"]
-		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"): 
+		# if Record["name"]=="CBIT" and Record.get("text","NA").startswith("LAST"):
+		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"):
 			BadBattery=Record["unixTime"]
 			if DEBUG:
 				print >> sys.stderr,"BAD BATTERY"
@@ -867,7 +872,8 @@ else:   #not opt report
 	cartcolors=["color_bigcable",
 	"color_smallcable",
 	"color_cart",
-	"color_cartcircle"]
+	"color_cartcircle", 
+	"color_badbatt"]
 
 	for cname in cartcolors:
 		cdd[cname]='st18'
@@ -1057,6 +1063,7 @@ else:   #not opt report
 	
 		cdd["color_wavecolor"] = 'st0'
 		cdd["color_dirtbox"] = 'st18'
+		cdd["color_badbatt"]= 'st18'
 	
 		if batttime:
 	#		if DEBUG:
@@ -1088,6 +1095,7 @@ else:   #not opt report
 		if BadBattery > 100:
 			if DEBUG:
 				print >> sys.stderr, "# BAD BATTERY:",elapsed(BadBattery)
+			cdd["color_badbatt"]=''
 			cdd["color_bat1"] = 'st11'  #gray
 			cdd["color_bat3"] = 'st11'
 			cdd["color_bat5"] = 'st11'
