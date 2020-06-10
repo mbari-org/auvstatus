@@ -1073,7 +1073,7 @@ else:   #not opt report
 
 
 		cdd["color_thrust"] = ['st4','st6'][(ThrusterServo>100)]
-		cdd["color_bat1"] = [cdd["color_bat1"],'st6'][(BadBattery>100)]
+		cdd["color_bat1"] = [cdd["color_bat1"],'st4'][(BadBattery>100)]
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
 		if dropWeight > 100:
