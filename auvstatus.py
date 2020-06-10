@@ -672,6 +672,9 @@ global DEBUG
 DEBUG = Opt.DEBUG
 global VEHICLE
 VEHICLE = Opt.vehicle
+BadBattery = False
+ThrusterServo = False
+dropWeight = False
 
 if Opt.missions:
 	'''utility to show default values for selected missions'''
@@ -728,8 +731,7 @@ note,noteTime = parseNotes(getNotes(startTime))
 # vehicle not recovered
 if not recovered or DEBUG:
 	critical  = getCritical(startTime)
-	
-	BadBattery,DVLError = parseFaults(getFaults(startTime))
+	faults = getFaults(startTime)
 	
 	site,gpstime = parseGPS(getGPS(startTime))
 
@@ -760,6 +762,9 @@ if not recovered or DEBUG:
 	
 	if (critical):
 		dropWeight,ThrusterServo = parseCritical(critical)
+		
+	if faults:
+		BadBattery,DVLError = parseFaults()
 
 # vehicle has been recovered
 else:   
@@ -1021,7 +1026,11 @@ else:   #not opt report
 			
 	# NOT RECOVERED
 	else:                                                                  # unicode bullet
-		cdd["text_mission"]=missionName + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
+		if missionName and missionTime:
+			cdd["text_mission"]=missionName + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
+		else:
+			cdd["text_mission"]     = "PENDING " 
+			
 		if speed != 'na':
 	#		if DEBUG:
 	#			print >> sys.stderr, "#SPEED:",speed
