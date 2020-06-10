@@ -134,9 +134,9 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 			result = structured['result']
 		else:
 			result = '# offline'
-		if DEBUG:
-			print URL
-			print result
+	#	if DEBUG:
+	#		print URL
+	#		print result
 		return result
 	except urllib2.HTTPError:
 		print >> sys.stderr, "# FAILURE IN QUERY:",URL
@@ -241,6 +241,8 @@ def parseCritical(recordlist):
 			ThrusterServo = Record["unixTime"]
 		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"): 
 			BadBattery=Record["unixTime"]
+			if DEBUG:
+				print >> sys.stderr,"BAD BATTERY"
 	return Drop, ThrusterServo, BadBattery 
 	
 def getFaults(starttime):
@@ -293,9 +295,9 @@ def getComms(starttime):
 	retstring = False
 	if qString:
 		retstring = qString
-	if DEBUG:
-		for rec in retstring:
-			print rec
+#	if DEBUG:
+#		for rec in retstring:
+#			print rec
 	return retstring
 
 def parseComms(recordlist):
@@ -348,8 +350,8 @@ def getDataAsc(starttime):
 		datacon = urllib2.urlopen(NewURL,timeout=5)
 		lastlines = deque(datacon, 250)
 		for nextline in lastlines:
-			if DEBUG:
-				print >> sys.stderr, nextline
+			#if DEBUG:
+				#print >> sys.stderr, nextline
 			if "platform_battery_" in nextline:
 				fields = nextline.split("=")
 				if (volt==0) and "voltage" in nextline:
@@ -383,6 +385,8 @@ def getData(starttime):
 	extrapath = record[0]['path']
 	NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
 	datacon = urllib2.urlopen(NewURL,timeout=5)
+	if DEBUG:
+		print >> sys.stderr, "# Data URL",NewURL
 	lastlines = deque(datacon, 10)
 	for nextline in lastlines:
 		if "V," in nextline:
@@ -467,8 +471,8 @@ def parseImptMisc(recordlist):
 	LogTime = False
 	
 	for Record in recordlist:
-		if DEBUG:
-			print Record["name"],"<-->",Record.get("text","NO TEXT FIELD")
+		#if DEBUG:
+		#	print Record["name"],"<-->",Record.get("text","NO TEXT FIELD")
 			
 		## PARSE GROUND FAULTS
 		if GF == False and Record["name"]=="CBIT":
@@ -985,8 +989,8 @@ else:   #not opt report
 	else:                                                                  # unicode bullet
 		cdd["text_mission"]=missionName + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
 		if speed != 'na':
-			if DEBUG:
-				print >> sys.stderr, "#SPEED:",speed
+	#		if DEBUG:
+	#			print >> sys.stderr, "#SPEED:",speed
 			cdd["text_speed"]= "%.1f" % speed + "m/s"
 
 		###
@@ -1051,8 +1055,8 @@ else:   #not opt report
 		cdd["color_dirtbox"] = 'st18'
 	
 		if batttime:
-			if DEBUG:
-				print >> sys.stderr, "#BATTTIME", batttime
+	#		if DEBUG:
+			#	print >> sys.stderr, "#BATTTIME", batttime
 			cdd["text_ampago"] = elapsed(batttime-now)
 		else:
 			cdd["text_flowago"]="Default"
@@ -1076,7 +1080,12 @@ else:   #not opt report
 
 
 		cdd["color_thrust"] = ['st4','st6'][(ThrusterServo>100)]
-		cdd["color_bat1"] = [cdd["color_bat1"],'st4'][(BadBattery>100)]
+		if BadBattery > 100:
+			if DEBUG:
+				print >> sys.stderr, "# BAD BATTERY:",elapsed(BadBattery)
+			cdd["color_bat1"] = 'st11'  #gray
+			cdd["color_bat3"] = 'st11'
+			cdd["color_bat5"] = 'st11'
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
 		if dropWeight > 100:
