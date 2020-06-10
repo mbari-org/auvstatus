@@ -239,7 +239,7 @@ def parseCritical(recordlist):
 			Drop=Record["unixTime"]
 		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
 			ThrusterServo = Record["unixTime"]
-		if Record["name"]=="BPC1" and Record.get("text"."NA").startswith("Battery stick"): 
+		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"): 
 			BadBattery=Record["unixTime"]
 	return Drop, ThrusterServo, BadBattery 
 	
@@ -341,7 +341,8 @@ def getDataAsc(starttime):
 	for pathpart in record:
 		volt=0
 		amp =0
-		volttime="0"
+		volttime=0
+		
 		extrapath = pathpart['path']
 		NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
 		datacon = urllib2.urlopen(NewURL,timeout=5)
@@ -1050,6 +1051,8 @@ else:   #not opt report
 		cdd["color_dirtbox"] = 'st18'
 	
 		if batttime:
+			if DEBUG:
+				print >> sys.stderr, "#BATTTIME", batttime
 			cdd["text_ampago"] = elapsed(batttime-now)
 		else:
 			cdd["text_flowago"]="Default"
@@ -1073,7 +1076,7 @@ else:   #not opt report
 
 
 		cdd["color_thrust"] = ['st4','st6'][(ThrusterServo>100)]
-		cdd["color_bat1"] = [cdd["color_bat1"],'st6'][(BadBattery>100)]
+		cdd["color_bat1"] = [cdd["color_bat1"],'st4'][(BadBattery>100)]
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
 		if dropWeight > 100:
