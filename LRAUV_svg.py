@@ -77,15 +77,18 @@ svgtext = '''
 <!-- status shapes -->
 
 <rect desc="drop" x="284.79" y="282.44" class="{color_drop}" width="24.43" height="9.5"/>
+<g><title>Ground Fault: None means not detected. False means no recent scan</title>
 <line class="st7" x1="475.36" y1="256.18" x2="475.36" y2="267.72"/> <!-- Ground fault -->
 <line class="st7" x1="468.58" y1="268.37" x2="482.15" y2="268.37"/>
 <line class="st7" x1="469.91" y1="270.59" x2="480.82" y2="270.59"/>
 <line class="st7" x1="471.24" y1="272.82" x2="479.49" y2="272.82"/>
+</g>
 <line class="st8" x1="472.57" y1="275.05" x2="478.16" y2="275.05"/> <!-- not sure -->
 <circle desc="thrust" class="{color_thrust}" cx="175.51" cy="261.61" r="8.15"/>
 <!--<circle desc="gf" class="st6" cx="488.44" cy="259.45" r="8.15"/>-->
 
 <!--<circle desc="bat1" class="{color_bat1}" cx="295" cy="241.38" r="4"/>-->
+<g><title>Batteries in 0.5 increment from 13.5 to 16.5</title>
 <circle desc="bat1" class="{color_bat1}" cx="309" cy="241.38" r="4"/>
 <circle desc="bat2" class="{color_bat2}" cx="319" cy="241.38" r="4"/>
 <circle desc="bat3" class="{color_bat3}" cx="329" cy="241.38" r="4"/>
@@ -93,8 +96,8 @@ svgtext = '''
 <circle desc="bat5" class="{color_bat5}" cx="349" cy="241.38" r="4"/>
 <circle desc="bat6" class="{color_bat6}" cx="359" cy="241.38" r="4"/>
 <circle desc="bat7" class="{color_bat7}" cx="369" cy="241.38" r="4"/>
-<!-- X for bad battery stick-->
-<text transform="matrix(1 0 0 1 305.5 245)" class="st14 st15 {color_badbatt}">X</text>
+</g><!-- X for bad battery stick-->
+<text transform="matrix(1 0 0 1 305.5 245)" class="st14 st15 {color_badbatt}">X<title>Bad battery cell reported</title></text>
 
 
 <circle desc="missiondefault" class="{color_missiondefault}" cx="435" cy="188" r="2"/>
@@ -145,7 +148,7 @@ svgtext = '''
 <text desc="text_gftime" transform="matrix(1 0 0 1 479.3629 247.7823)" class="st12 st9 st13">{text_gftime}</text>
 <text desc="text_gf" transform="matrix(1 0 0 1 482 262.4973)" class="st9 st10">{text_gf}</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">{text_thrusttime}<title>Speed estimated from last two GPS fixes</title></text>
-<text desc="text_vehicle" transform="matrix(1 0 0 1 398.7397 254.7336)" class="st14 st15">{text_vehicle}</text>
+<text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
 
 <!-- Static labels -->
@@ -161,7 +164,7 @@ svglabels='''
 <text transform="matrix(1 0 0 1 289.7587 302.4895)" class="st9 st10">Drop Weight</text>
 <text transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
-<text transform="matrix(1 0 0 1 482.912 279.8586)" class="st9 st10"><title>Ground Fault</title>GF</text>
+<text transform="matrix(1 0 0 1 482.912 279.8586)" class="st9 st10"><title>Ground Fault: None means not detected. False means no recent scan</title>GF</text>
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
 <text transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10">Sat comms</text>
