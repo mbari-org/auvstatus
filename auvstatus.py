@@ -31,6 +31,9 @@ import math
 from collections import deque
 from LRAUV_svg import svgtext,svghead,svgpontus,svgtail,svglabels,svgerror,svgerrorhead   # define the svg text?
 
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 # Default timeouts for selected missions
 
 def get_options():
