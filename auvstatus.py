@@ -625,6 +625,8 @@ def elapsed(rawdur):
 		if (hours)>23:
 			HourString = str(hours%24) + "h "
 			DayString = str(hours//24) + "d " 
+		if hours > 600:
+			DurationString = "long time ago"
 		DurationString = DurationBase.format(DayString,HourString,MinuteString)
 		if rawdur < 1:
 			DurationString += " ago"
@@ -963,6 +965,7 @@ else:   #not opt report
 		gfnum=int(4+ 1*(float(gf)>0.2) + 1*(float(gf)>0.6))
 	else:
 		gfnum=4    # None means no GF. Figure out what means no data.
+		gf="NA"
 
 	###
 	###   GROUND FAULT DISPLAY
@@ -979,7 +982,7 @@ else:   #not opt report
 
 	# This in in hours
 	# cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000)
-	cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000) + " - " + elapsed((missionTime+duration*3600*1000) - now )
+	cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000) + " - " + def elasd((missionTime+duration*3600*1000) - now )
 
 	#Change this to use sat comms time
 	# This is typically in minutes
