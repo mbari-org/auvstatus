@@ -1,4 +1,4 @@
-![Widget Preview](./auv_widget.png)
+![Widget Preview](./single_auv_display.png)
 
 ## LRAUV monitoring widget
 
