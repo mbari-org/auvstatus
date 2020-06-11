@@ -158,7 +158,7 @@ svgtext = '''
 '''
 svglabels='''
 <!-- create new variable for these -->
-<text desc="reckoned_label" transform="matrix(1 0 0 1 599 281)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
+<text desc="reckoned_label" transform="matrix(1 0 0 1 599 283)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>

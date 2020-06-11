@@ -172,7 +172,7 @@ def getFaults(starttime):
 		2020-03-06T00:10:13.771Z,1583453413.771 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
 		
 	2020-03-06T00:09:26.051Z,1583453366.051 [RDI_Pathfinder](FAULT): DVL failed to acquire valid data within timeout.'''
-	qString = runQuery(VEHICLE,"logFault","",starttime)
+	qString = runQuery(VEHICLE,"logFault","&limit=2000",starttime)
 	retstring = False
 	if qString:
 		retstring = qString	
