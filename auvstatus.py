@@ -179,7 +179,7 @@ def getFaults(starttime):
 	return retstring
 
 def getImportant(starttime):
-	qString = runQuery(VEHICLE,"logImportant","",starttime)
+	qString = runQuery(VEHICLE,"logImportant","&limit=2000",starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
