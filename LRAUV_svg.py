@@ -134,7 +134,8 @@ svgtext = '''
 <text desc="test_notetime" transform="matrix(1 0 0 1 134 180)" class="st12 st9 st24">{text_notetime}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
-<text desc="text_speed" transform="matrix(1 0 0 1 598 276.3205)" class="st9 st10">{text_speed}</text>
+<text desc="text_bearing" transform="matrix(1 0 0 1 598 250)" class="st9 st10">{text_bearing}</text>
+<text desc="text_thrusttime" transform="matrix(1 0 0 1 598 276.3205)" class="st9 st10">{text_thrusttime}</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 193 298.3899)" class="st9 st10">{text_nextcomm}</text>
 <text desc="text_timeout" transform="matrix(1 0 0 1 193 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
@@ -147,7 +148,7 @@ svgtext = '''
 <text desc="text_droptime" transform="matrix(1 0 0 1 342.619 301.9217)" class="st12 st9 st13">{text_droptime}</text>
 <text desc="text_gftime" transform="matrix(1 0 0 1 479.3629 247.7823)" class="st12 st9 st13">{text_gftime}</text>
 <text desc="text_gf" transform="matrix(1 0 0 1 482 262.4973)" class="st9 st10">{text_gf}</text>
-<text desc="text_thrusttime" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">{text_thrusttime}<title>Speed estimated from last two GPS fixes</title></text>
+<text desc="text_speed" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">{text_speed}<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
 
@@ -157,8 +158,8 @@ svgtext = '''
 '''
 svglabels='''
 <!-- create new variable for these -->
-<text desc="speed_label" transform="matrix(1 0 0 1 599 281)" class="st12 st9 st24">command</text>
-<text desc="reckoned_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
+<text desc="reckoned_label" transform="matrix(1 0 0 1 599 281)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
+<text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
 <text transform="matrix(1 0 0 1 289.7587 302.4895)" class="st9 st10">Drop Weight</text>

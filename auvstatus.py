@@ -50,75 +50,6 @@ def get_options():
 	return options
 
 
-def hours(unixtime):
-	'''return epoch in HH:MM string'''
-	if unixtime:
-		t1=time.localtime(unixtime/1000)
-		TimeString = time.strftime('%H:%M',t1)
-		return TimeString
-	else:
-		return "99:99"
-		
-def dates(unixtime):
-	'''return epoch in DDmonYY string'''
-	if unixtime:
-		t1=time.localtime(unixtime/1000)
-		TimeString = time.strftime('%d%b%y',t1)
-		return TimeString
-	else:
-		return "9NaN99"
-
-def sendMessage(MessageText="EV Status"):
-	'''not presently used, but email / sms notification sending function'''
-	import smtplib
-	import settings
-
-	from email.mime.text import MIMEText
-
-
-	# PCfB Stuff
-	me = 'XXXXXX@jellywatch.org'
-	port = 587
-	password = settings.pa
-	mailhost = 'smtp.dreamhost.com'
-
-	you = 'XXXXx@mms.att.net'
-	msg = MIMEText(MessageText)
-	msg['Subject'] = "EV Charger" 
-	msg['From'] = me
-	msg['To'] = you
-
-	server = smtplib.SMTP(mailhost, port)
-	# server.ehlo()
-	server.starttls()
-	# server.ehlo()
-	server.login(me, password)
-	server.sendmail(me, you, msg.as_string() )
-	server.quit()
-
-def getMissionDefaults():
-	'''print standard defaults for the listed missions. some must have inheritance because it doesn't get them all'''
-	missions=["Science/profile_station","Science/sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
-	for mission in missions:
-		URL = "https://okeanids.mbari.org/TethysDash/api/git/mission/{}.xml".format(mission)
-		print "\n#===========================\n",mission, "\n"
-		try:
-			connection = urllib2.urlopen(URL,timeout=5)
-			if connection: # here?
-				raw = connection.read()
-				structured = json.loads(raw)
-				connection.close()
-				result = structured['result']
-			
-				print URL
-				try: 
-					print result
-				except KeyError:
-					print "NA"
-		except urllib2.HTTPError:
-			print >> sys.stderr, "# FAILED TO FIND MISSION",mission
-	
-
 def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
 	vehicle = VEHICLE
@@ -145,8 +76,7 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 	except urllib2.HTTPError:
 		print >> sys.stderr, "# FAILURE IN QUERY:",URL
 		handleURLerror()
-		
-	
+
 	
 def getDeployment():
 	'''return start time for deployment'''
@@ -190,16 +120,29 @@ def getOldGPS(gpstime,missionstart):
 		retstring = qString
 	return retstring
 
-def parseGPS(recordlist):
-	# print "GPS record", recordlist
-	site=False
-	gpstime=False
-	'''[{u'eventId': 12283560, u'unixTime': 1583301462000, u'vehicleName': u'pontus', u'fix': {u'latitude': 36.757467833070464, u'date': u'Wed Mar 04 05:57:42 GMT 2020', u'longitude': -122.02584799923866}, u'eventType': u'gpsFix'},'''
-	if not recordlist:
-		return((False,False),False)
-	site =    (recordlist[0]['fix']['latitude'],recordlist[0]['fix']['longitude'])
-	gpstime = recordlist[0]['unixTime']
-	return site,gpstime
+def getMissionDefaults():
+	'''print standard defaults for the listed missions. some must have inheritance because it doesn't get them all'''
+	missions=["Science/profile_station","Science/sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
+	for mission in missions:
+		URL = "https://okeanids.mbari.org/TethysDash/api/git/mission/{}.xml".format(mission)
+		print "\n#===========================\n",mission, "\n"
+		try:
+			connection = urllib2.urlopen(URL,timeout=5)
+			if connection: # here?
+				raw = connection.read()
+				structured = json.loads(raw)
+				connection.close()
+				result = structured['result']
+			
+				print URL
+				try: 
+					print result
+				except KeyError:
+					print "NA"
+		except urllib2.HTTPError:
+			print >> sys.stderr, "# FAILED TO FIND MISSION",mission
+			
+
 	
 def getNotes(starttime):
 	'''get notes with #widget in the text'''
@@ -210,6 +153,148 @@ def getNotes(starttime):
 
 	return retstring
 	
+def getCritical(starttime):
+	'''get critical entries, like drop weight'''
+	qString = runQuery(VEHICLE,"logCritical","",starttime)
+	retstring = False
+	if qString:
+		retstring = qString
+	
+	return retstring
+	
+def getFaults(starttime):
+	'''
+	Software Overcurrent Add swatch to thruster section? 
+	Hardware Overcurrent 
+	On overcurrent errors, the component varies. Probably worth having a special indicator and report what is flagged
+		LCB Fault
+		
+		2020-03-06T00:10:13.771Z,1583453413.771 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
+		
+	2020-03-06T00:09:26.051Z,1583453366.051 [RDI_Pathfinder](FAULT): DVL failed to acquire valid data within timeout.'''
+	qString = runQuery(VEHICLE,"logFault","",starttime)
+	retstring = False
+	if qString:
+		retstring = qString	
+	return retstring
+
+def getImportant(starttime):
+	qString = runQuery(VEHICLE,"logImportant","",starttime)
+	retstring = ""
+	if qString:
+		retstring = qString
+	return retstring
+
+def getComms(starttime):
+	qString = runQuery(VEHICLE,"sbdReceive","",starttime)
+	retstring = False
+	if qString:
+		retstring = qString
+#	if DEBUG:
+#		for rec in retstring:
+#			print rec
+	return retstring
+
+def getDataAsc(starttime):
+	''' TODO: cache batteries for when there is a new log file
+	OR if you don't find it, rerun the Query with limit 2 and parse the second file
+
+	
+	Entries from shore.asc use same deque "trick" to get values. get maybe 150 lines
+	2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_charge=126.440002 Ah
+	2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_voltage=14.332275 V
+	Split on '='
+	
+	['2020-03-03T09:17:56.203Z,1583227076.203 Unknown', '', '>platform_battery_charge', '153.968887 Ah']
+	
+	'''
+	
+	'''https://okeanids.mbari.org/TethysDash/data/pontus/realtime/sbdlogs/2020/202003/20200303T074113/shore.csv
+	2020/202003/20200303T074113
+	
+	look for platform_battery_charge or platform_battery_voltage
+	
+'''
+
+	Bailout=False
+	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
+	
+	record = runQuery(VEHICLE,"dataProcessed","&limit=2",starttime)
+	for pathpart in record:
+		volt=0
+		amp =0
+		volttime=0
+		
+		extrapath = pathpart['path']
+		NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
+		datacon = urllib2.urlopen(NewURL,timeout=5)
+		# pull last X lines from queue. This was causing problems on some missions so increased it
+		lastlines = deque(datacon, 1500)
+		for nextline in lastlines:
+			# if DEBUG:
+			# 	print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
+			if "platform_battery_" in nextline:
+				fields = nextline.split("=")
+				if (volt==0) and "voltage" in nextline:
+					volt     = float(fields[3].split(" ")[0])
+					volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  # in seconds not MS
+				elif "charge" in nextline:
+					amp      = float(fields[3].split(" ")[0])
+			if (volt) and (amp):
+				Bailout = True
+				break
+		if Bailout == True:
+			break
+	return volt,amp,volttime
+
+def getData(starttime):
+	'''NOT USED? see getDataAsc'''
+	'''Walk through the file backwards'''
+	''' IBIT will show battery thresholds that could be used to determine warning colors'''
+	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
+	'''
+	volt="0"
+	amp ="0"
+	volttime="0"
+	saveline="na,na,na"
+	'''https://okeanids.mbari.org/TethysDash/data/pontus/realtime/sbdlogs/2020/202003/20200303T074113/shore.csv
+	2020/202003/20200303T074113'''
+	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.csv'
+	
+	record = runQuery(VEHICLE,"dataProcessed","&limit=1",starttime)
+	extrapath = record[0]['path']
+	NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
+	datacon = urllib2.urlopen(NewURL,timeout=5)
+	if DEBUG:
+		print >> sys.stderr, "# Data URL",NewURL
+	lastlines = deque(datacon, 10)
+	for nextline in lastlines:
+		if "V," in nextline:
+			try:
+				fields = nextline.split(",")
+				volt     = float(fields[8].split(" ")[0])
+				amp      = float(fields[7].split(" ")[0])
+				volttime = int(float(fields[1])*1000)  # in seconds not MS
+			except IndexError:
+				print >> sys.stderr, "VOLT parsing error"
+				volt=False
+				amp=False
+				volttime=False
+			break
+
+	return volt,amp,volttime
+	
+def parseGPS(recordlist):
+	# print "GPS record", recordlist
+	site=False
+	gpstime=False
+	'''[{u'eventId': 12283560, u'unixTime': 1583301462000, u'vehicleName': u'pontus', u'fix': {u'latitude': 36.757467833070464, u'date': u'Wed Mar 04 05:57:42 GMT 2020', u'longitude': -122.02584799923866}, u'eventType': u'gpsFix'},'''
+	if not recordlist:
+		return((False,False),False)
+	site =    (recordlist[0]['fix']['latitude'],recordlist[0]['fix']['longitude'])
+	gpstime = recordlist[0]['unixTime']
+	return site,gpstime
+
 def parseNotes(recordlist):
 	Note = ''
 	NoteTime = False
@@ -222,14 +307,6 @@ def parseNotes(recordlist):
 			break
 	return Note,NoteTime 
 	
-def getCritical(starttime):
-	'''get critical entries, like drop weight'''
-	qString = runQuery(VEHICLE,"logCritical","",starttime)
-	retstring = False
-	if qString:
-		retstring = qString
-	
-	return retstring
 
 def parseCritical(recordlist):
 	'''Maybe some of these are in logFault?'''
@@ -251,22 +328,6 @@ def parseCritical(recordlist):
 			ThrusterServo = Record["unixTime"]
 		# if Record["name"]=="CBIT" and Record.get("text","NA").startswith("LAST"):
 	return Drop, ThrusterServo
-	
-def getFaults(starttime):
-	'''
-	Software Overcurrent Add swatch to thruster section? 
-	Hardware Overcurrent 
-	On overcurrent errors, the component varies. Probably worth having a special indicator and report what is flagged
-		LCB Fault
-		
-		2020-03-06T00:10:13.771Z,1583453413.771 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
-		
-	2020-03-06T00:09:26.051Z,1583453366.051 [RDI_Pathfinder](FAULT): DVL failed to acquire valid data within timeout.'''
-	qString = runQuery(VEHICLE,"logFault","",starttime)
-	retstring = False
-	if qString:
-		retstring = qString	
-	return retstring
 
 def parseFaults(recordlist):
 	'''https://okeanids.mbari.org/TethysDash/api/events?vehicles=brizo&eventTypes=logFault&from=1591731032512
@@ -314,23 +375,6 @@ def parseDVL(recordlist):
 			ThrusterServo = Record["unixTime"]
 	return Drop, ThrusterServo 
 
-def getImportant(starttime):
-	qString = runQuery(VEHICLE,"logImportant","",starttime)
-	retstring = ""
-	if qString:
-		retstring = qString
-	return retstring
-
-def getComms(starttime):
-	qString = runQuery(VEHICLE,"sbdReceive","",starttime)
-	retstring = False
-	if qString:
-		retstring = qString
-#	if DEBUG:
-#		for rec in retstring:
-#			print rec
-	return retstring
-
 def parseComms(recordlist):
 	satCommTime = False
 	directCommTime = False
@@ -345,96 +389,6 @@ def parseComms(recordlist):
 
 		# Direct Comms event type for cell comms
 	return satCommTime,directCommTime 
-
-def getDataAsc(starttime):
-	''' TODO: cache batteries for when there is a new log file
-	OR if you don't find it, rerun the Query with limit 2 and parse the second file
-
-	
-	Entries from shore.asc use same deque "trick" to get values. get maybe 150 lines
-	2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_charge=126.440002 Ah
-	2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_voltage=14.332275 V
-	Split on '='
-	
-	['2020-03-03T09:17:56.203Z,1583227076.203 Unknown', '', '>platform_battery_charge', '153.968887 Ah']
-	
-	'''
-	
-	'''https://okeanids.mbari.org/TethysDash/data/pontus/realtime/sbdlogs/2020/202003/20200303T074113/shore.csv
-	2020/202003/20200303T074113
-	
-	look for platform_battery_charge or platform_battery_voltage
-	
-'''
-
-	Bailout=False
-	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
-	
-	record = runQuery(VEHICLE,"dataProcessed","&limit=2",starttime)
-	for pathpart in record:
-		volt=0
-		amp =0
-		volttime=0
-		
-		extrapath = pathpart['path']
-		NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
-		datacon = urllib2.urlopen(NewURL,timeout=5)
-		lastlines = deque(datacon, 1500)
-		for nextline in lastlines:
-			if DEBUG:
-				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
-			if "platform_battery_" in nextline:
-				fields = nextline.split("=")
-				if (volt==0) and "voltage" in nextline:
-					volt     = float(fields[3].split(" ")[0])
-					volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  # in seconds not MS
-				elif "charge" in nextline:
-					amp      = float(fields[3].split(" ")[0])
-			if (volt) and (amp):
-				Bailout = True
-				break
-		if Bailout == True:
-			break
-	return volt,amp,volttime
-
-def getData(starttime):
-	'''Walk through the file backwards'''
-	''' IBIT will show battery thresholds that could be used to determine warning colors'''
-	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
-	
-	
-	'''
-	volt="0"
-	amp ="0"
-	volttime="0"
-	saveline="na,na,na"
-	'''https://okeanids.mbari.org/TethysDash/data/pontus/realtime/sbdlogs/2020/202003/20200303T074113/shore.csv
-	2020/202003/20200303T074113'''
-	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.csv'
-	
-	record = runQuery(VEHICLE,"dataProcessed","&limit=1",starttime)
-	extrapath = record[0]['path']
-	NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
-	datacon = urllib2.urlopen(NewURL,timeout=5)
-	if DEBUG:
-		print >> sys.stderr, "# Data URL",NewURL
-	lastlines = deque(datacon, 10)
-	for nextline in lastlines:
-		if "V," in nextline:
-			try:
-				fields = nextline.split(",")
-				volt     = float(fields[8].split(" ")[0])
-				amp      = float(fields[7].split(" ")[0])
-				volttime = int(float(fields[1])*1000)  # in seconds not MS
-			except IndexError:
-				print >> sys.stderr, "VOLT parsing error"
-				volt=False
-				amp=False
-				volttime=False
-			break
-
-	return volt,amp,volttime
-	
 	
 def parseGF(gfstring):
 	GFlist = []
@@ -465,11 +419,6 @@ If you see a Loaded mission command, or Started default before getting speed (or
 
 Ground fault: Queue on RED on Low side ground fault detected - Yellow on any ground fault
 ...
-TODO: Get defaults for missions and store locally
-git tag -  
-   profile station
-   sci2
-	
 	drop weight - 
 
 
@@ -536,20 +485,6 @@ def parseImptMisc(recordlist):
 
 	return GF, GFtime, ubatStatus, ubatTime, FlowRate,FlowTime, LogTime
 
-def handleURLerror():
-	now = 1000 * time.mktime(time.localtime())
-	timestring = dates(now) + " - " +hours(now)
-	if Opt.savefile:
-		with open(OutPath.format(VEHICLE),'w') as outfile:
-			outfile.write(svgerrorhead)
-			outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
-		print >> sys.stderr ("URL ACCESS ERROR:"+VEHICLE)
-		
-	elif not Opt.report:
-		print svgerrorhead
-		print svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring)
-		sys.exit("URL ACCESS ERROR:"+VEHICLE)
-	
 def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	''' parse events that get reset after missions and might be default'''
 	''' todo, need to move the ubat here and change the ubat on command parsing'''
@@ -597,6 +532,21 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	
 			
 	return TimeoutDuration, TimeoutStart, NeedComms,Speed 
+
+def handleURLerror():
+	now = 1000 * time.mktime(time.localtime())
+	timestring = dates(now) + " - " +hours(now)
+	if Opt.savefile:
+		with open(OutPath.format(VEHICLE),'w') as outfile:
+			outfile.write(svgerrorhead)
+			outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
+		print >> sys.stderr ("URL ACCESS ERROR:"+VEHICLE)
+		
+	elif not Opt.report:
+		print svgerrorhead
+		print svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring)
+		sys.exit("URL ACCESS ERROR:"+VEHICLE)
+	
 
 def printhtmlutility():
 	''' Print the html for the auv.html web page'''
@@ -649,16 +599,14 @@ def distance(site,time,oldsite,oldtime):
 	----------
 	origin and destination:  tuple of (lat, long)
 	distance_in_km : float
-
+	Bearing from https://www.igismap.com/what-is-bearing-angle-and-calculate-between-two-points/
 	"""
-	lat1, lon1 = site
-	lat2, lon2 = oldsite
+	lat1, lon1 = oldsite
+	lat2, lon2 = site
 	deltat = time - oldtime
 	seconds = deltat / 1000.0
 	hours = seconds / (60*60)
-	
 	radius = 6371  # km
-
 	dlat = math.radians(lat2 - lat1)
 	dlon = math.radians(lon2 - lon1)
 	a = (math.sin(dlat / 2) * math.sin(dlat / 2) +
@@ -667,7 +615,58 @@ def distance(site,time,oldsite,oldtime):
 	c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 	d = radius * c
 	speed = d / hours
-	return d,hours,speed
+	# BEARING: 
+	Y = math.sin(dlon) *  math.cos(math.radians(lat2))	
+	X = math.cos(math.radians(lat1))*math.sin(math.radians(lat2)) - math.sin(math.radians(lat1))*math.cos(math.radians(lat2))*math.cos(dlon)
+	Bearing = int (math.degrees(math.atan2(X,Y)) - 90 ) % 360
+	return d,hours,speed,Bearing
+
+def hours(unixtime):
+	'''return epoch in HH:MM string'''
+	if unixtime:
+		t1=time.localtime(unixtime/1000)
+		TimeString = time.strftime('%H:%M',t1)
+		return TimeString
+	else:
+		return "99:99"
+		
+def dates(unixtime):
+	'''return epoch in DDmonYY string'''
+	if unixtime:
+		t1=time.localtime(unixtime/1000)
+		TimeString = time.strftime('%d%b%y',t1)
+		return TimeString
+	else:
+		return "9NaN99"
+
+def sendMessage(MessageText="EV Status"):
+	'''not presently used, but email / sms notification sending function'''
+	import smtplib
+	import settings
+
+	from email.mime.text import MIMEText
+
+
+	# PCfB Stuff
+	me = 'XXXXXX@jellywatch.org'
+	port = 587
+	password = settings.pa
+	mailhost = 'smtp.dreamhost.com'
+
+	you = 'XXXXx@mms.att.net'
+	msg = MIMEText(MessageText)
+	msg['Subject'] = "EV Charger" 
+	msg['From'] = me
+	msg['To'] = you
+
+	server = smtplib.SMTP(mailhost, port)
+	# server.ehlo()
+	server.starttls()
+	# server.ehlo()
+	server.login(me, password)
+	server.sendmail(me, you, msg.as_string() )
+	server.quit()
+
 
 ########################################################################
 ##
@@ -746,7 +745,7 @@ if (not recovered) or DEBUG:
 
 	oldsite,oldgpstime = parseGPS(getOldGPS(gpstime,startTime))
 
-	deltadist,deltat,speedmadegood = distance(site,gpstime,oldsite,oldgpstime)
+	deltadist,deltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
 
 # FULL RANGE OF RECORDS
 	important = getImportant(startTime)
@@ -828,6 +827,7 @@ if Opt.report:
 	print "OLDGPSTIme",hours(oldgpstime)
 	  # last two points: [0] is most recent
 	print "Distance:",deltadist,deltat,speedmadegood
+	print "Bearing: ",bearing
 	print "Battery: ",volt, amphr, batttime
 	print "DropWeight:",dropWeight
 	print "Thruster:  ",ThrusterServo
@@ -929,6 +929,7 @@ else:   #not opt report
 	"text_droptime",
 	"text_gftime",
 	"text_gf",
+	"text_bearing",
 	"text_thrusttime",
 	"text_commago",
 	"text_ampago",
@@ -1051,6 +1052,7 @@ else:   #not opt report
 		cdd["text_gps"] = hours(gpstime)
 		cdd["color_gps"] = ['st4','st5'][(now - gpstime > 3600000)]
 		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
+		cdd["text_bearing"] = "%d" % (int(bearing)) + "&#x00B0;"  # degree sign
 
 
 		###
