@@ -139,7 +139,8 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 			connection.close()
 			result = structured['result']
 		else:
-			result = '# offline'
+			print >> sys.stderr, "# Query timeout",URL
+			result = ''
 		return result
 	except urllib2.HTTPError:
 		print >> sys.stderr, "# FAILURE IN QUERY:",URL
@@ -378,10 +379,10 @@ def getDataAsc(starttime):
 		extrapath = pathpart['path']
 		NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
 		datacon = urllib2.urlopen(NewURL,timeout=5)
-		lastlines = deque(datacon, 250)
+		lastlines = deque(datacon, 1500)
 		for nextline in lastlines:
-			#if DEBUG:
-				#print >> sys.stderr, nextline
+			if DEBUG:
+				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
 			if "platform_battery_" in nextline:
 				fields = nextline.split("=")
 				if (volt==0) and "voltage" in nextline:
@@ -480,6 +481,8 @@ def parseMission(recordlist):
 	## PARSE MISSION NAME
 	for Record in recordlist:
 		if Record["name"]=="MissionManager":
+			if DEBUG:
+				print >> sys.stderr,"## MISSION RECORD",Record
 			MissionName = Record.get("text","mission NA").split("mission ")[1]
 			MissionTime = Record["unixTime"]
 			break
@@ -555,9 +558,11 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	TimeoutStart   =False
 	NeedComms = False
 	Speed = 0
-
-	
+	if DEBUG:
+		print >>sys.stderr, "## Parsing defaults"
 	for Record in recordlist:
+		if DEBUG:
+			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",Record["text"]
 		## PARSE TIMEOUTS Assumes HOURS
 		if TimeoutDuration == False and Record["name"]=="CommandLine" and ".MissionTimeout" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
@@ -565,18 +570,20 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			TimeoutStart    = Record["unixTime"]
 		
 		## PARSE NEED COMMS Assumes MINUTES
-		if NeedComms == False and Record["name"]=="CommandLine" and ".NeedCommsTime" in Record.get("text","NA"):
-			'''command set keepstation.NeedCommsTime 60.000000 minute	'''
+		if NeedComms == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("got command") and ".NeedCommsTime" in Record.get("text","NA"):
+			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
+			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
-			
+			if DEBUG:
+				print >> sys.stderr, "#FOUND NEEDCOMMS",NeedComms
 			## ADD FLOW RATE FOR UBAT...
 			
 			### For the moment this will just go from the start of the mission, but once we get SatComms, use that time
 			
 		## PARSE UBAT (make vehicle-specific)
-		## PARSE SPEED
-		if Speed == False and Record["name"]=="CommandLine" and ".Speed" in Record.get("text","NA"):
-			Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].strip().split(" ")[0]))
+		## PARSE SPEED # THis used to be ".Speed"
+		if Speed == False and Record["name"]=="CommandLine" and ".speedCmd" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
+			Speed = "%.1f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
 			
 			# Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].split(" ")[0]))
 		
@@ -731,7 +738,7 @@ plugged = getPlugged(recovered)
 note,noteTime = parseNotes(getNotes(startTime))
 
 # vehicle not recovered
-if not recovered or DEBUG:
+if (not recovered) or DEBUG:
 	critical  = getCritical(startTime)
 	faults = getFaults(startTime)
 	
@@ -750,7 +757,7 @@ if not recovered or DEBUG:
 	if not logtime:
 		logtime = startTime
 	
-	# ONLY RECORDS AFTER MISSION
+	# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
 	postmission = getImportant(missionTime)
 	duration,timeoutstart,needcomms,speed  = parseDefaults(postmission,mission_defaults,missionName,missionTime)
 
@@ -1158,7 +1165,7 @@ else:   #not opt report
 			outfile.write(svgtail)
 		
 		
-	elif not Opt.report:
+	elif not Opt.report and not DEBUG:
 		print svghead
 		print svgtext.format(**cdd)
 		if not recovered:
