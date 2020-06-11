@@ -29,7 +29,7 @@ import urllib2
 import json
 import math
 from collections import deque
-from LRAUV_svg import svgtext,svghead,svgpontus,svgtail,svglabels,svgerror,svgerrorhead   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead   # define the svg text?
 
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -155,7 +155,7 @@ def getNotes(starttime):
 	
 def getCritical(starttime):
 	'''get critical entries, like drop weight'''
-	qString = runQuery(VEHICLE,"logCritical","",starttime)
+	qString = runQuery(VEHICLE,"logCritical","&limit=2000",starttime)
 	retstring = False
 	if qString:
 		retstring = qString
@@ -312,7 +312,7 @@ def parseCritical(recordlist):
 	'''Maybe some of these are in logFault?'''
 	Drop          = False
 	ThrusterServo = False
-	BadBattery    = False
+
 	
 	# if DEBUG:
 	# 	print "### Start Recordlist"
@@ -910,8 +910,7 @@ else:   #not opt report
 	cartcolors=["color_bigcable",
 	"color_smallcable",
 	"color_cart",
-	"color_cartcircle", 
-	"color_badbatt"]
+	"color_cartcircle"]
 
 	for cname in cartcolors:
 		cdd[cname]='st18'
@@ -1107,7 +1106,7 @@ else:   #not opt report
 	
 		cdd["color_wavecolor"] = 'st0'
 		cdd["color_dirtbox"] = 'st18'
-		cdd["color_badbatt"]= 'st18'  #  invisible
+
 	
 		if batttime:
 	#		if DEBUG:
@@ -1136,13 +1135,9 @@ else:   #not opt report
 
 
 		cdd["color_thrust"] = ['st4','st6'][(ThrusterServo>100)]
-		if BadBattery > 100:
+		if BadBattery > 100: # this is the unixtine
 			if DEBUG:
 				print >> sys.stderr, "# BAD BATTERY:",elapsed(BadBattery)
-			cdd["color_badbatt"]='st26'
-			cdd["color_bat1"] = 'st11'  #gray
-			# cdd["color_bat3"] = 'st11'
-			# cdd["color_bat5"] = 'st11'
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
 		if dropWeight > 100:
@@ -1160,6 +1155,8 @@ else:   #not opt report
 		with open(OutPath.format(VEHICLE),'w') as outfile:
 			outfile.write(svghead)
 			outfile.write(svgtext.format(**cdd))
+			if BadBattery > 100:
+				outfile.write(svgbadbattery)
 			if not recovered:
 				outfile.write(svglabels)
 				if VEHICLE=="pontus":
@@ -1170,6 +1167,8 @@ else:   #not opt report
 	elif not Opt.report and not DEBUG:
 		print svghead
 		print svgtext.format(**cdd)
+		if BadBattery:
+			print svgbadbattery
 		if not recovered:
 			print svglabels
 			if VEHICLE=="pontus":

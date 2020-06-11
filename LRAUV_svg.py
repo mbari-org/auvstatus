@@ -96,8 +96,7 @@ svgtext = '''
 <circle desc="bat5" class="{color_bat5}" cx="349" cy="241.38" r="4"/>
 <circle desc="bat6" class="{color_bat6}" cx="359" cy="241.38" r="4"/>
 <circle desc="bat7" class="{color_bat7}" cx="369" cy="241.38" r="4"/>
-</g><!-- X for bad battery stick-->
-<text transform="matrix(1 0 0 1 305.5 245)" class="st14 st15 {color_badbatt}">X<title>Bad battery cell reported</title></text>
+</g>
 
 
 <circle desc="missiondefault" class="{color_missiondefault}" cx="435" cy="188" r="2"/>
@@ -172,6 +171,17 @@ svglabels='''
 <text transform="matrix(1 0 0 1 291.6499 221.6039)" class="st9 st10">Cell comms</text>
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
+'''
+
+svgbadbattery='''<g><title>Bad battery cell detected</title>
+	<circle desc="badbatteryspot" class="st28" cx="309" cy="241.38" r="2"/>
+	<circle desc="badbatteryspot" class="st28" cx="329" cy="241.38" r="2"/>
+	<circle desc="badbatteryspot" class="st28" cx="349" cy="241.38" r="2"/>
+	<circle desc="badbatteryspot" class="st28" cx="369" cy="241.38" r="2"/>
+	<text transform="matrix(1 0 0 1 285.0 242)" class="st12 st9 st13">BAD</text>
+	<text transform="matrix(1 0 0 1 285.0 249)" class="st12 st9 st13">CELL</text>
+	
+</g>	
 '''
 
 svgpontus='''
