@@ -135,8 +135,8 @@ svgtext = '''
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
 <text desc="text_bearing" transform="matrix(1 0 0 1 598 250)" class="st9 st10">{text_bearing}</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 598 276.3205)" class="st9 st10">{text_thrusttime}</text>
-<text desc="text_nextcomm" transform="matrix(1 0 0 1 193 298.3899)" class="st9 st10">{text_nextcomm}</text>
-<text desc="text_timeout" transform="matrix(1 0 0 1 193 309.1899)" class="st9 st10">{text_timeout}</text>
+<text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">{text_nextcomm}</text>
+<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">{text_logtime}</text>
 <text desc="text_logago" transform="matrix(1 0 0 1 185.0 231.2224)" class="st12 st9 st13">{text_logago}</text>
@@ -164,7 +164,10 @@ svglabels='''
 <text transform="matrix(1 0 0 1 289.7587 302.4895)" class="st9 st10">Drop Weight</text>
 <text transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
-<text transform="matrix(1 0 0 1 482.912 279.8586)" class="st9 st10"><title>Ground Fault: None means not detected. False means no recent scan</title>GF</text>
+<g><title>Ground Fault: None means not detected. False means no recent scan</title>
+<text transform="matrix(1 0 0 1 485 273)" class="st12 st9 st13">GROUND</text>
+<text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT</text>
+</g>
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
 <text transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10">Sat comms</text>
