@@ -166,7 +166,7 @@ svglabels='''
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
 <g><title>Ground Fault: None means not detected. False means no recent scan</title>
 <text transform="matrix(1 0 0 1 485 273)" class="st12 st9 st13">GROUND</text>
-<text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT</text>
+<text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT?</text>
 </g>
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
@@ -231,7 +231,7 @@ svgerrorhead =  '''<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://w
 	</style>
 '''
 svgerror ='''<rect desc="backgroundbox" class="st0" width="512" height="154"/>
-		<text desc="text_vehicle" x="50%" y="40%" text-anchor="middle" class="st9 st10 st12">NETWORK DOWN: {text_vehicle}</text>
+		<text desc="text_vehicle" x="50%" y="40%" text-anchor="middle" class="st9 st10 st12">TRANSITIONING: {text_vehicle}</text>
 		<text desc="text_lastupdate" x="50%" y="55%" text-anchor="middle" class="st9 st10 st12">{text_lastupdate}</text>
 		
 </svg>

@@ -122,7 +122,8 @@ def getOldGPS(gpstime,missionstart):
 
 def getMissionDefaults():
 	'''print standard defaults for the listed missions. some must have inheritance because it doesn't get them all'''
-	missions=["Science/profile_station","Science/sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
+	missions=["Science/profile_station","Science/sci2","Science/mbts_sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
+	missions=["Science/mbts_sci2","Science/profile_station"]
 	for mission in missions:
 		URL = "https://okeanids.mbari.org/TethysDash/api/git/mission/{}.xml".format(mission)
 		print "\n#===========================\n",mission, "\n"
@@ -136,7 +137,9 @@ def getMissionDefaults():
 			
 				print URL
 				try: 
-					print result
+					splitted = str(result).split("{")
+					for item in splitted:
+						print item
 				except KeyError:
 					print "NA"
 		except urllib2.HTTPError:
@@ -705,10 +708,11 @@ else:
 	OutPath = './auv_{}.svg'
 	StartTimePath = "./auvstats_{}.csv" # make this .py for importing or .json?
 	
-	
+# TIMEOUTS are in hours? or days?
 mission_defaults = {
 	"profile_station"  : {"MissionTimeout": 4,   "NeedCommsTime":60, "Speed":1 },
 	"sci2"             : {"MissionTimeout": 2,   "NeedCommsTime":60, "Speed":1 },
+	"mbts_sci2"        : {"MissionTimeout": 48,  "NeedCommsTime":60, "Speed":1 },
 	"keepstation"      : {"MissionTimeout": 4,   "NeedCommsTime":45, "Speed":.75 },
 	"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45, "Speed":0.1 },
 	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45, "Speed":.75 },
