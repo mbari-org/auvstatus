@@ -28,3 +28,12 @@ Scripts and cron jobs are run in the `widget` folder on the server.
 
   * Long list of TODOs in the code, and see [Issues](https://bitbucket.org/beroe/auvstatus/issues?status=new&status=open) for more
 
+## UPDATED API
+```
+    name=string: The field value is equal to the given string
+    name.startsWith=string: The field value starts with the given string
+    name.matches=string: The field value matches the given regular expression
+    The first given variant as listed above is the only one applied for the particular field.
+    This handling is done for the fields: `name, text, note, path, user, email.
+    (Note: name gets reflected as component in the reported JSON object for some event types).
+```
