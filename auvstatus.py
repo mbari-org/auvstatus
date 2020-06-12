@@ -191,14 +191,21 @@ def getFaults(starttime):
 	return retstring
 
 def getImportant(starttime):
-	qString = runQuery(event="logImportant",limit="2000",timeafter=starttime)
+	qString = runQuery(event="logImportant",limit="1000",timeafter=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
 	return retstring
 
+def getGFs(starttime):
+	qString = runQuery(name="CBIT",timeafter=starttime)
+	retstring = ""
+	if qString:
+		retstring = qString
+	return retstring
+	
 def getComms(starttime):
-	qString = runQuery(event="sbdReceive",limit="",timeafter=starttime)
+	qString = runQuery(event="sbdReceive",timeafter=starttime)
 	retstring = False
 	if qString:
 		retstring = qString
@@ -449,28 +456,28 @@ def parseMission(recordlist):
 			break
 	return MissionName,MissionTime
 
-def parseGF(recordlist):
-	'''special query for CBIT and GF'''
+def parseGroundFaultRecord(recordlist):
+	'''Use special query for CBIT and GF'''
 	GF = False
 	GFtime = False
-	
-	for Record in recordlist:
-		if GF == False and Record["name"]=="CBIT":
-			if Record.get("text","NA").startswith("Ground fault detected") or Record.get("text","NA").startswith("Low side ground fault detected"):
-				# print "\n####\n",Record["text"]
-				GF = parseGF(Record.get("text","NA"))
-				GFtime = Record["unixTime"]
+	if recordlist:
+		for Record in recordlist:
+			if GF == False and Record["name"]=="CBIT":
+				if Record.get("text","NA").startswith("Ground fault detected") or Record.get("text","NA").startswith("Low side ground fault detected"):
+					# print "\n####\n",Record["text"]
+					GF = parseGF(Record.get("text","NA"))
+					GFtime = Record["unixTime"]
 			
-			elif Record.get("text","NA").startswith("No ground fault"):
-				GF = "None"
-				GFtime = Record["unixTime"]
-		return GF, GFtime		
+				elif Record.get("text","NA").startswith("No ground fault"):
+					GF = "None"
+					GFtime = Record["unixTime"]
+	else:
+		GF = "None"
+	return GF, GFtime		
 	
 
 def parseImptMisc(recordlist):
 	'''Loads events that persist across missions'''
-	GF = False
-	GFtime = False
 
 	ubatStatus = "st3"
 	ubatTime = False
@@ -483,17 +490,6 @@ def parseImptMisc(recordlist):
 	for Record in recordlist:
 		#if DEBUG:
 		#	print Record["name"],"<-->",Record.get("text","NO TEXT FIELD")
-			
-		## PARSE GROUND FAULTS
-		if GF == False and Record["name"]=="CBIT":
-			if Record.get("text","NA").startswith("Ground fault detected") or Record.get("text","NA").startswith("Low side ground fault detected"):
-				# print "\n####\n",Record["text"]
-				GF = parseGF(Record.get("text","NA"))
-				GFtime = Record["unixTime"]
-				
-			elif Record.get("text","NA").startswith("No ground fault"):
-				GF = "None"
-				GFtime = Record["unixTime"]
 				
 		if not LogTime and Record["name"] =='CommandLine' and 'got command restart logs' in Record.get("text","NA"):
 			LogTime = Record["unixTime"]
@@ -511,7 +507,7 @@ def parseImptMisc(recordlist):
 			FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 			FlowTime   = Record["unixTime"]
 
-	return GF, GFtime, ubatStatus, ubatTime, FlowRate,FlowTime, LogTime
+	return ubatStatus, ubatTime, FlowRate,FlowTime, LogTime
 
 def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	''' parse events that get reset after missions and might be default'''
@@ -769,6 +765,7 @@ note,noteTime = parseNotes(getNotes(startTime))
 if (not recovered) or DEBUG:
 	critical  = getCritical(startTime)
 	faults = getFaults(startTime)
+	gfrecords = getGFs(startTime)
 	
 	site,gpstime = parseGPS(getGPS(startTime))
 
@@ -780,7 +777,9 @@ if (not recovered) or DEBUG:
 	important = getImportant(startTime)
 
 	missionName,missionTime = parseMission(important)
-	gf,gftime,ubatStatus,ubatTime,flowrate,flowtime,logtime  = parseImptMisc(important)
+	ubatStatus,ubatTime,flowrate,flowtime,logtime  = parseImptMisc(important)
+	
+	gf,gftime = parseGroundFaultRecord(gfrecords)
 
 	if not logtime:
 		logtime = startTime
@@ -1007,9 +1006,13 @@ else:   #not opt report
 	###
 
 	cdd["color_gf"]= "st{}".format(gfnum)
+	if gf == "None":
+		cdd["text_gftime"] = "no scan"
+	else:
+		ago_gftime = gftime - now 
+		cdd["text_gftime"] = elapsed(ago_gftime)
+		
 	cdd["text_gf"] = gf
-	ago_gftime = gftime - now 
-	cdd["text_gftime"] = elapsed(ago_gftime)
 
 	###
 	###   MISSION TIMEOUTS DISPLAY
