@@ -50,14 +50,23 @@ def get_options():
 	return options
 
 
-def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
+def runQuery(event="",limit="",name="",timeafter="1234567890123"):
+	if limit:
+		limit = "&limit=" + limit
+	if name:
+		name = "&name=" + name
+	if event:
+		event = "&eventTypes=" + event
+		
 	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
+	
 	vehicle = VEHICLE
+
 	if not timeafter:
 		timeafter="1234567890123"
 		
-	BaseQuery = "https://okeanids.mbari.org/TethysDash/api/events?vehicles={0}&eventTypes={1}{2}&from={3}"
-	URL = BaseQuery.format(vehicle,events,limit,timeafter)
+	BaseQuery = "https://okeanids.mbari.org/TethysDash/api/events?vehicles={v}{e}{n}{l}&from={t}"
+	URL = BaseQuery.format(v=vehicle,e=event,n=name,l=limit,t=timeafter)
 	
 	if DEBUG:
 		print "### QUERY:",URL
@@ -81,13 +90,13 @@ def runQuery(vehicle,events,limit="",timeafter="1234567890123"):
 def getDeployment():
 	'''return start time for deployment'''
 	startTime = 0
-	launchString = runQuery(VEHICLE,"launch","&limit=1",)
+	launchString = runQuery(event="launch",limit="1")
 	if launchString:
 		startTime = launchString[0]['unixTime']
 	return startTime
 	
 def getRecovery(starttime):
-	launchString = runQuery(VEHICLE,"recover","&limit=1",starttime)
+	launchString = runQuery(event="recover",limit="1",timeafter=starttime)
 	recover = False
 	if launchString:
 		recover = launchString[0]['unixTime']
@@ -95,7 +104,7 @@ def getRecovery(starttime):
 	return recover
 
 def getPlugged(starttime):
-	launchString = runQuery(VEHICLE,"deploy","&limit=1",starttime)
+	launchString = runQuery(event="deploy",limit="1",timeafter=starttime)
 	plugged = False
 	if launchString:
 		plugged = launchString[0]['unixTime']
@@ -104,7 +113,7 @@ def getPlugged(starttime):
  
 def getGPS(starttime):
 	''' extract the most recent GPS entry'''
-	qString = runQuery(VEHICLE,"gpsFix","&limit=1",starttime)
+	qString = runQuery(event="gpsFix",limit="1",timeafter=starttime)
 	retstring=""
 	if qString:
 		retstring = qString	
@@ -114,7 +123,7 @@ def getOldGPS(gpstime,missionstart):
 	'''using the date of the most recent entry [mission start], go back 30 minutes and get GPS fix'''
 	
 	previoustime = gpstime - 30*60*1000
-	qString = runQuery(VEHICLE,"gpsFix","&limit=1&to={}".format(previoustime),missionstart)
+	qString = runQuery(event="gpsFix",limit="1&to={}".format(previoustime),timeafter=missionstart)
 	retstring=""
 	if qString:
 		retstring = qString
@@ -149,7 +158,7 @@ def getMissionDefaults():
 	
 def getNotes(starttime):
 	'''get notes with #widget in the text'''
-	qString = runQuery(VEHICLE,"note","&limit=10",starttime)
+	qString = runQuery(event="note",limit="10",timeafter=starttime)
 	retstring = ''
 	if qString:
 		retstring=qString
@@ -158,7 +167,7 @@ def getNotes(starttime):
 	
 def getCritical(starttime):
 	'''get critical entries, like drop weight'''
-	qString = runQuery(VEHICLE,"logCritical","&limit=2000",starttime)
+	qString = runQuery(event="logCritical",limit="2000",timeafter=starttime)
 	retstring = False
 	if qString:
 		retstring = qString
@@ -175,21 +184,21 @@ def getFaults(starttime):
 		2020-03-06T00:10:13.771Z,1583453413.771 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
 		
 	2020-03-06T00:09:26.051Z,1583453366.051 [RDI_Pathfinder](FAULT): DVL failed to acquire valid data within timeout.'''
-	qString = runQuery(VEHICLE,"logFault","&limit=2000",starttime)
+	qString = runQuery(event="logFault",limit="2000",timeafter=starttime)
 	retstring = False
 	if qString:
 		retstring = qString	
 	return retstring
 
 def getImportant(starttime):
-	qString = runQuery(VEHICLE,"logImportant","&limit=2000",starttime)
+	qString = runQuery(event="logImportant",limit="2000",timeafter=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
 	return retstring
 
 def getComms(starttime):
-	qString = runQuery(VEHICLE,"sbdReceive","",starttime)
+	qString = runQuery(event="sbdReceive",limit="",timeafter=starttime)
 	retstring = False
 	if qString:
 		retstring = qString
@@ -222,7 +231,7 @@ def getDataAsc(starttime):
 	Bailout=False
 	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
 	
-	record = runQuery(VEHICLE,"dataProcessed","&limit=2",starttime)
+	record = runQuery(event="dataProcessed",limit="2",timeafter=starttime)
 	for pathpart in record:
 		volt=0
 		amp =0
@@ -264,7 +273,7 @@ def getData(starttime):
 	2020/202003/20200303T074113'''
 	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.csv'
 	
-	record = runQuery(VEHICLE,"dataProcessed","&limit=1",starttime)
+	record = runQuery(event="dataProcessed",limit="1",timeafter=starttime)
 	extrapath = record[0]['path']
 	NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
 	datacon = urllib2.urlopen(NewURL,timeout=5)
@@ -440,10 +449,26 @@ def parseMission(recordlist):
 			break
 	return MissionName,MissionTime
 
+def parseGF(recordlist):
+	'''special query for CBIT and GF'''
+	GF = False
+	GFtime = False
+	
+	for Record in recordlist:
+		if GF == False and Record["name"]=="CBIT":
+			if Record.get("text","NA").startswith("Ground fault detected") or Record.get("text","NA").startswith("Low side ground fault detected"):
+				# print "\n####\n",Record["text"]
+				GF = parseGF(Record.get("text","NA"))
+				GFtime = Record["unixTime"]
+			
+			elif Record.get("text","NA").startswith("No ground fault"):
+				GF = "None"
+				GFtime = Record["unixTime"]
+		return GF, GFtime		
+	
 
 def parseImptMisc(recordlist):
 	'''Loads events that persist across missions'''
-
 	GF = False
 	GFtime = False
 
