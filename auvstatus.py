@@ -168,7 +168,7 @@ def getNotes(starttime):
 def getCritical(starttime):
 	'''get critical entries, like drop weight'''
 	qString = runQuery(event="logCritical",limit="2000",timeafter=starttime)
-	retstring = False
+	retstring = ""
 	if qString:
 		retstring = qString
 	
@@ -185,7 +185,7 @@ def getFaults(starttime):
 		
 	2020-03-06T00:09:26.051Z,1583453366.051 [RDI_Pathfinder](FAULT): DVL failed to acquire valid data within timeout.'''
 	qString = runQuery(event="logFault",limit="2000",timeafter=starttime)
-	retstring = False
+	retstring = ""
 	if qString:
 		retstring = qString	
 	return retstring
@@ -203,10 +203,18 @@ def getGFs(starttime):
 	if qString:
 		retstring = qString
 	return retstring
+
+def getDrop(starttime):
+	qString = runQuery(name="DropWeight",timeafter=starttime)
+	retstring = ""
+	if qString:
+		retstring = qString
+	return retstring
+
 	
 def getComms(starttime):
 	qString = runQuery(event="sbdReceive",timeafter=starttime)
-	retstring = False
+	retstring = ""
 	if qString:
 		retstring = qString
 #	if DEBUG:
@@ -326,7 +334,14 @@ def parseNotes(recordlist):
 			break
 	return Note,NoteTime 
 	
-
+def parseDrop(recordlist):
+	Drop          = False
+	for Record in recordlist:
+		# Expand this to check other DropWeight associated messages?
+		if Record["name"]=="DropWeight":
+			Drop=Record["unixTime"]
+	return Drop
+	 
 def parseCritical(recordlist):
 	'''Maybe some of these are in logFault?'''
 	Drop          = False
@@ -338,6 +353,7 @@ def parseCritical(recordlist):
 	# 	print recordlist
 	# 	print "### End Recordlist"
 	# 	# need to split this record?
+	
 	for Record in recordlist:
 		if DEBUG:
 			print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
@@ -409,39 +425,7 @@ def parseComms(recordlist):
 		# Direct Comms event type for cell comms
 	return satCommTime,directCommTime 
 	
-def parseGF(gfstring):
-	GFlist = []
-	'''multi-line input, find max value after colon
-	mA:
-CHAN A0 (Batt): -0.002926
-CHAN A1 (24V): -0.000568
-CHAN A2 (12V): -0.002154
-CHAN A3 (5V): -0.001574
-CHAN B0 (3.3V): 0.000075
-CHAN B1 (3.15aV): 4.767929
-CHAN B2 (3.15bV): -0.000301
-CHAN B3 (GND): -0.000056
-OPEN: -0.000713
-Full Scale Calc: 4.765 mA, -1.589 mA
-'''
-	for Line in gfstring.split("\n"):
-		if Line.startswith("CHAN") and ":" in Line:
-			GFlist.append(float(Line.split(":")[1]))
-	return "%.2f" % max(GFlist)
 
-'''
-Commanded speed may not show up in Important if it is default for mission
-Look between load and start for all these things -- needcomms, mission Timeout etc.
-
-Reset to default if you get a mission event before commanded speed. 
-If you see a Loaded mission command, or Started default before getting speed (or Need Comms [Default 60]....)
-
-Ground fault: Queue on RED on Low side ground fault detected - Yellow on any ground fault
-...
-	drop weight - 
-
-
-'''
 
 def parseMission(recordlist):
 	MissionName=False
@@ -472,10 +456,41 @@ def parseGroundFaultRecord(recordlist):
 					GF = "None"
 					GFtime = Record["unixTime"]
 	else:
-		GF = "None"
+		GF = "NA"
 	return GF, GFtime		
 	
+def parseGF(gfstring):
+	GFlist = []
+	'''multi-line input, find max value after colon
+	mA:
+CHAN A0 (Batt): -0.002926
+CHAN A1 (24V): -0.000568
+CHAN A2 (12V): -0.002154
+CHAN A3 (5V): -0.001574
+CHAN B0 (3.3V): 0.000075
+CHAN B1 (3.15aV): 4.767929
+CHAN B2 (3.15bV): -0.000301
+CHAN B3 (GND): -0.000056
+OPEN: -0.000713
+Full Scale Calc: 4.765 mA, -1.589 mA
+'''
+	for Line in gfstring.split("\n"):
+		if Line.startswith("CHAN") and ":" in Line:
+			GFlist.append(float(Line.split(":")[1]))
+	return "%.2f" % max(GFlist)
 
+'''
+Commanded speed may not show up in Important if it is default for mission
+Look between load and start for all these things -- needcomms, mission Timeout etc.
+
+Reset to default if you get a mission event before commanded speed. 
+If you see a Loaded mission command, or Started default before getting speed (or Need Comms [Default 60]....)
+
+Ground fault: Queue on RED on Low side ground fault detected - Yellow on any ground fault
+...
+
+
+'''
 def parseImptMisc(recordlist):
 	'''Loads events that persist across missions'''
 
@@ -996,7 +1011,9 @@ else:   #not opt report
 
 	now = time.time() * 1000  # localtime in unix
 	
-	if gf and gf != "None":
+	if gf=="NA":
+		gfnum = 3
+	elif gf and gf != "None":
 		gfnum=int(4+ 1*(float(gf)>0.2) + 1*(float(gf)>0.6))
 	else:
 		gfnum=4    # None means no GF. Figure out what means no data.
@@ -1006,7 +1023,7 @@ else:   #not opt report
 	###
 
 	cdd["color_gf"]= "st{}".format(gfnum)
-	if gf == "None":
+	if gf == "NA":
 		cdd["text_gftime"] = "no scan"
 	else:
 		ago_gftime = gftime - now 
