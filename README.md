@@ -37,3 +37,4 @@ Scripts and cron jobs are run in the `widget` folder on the server.
     This handling is done for the fields: `name, text, note, path, user, email.
     (Note: name gets reflected as component in the reported JSON object for some event types).
 ```
+Regex style shown [here](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html).
