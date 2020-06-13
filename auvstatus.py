@@ -676,10 +676,10 @@ def distance(site,time,oldsite,oldtime):
 	# BEARING: 
 	Y = math.sin(dlon) *  math.cos(math.radians(lat2))	
 	X = math.cos(math.radians(lat1))*math.sin(math.radians(lat2)) - math.sin(math.radians(lat1))*math.cos(math.radians(lat2))*math.cos(dlon)
-	Bearing = int (math.degrees(math.atan2(X,Y)) - 90 )
-	# NEEDS FIXING
-	# Bearing = int (math.degrees(math.atan2(X,Y)) - 90 ) % 360
+	Bearing = -1* int(math.degrees(math.atan2(X,Y)) - 90 ) % 360
 	return d,hours,speed,Bearing
+	
+
 
 def hours(unixtime):
 	'''return epoch in HH:MM string'''
