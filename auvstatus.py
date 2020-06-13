@@ -479,7 +479,9 @@ Full Scale Calc: 4.765 mA, -1.589 mA
 	for Line in gfstring.split("\n"):
 		if Line.startswith("CHAN") and ":" in Line:
 			GFlist.append(float(Line.split(":")[1]))
-	return "%.2f" % max(GFlist)
+	M=[(abs(n), (n>0)-(n<0)) for n in GFlist]
+	chosen = max(M) 
+	return "%.2f" % (chosen[0]*chosen[1])
 
 '''
 Commanded speed may not show up in Important if it is default for mission
