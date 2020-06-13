@@ -197,7 +197,8 @@ def getImportant(starttime):
 		retstring = qString
 	return retstring
 
-def getGFs(starttime):
+def getCBIT(starttime):
+	'''may also hold some DVL info'''
 	qString = runQuery(name="CBIT",timeafter=starttime)
 	retstring = ""
 	if qString:
@@ -440,15 +441,24 @@ def parseMission(recordlist):
 			break
 	return MissionName,MissionTime
 
-def parseGroundFaultRecord(recordlist):
+def parseCBIT(recordlist):
 	'''Use special query for CBIT and GF'''
 	GF = False
 	GFtime = False
+	DVL=False
+	
+	'''DVL stuff  Rowe_600.loadAtStartup=1 bool
+	old pontus/tethys command:
+	configSet Rowe_600.loadAtStartup 0 bool persist;restart app
+	"Communications Fault in component: RDI_Pathfinder"
+	name column is RDI_Pathfinder for tethys: DVL failed to acquire valid data within timeout."
+	
+	'''
 	if recordlist:
 		for Record in recordlist:
 			if DEBUG: 
 				print >> sys.stderr, "# GF RECORD",Record
-			if GF == False and Record["name"]=="CBIT":
+			if GF == False:
 				if Record.get("text","NA").startswith("Ground fault detected") or Record.get("text","NA").startswith("Low side ground fault detected"):
 					# print "\n####\n",Record["text"]
 					GF = parseGF(Record.get("text","NA"))
@@ -457,6 +467,11 @@ def parseGroundFaultRecord(recordlist):
 				elif Record.get("text","NA").startswith("No ground fault"):
 					GF = "OK"
 					GFtime = Record["unixTime"]
+			if DVL == False:
+				if Record.get("text","NA").startswith("Communications Fault in component: RDI_Pathfinder"):
+					if DEBUG:
+						print >> sys.stderr, "DVL COMM ERROR"
+					#need to find turned off commands.
 	else:
 		GF = "NA"
 	return GF, GFtime		
@@ -661,7 +676,9 @@ def distance(site,time,oldsite,oldtime):
 	# BEARING: 
 	Y = math.sin(dlon) *  math.cos(math.radians(lat2))	
 	X = math.cos(math.radians(lat1))*math.sin(math.radians(lat2)) - math.sin(math.radians(lat1))*math.cos(math.radians(lat2))*math.cos(dlon)
-	Bearing = int (math.degrees(math.atan2(X,Y)) - 90 ) % 360
+	Bearing = int (math.degrees(math.atan2(X,Y)) - 90 )
+	# NEEDS FIXING
+	# Bearing = int (math.degrees(math.atan2(X,Y)) - 90 ) % 360
 	return d,hours,speed,Bearing
 
 def hours(unixtime):
@@ -784,7 +801,7 @@ note,noteTime = parseNotes(getNotes(startTime))
 if (not recovered) or DEBUG:
 	critical  = getCritical(startTime)
 	faults = getFaults(startTime)
-	gfrecords = getGFs(startTime)
+	gfrecords = getCBIT(startTime)
 	
 	site,gpstime = parseGPS(getGPS(startTime))
 
@@ -798,7 +815,7 @@ if (not recovered) or DEBUG:
 	missionName,missionTime = parseMission(important)
 	ubatStatus,ubatTime,flowrate,flowtime,logtime  = parseImptMisc(important)
 	
-	gf,gftime = parseGroundFaultRecord(gfrecords)
+	gf,gftime = parseCBIT(gfrecords)
 
 	if not logtime:
 		logtime = startTime
@@ -1104,7 +1121,8 @@ else:   #not opt report
 		cdd["text_gps"] = hours(gpstime)
 		cdd["color_gps"] = ['st4','st5'][(now - gpstime > 3600000)]
 		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
-		cdd["text_bearing"] = "%d" % (int(bearing)) + "&#x00B0;"  # degree sign
+		cdd["text_bearing"] = "tbd&#x00B0;"  # 		
+		# cdd["text_bearing"] = "%d" % (int(bearing)) "&#x00B0;"  # degree sign
 
 
 		###
