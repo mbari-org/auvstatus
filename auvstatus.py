@@ -446,6 +446,8 @@ def parseGroundFaultRecord(recordlist):
 	GFtime = False
 	if recordlist:
 		for Record in recordlist:
+			if DEBUG: 
+				print >> sys.stderr, "# GF RECORD",Record
 			if GF == False and Record["name"]=="CBIT":
 				if Record.get("text","NA").startswith("Ground fault detected") or Record.get("text","NA").startswith("Low side ground fault detected"):
 					# print "\n####\n",Record["text"]
@@ -453,7 +455,7 @@ def parseGroundFaultRecord(recordlist):
 					GFtime = Record["unixTime"]
 			
 				elif Record.get("text","NA").startswith("No ground fault"):
-					GF = "None"
+					GF = "OK"
 					GFtime = Record["unixTime"]
 	else:
 		GF = "NA"
@@ -493,7 +495,7 @@ Ground fault: Queue on RED on Low side ground fault detected - Yellow on any gro
 '''
 def parseImptMisc(recordlist):
 	'''Loads events that persist across missions'''
-
+   #FORMER HOME OF GF SCANS
 	ubatStatus = "st3"
 	ubatTime = False
 
@@ -1013,10 +1015,10 @@ else:   #not opt report
 	
 	if gf=="NA":
 		gfnum = 3
-	elif gf and gf != "None":
+	elif gf and gf != "OK":
 		gfnum=int(4+ 1*(float(gf)>0.2) + 1*(float(gf)>0.6))
 	else:
-		gfnum=4    # None means no GF. Figure out what means no data.
+		gfnum=4    # OK means no GF. NA is no data
 
 	###
 	###   GROUND FAULT DISPLAY

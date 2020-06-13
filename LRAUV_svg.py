@@ -161,12 +161,12 @@ svglabels='''
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
-<text transform="matrix(1 0 0 1 289.7587 302.4895)" class="st9 st10">Drop Weight</text>
+<text transform="matrix(1 0 0 1 289.7587 302.4895)" class="st12 st9 st13">DROP WEIGHT</text>
 <text transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
 <g><title>Ground Fault: None means not detected. False means no recent scan</title>
 <text transform="matrix(1 0 0 1 485 273)" class="st12 st9 st13">GROUND</text>
-<text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT?</text>
+<text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT</text>
 </g>
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
