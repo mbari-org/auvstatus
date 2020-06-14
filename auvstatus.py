@@ -356,8 +356,8 @@ def parseCritical(recordlist):
 	# 	# need to split this record?
 	
 	for Record in recordlist:
-		if DEBUG:
-			print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
+		# if DEBUG:
+		# 	print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
 		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
@@ -378,8 +378,8 @@ def parseFaults(recordlist):
 	# 	print "### End Recordlist"
 	# 	# need to split this record?
 	for Record in recordlist:
-		if DEBUG:
-			print "NAME:",Record["name"],"===> ", Record["text"]
+		# if DEBUG:
+		# 	print "NAME:",Record["name"],"===> ", Record["text"]
 		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"):
 			BadBattery=Record["unixTime"]
 			if DEBUG:
@@ -456,8 +456,8 @@ def parseCBIT(recordlist):
 	'''
 	if recordlist:
 		for Record in recordlist:
-			if DEBUG: 
-				print >> sys.stderr, "# GF RECORD",Record
+			# if DEBUG:
+			# 	print >> sys.stderr, "# GF RECORD",Record
 			if GF == False:
 				if Record.get("text","NA").startswith("Ground fault detected") or Record.get("text","NA").startswith("Low side ground fault detected"):
 					# print "\n####\n",Record["text"]
@@ -545,23 +545,36 @@ def parseImptMisc(recordlist):
 
 def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	''' parse events that get reset after missions and might be default'''
+	''' check schedule: got command schedule "run Science/mbts_sci2.xml"'''
 	''' todo, need to move the ubat here and change the ubat on command parsing'''
 	
 	TimeoutDuration=False
 	TimeoutStart   =False
 	NeedComms = False
+	Scheduled = False
+	Cleared = False
 	Speed = 0
+	
 	if DEBUG:
 		print >>sys.stderr, "## Parsing defaults"
 	for Record in recordlist:
-		if DEBUG:
-			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",Record["text"]
+		# if DEBUG:
+		# 	print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",Record["text"]
 		## PARSE TIMEOUTS Assumes HOURS
 		if TimeoutDuration == False and Record["name"]=="CommandLine" and ".MissionTimeout" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
 			TimeoutStart    = Record["unixTime"]
-		
+		if Scheduled == False and not Cleared and Record["name"]=="CommandLine" and \
+				Record.get("text","NA").startswith('got command schedule "run'):
+			'''got command schedule "run Science/mbts_sci2.xml"'''
+			Scheduled = Record["text"].split("/")[1].replace('.xml"','')
+			if DEBUG:
+				print >> sys.stderr, "## Found Scheduled",Scheduled
+		if Record["name"]=="CommandLine" and \
+				Record.get("text","NA").startswith('got command schedule clear'):
+				Cleared = True
+				
 		## PARSE NEED COMMS Assumes MINUTES
 		if NeedComms == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("got command") and ".NeedCommsTime" in Record.get("text","NA"):
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
@@ -589,7 +602,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			TimeoutStart = MissionTime
 	
 			
-	return TimeoutDuration, TimeoutStart, NeedComms,Speed 
+	return TimeoutDuration, TimeoutStart, NeedComms,Speed,Scheduled
 
 def handleURLerror():
 	now = 1000 * time.mktime(time.localtime())
@@ -822,7 +835,7 @@ if (not recovered) or DEBUG:
 	
 	# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
 	postmission = getImportant(missionTime)
-	duration,timeoutstart,needcomms,speed  = parseDefaults(postmission,mission_defaults,missionName,missionTime)
+	duration,timeoutstart,needcomms,speed,Scheduled  = parseDefaults(postmission,mission_defaults,missionName,missionTime)
 
 	#this is volt, amp, time
 	volt,amphr,batttime = getDataAsc(startTime)
@@ -974,7 +987,8 @@ else:   #not opt report
 	cartcolors=["color_bigcable",
 	"color_smallcable",
 	"color_cart",
-	"color_cartcircle"]
+	"color_cartcircle",
+	"color_scheduled"]
 
 	for cname in cartcolors:
 		cdd[cname]='st18'
@@ -994,6 +1008,7 @@ else:   #not opt report
 	"text_gf",
 	"text_bearing",
 	"text_thrusttime",
+	"text_scheduled",
 	"text_commago",
 	"text_ampago",
 	"text_cellago",
@@ -1074,10 +1089,13 @@ else:   #not opt report
 	cdd["text_vehicle"] = VEHICLE.upper()
 	cdd["text_lastupdate"] = time.strftime('%H:%M')
 	# Green = 5 if in defaults Lets go orange for not in
-	cdd["color_missiondefault"] = ['st6','st4'][missionName in mission_defaults]   
+	cdd["color_missiondefault"] = ['st27','st25'][missionName in mission_defaults]   
 	if noteTime:
 		cdd["text_note"] = note
 		cdd["text_notetime"] = elapsed(noteTime)
+	if Scheduled:
+		cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
+		cdd["color_scheduled"] = ['st27','st25'][Scheduled in mission_defaults]   
 
 
 	
@@ -1122,7 +1140,7 @@ else:   #not opt report
 		cdd["color_gps"] = ['st4','st5'][(now - gpstime > 3600000)]
 		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
 		# cdd["text_# bearing"] = "tbd&#x00B0;"  #
-		cdd["text_bearing"] = "%d" % (int(bearing)) "&#x00B0;"  # degree sign
+		cdd["text_bearing"] = "%d" % (int(bearing)) + "&#x00B0;"  # degree sign
 
 
 		###
