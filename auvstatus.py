@@ -574,6 +574,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 		if Record["name"]=="CommandLine" and \
 				Record.get("text","NA").startswith('got command schedule clear'):
 				Cleared = True
+				if DEBUG:
+					print >> sys.stderr, "## Got CLEAR"
 				
 		## PARSE NEED COMMS Assumes MINUTES
 		if NeedComms == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("got command") and ".NeedCommsTime" in Record.get("text","NA"):
@@ -1008,7 +1010,6 @@ else:   #not opt report
 	"text_gf",
 	"text_bearing",
 	"text_thrusttime",
-	"text_scheduled",
 	"text_commago",
 	"text_ampago",
 	"text_cellago",
@@ -1023,7 +1024,8 @@ else:   #not opt report
 	# these should persist after recovery
 	specialnames=[
 	"text_vehicle","text_lastupdate",
-	"text_note", "text_notetime"	
+	"text_note", "text_notetime","text_scheduled"
+
 	]
 	for tname in specialnames:
 		cdd[tname]=''
