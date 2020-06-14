@@ -99,7 +99,8 @@ svgtext = '''
 </g>
 
 
-<circle desc="missiondefault" class="{color_missiondefault}" cx="435" cy="188" r="2"/>
+<circle desc="missiondefault" class="{color_missiondefault}" cx="435" cy="183" r="2"/>
+<circle desc="scheduleddefault" class="{color_scheduled}" cx="435" cy="193.5" r="1.6"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="{color_satcomm}" width="24.43" height="11.5"/>
 <rect desc="cell"    x="260.15" y="212.24" class="{color_cell}" width="26.43" height="11.31"/>
 <rect desc="gps"     x="407.76" y="221.71" class="{color_gps}" width="26.93" height="10.17"/>
@@ -127,7 +128,8 @@ svgtext = '''
 -->
 
 <!-- Dynamic values -->
-<text desc="mission" transform="matrix(1 0 0 1 482.0 191.2224)" class="st9 st10 st12">{text_mission}</text>
+<text desc="mission" transform="matrix(1 0 0 1 482.0 186)" class="st9 st10 st12">{text_mission}</text>
+<text desc="mission" transform="matrix(1 0 0 1 439.5 196)" class="st12 st9 st13">{text_scheduled}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
 <text desc="test_note" transform="matrix(1 0 0 1 133 174)" class="st12 st9 st13">{text_note}</text>
 <text desc="test_notetime" transform="matrix(1 0 0 1 134 180)" class="st12 st9 st24">{text_notetime}</text>
@@ -152,7 +154,7 @@ svgtext = '''
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
 
 <!-- Static labels -->
-<text transform="matrix(1 0 0 1 439.0 191.2224)" class="st9 st10">MISSION:</text>
+<text transform="matrix(1 0 0 1 439.0 186)" class="st9 st10">MISSION:</text>
 <text transform="matrix(1 0 0 1 404.0 268.0)" class="st12 st9 st13">UPDATED:</text>
 '''
 svglabels='''
@@ -161,7 +163,7 @@ svglabels='''
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
-<text transform="matrix(1 0 0 1 289.7587 302.4895)" class="st12 st9 st13">DROP WEIGHT</text>
+<text transform="matrix(1 0 0 1 285 300)" class="st12 st9 st13">DROP WEIGHT</text>
 <text transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
 <g><title>Ground Fault: None means not detected. False means no recent scan</title>
