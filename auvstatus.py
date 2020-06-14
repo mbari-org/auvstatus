@@ -1122,7 +1122,7 @@ else:   #not opt report
 		cdd["color_gps"] = ['st4','st5'][(now - gpstime > 3600000)]
 		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
 		# cdd["text_# bearing"] = "tbd&#x00B0;"  #
-		cdd["text_bearing"] = "%d" % (int(bearing)) "&#x00B0;"  # degree sign
+		cdd["text_bearing"] = "%d" % (int(bearing)) + "&#x00B0;"  # degree sign
 
 
 		###
