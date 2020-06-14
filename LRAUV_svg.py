@@ -99,8 +99,10 @@ svgtext = '''
 </g>
 
 
-<circle desc="missiondefault" class="{color_missiondefault}" cx="435" cy="183" r="2"/>
-<circle desc="scheduleddefault" class="{color_scheduled}" cx="435" cy="193.5" r="1.6"/>
+<circle desc="missiondefault"   class="{color_missiondefault}" cx="435" cy="183" r="2"/>
+<circle desc="scheduleddefault" class="{color_scheduled}"      cx="435" cy="193.5" r="1.6"/>
+<circle desc="commoverdue"     class="{color_commago}"        cx="138.5" cy="295.5" r="2"/>
+<circle desc="missionoverdue"     class="{color_missionago}"     cx="138.5" cy="306" r="2"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="{color_satcomm}" width="24.43" height="11.5"/>
 <rect desc="cell"    x="260.15" y="212.24" class="{color_cell}" width="26.43" height="11.31"/>
 <rect desc="gps"     x="407.76" y="221.71" class="{color_gps}" width="26.93" height="10.17"/>

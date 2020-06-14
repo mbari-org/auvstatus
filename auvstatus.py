@@ -981,8 +981,7 @@ else:   #not opt report
 	"color_smallcable",
 	"color_cart",
 	"color_cartcircle",
-	"color_missiondefault"]
-
+	"color_missiondefault" ]
 	for cname in colornames:
 		cdd[cname]='st3'
 
@@ -990,7 +989,9 @@ else:   #not opt report
 	"color_smallcable",
 	"color_cart",
 	"color_cartcircle",
-	"color_scheduled"]
+	"color_scheduled",
+	"color_commago",
+	"color_missionago"]
 
 	for cname in cartcolors:
 		cdd[cname]='st18'
@@ -1076,10 +1077,8 @@ else:   #not opt report
 
 	# This in in hours
 	# cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000)
-	cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000) + " - " + elapsed((missionTime+duration*3600*1000) - now )
 
-	#Change this to use sat comms time
-	# This is typically in minutes
+	cdd["text_timeout"] = hours(missionTime+duration*3600*1000) + " - " + elapsed((missionTime+duration*3600*1000) - now )
 
 	# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
 	cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
@@ -1092,11 +1091,13 @@ else:   #not opt report
 	cdd["text_vehicle"] = VEHICLE.upper()
 	cdd["text_lastupdate"] = time.strftime('%H:%M')
 	# Green = 5 if in defaults Lets go orange for not in
-	cdd["color_missiondefault"] = ['st27','st25'][missionName in mission_defaults]   
+	cdd["color_missiondefault"] = ['st27','st25'][missionName in mission_defaults] 
+	
+	# NOT USED YET! NOTES  
 	if noteTime:
 		cdd["text_note"] = note
 		cdd["text_notetime"] = elapsed(noteTime)
-
+		
 
 	
 	if recovered:
@@ -1135,6 +1136,32 @@ else:   #not opt report
 		if Scheduled:
 			cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
 			cdd["color_scheduled"] = ['st27','st25'][Scheduled in mission_defaults]   
+
+		# MISSION TIMES
+		timetotimeout =  ((missionTime+duration*3600*1000)  - now) / (60*1000)
+	
+		if DEBUG:
+			print >> sys.stderr, "#TIME TO MISSION TIMEOUT",timetotimeout
+
+		if timetotimeout > 11:
+			cdd["color_missionago"] = 'st4'
+		elif timetotimeout < 1:
+			cdd["color_missionago"] = 'st6'
+		else:
+			cdd["color_missionago"] = 'st5'
+
+		# This is typically in minutes
+
+		# CIRCLE NEXT TO COMM TIME in minutes
+		timetocomm = int(((commreftime+needcomms*60*1000) -now) / (60*1000))
+		if DEBUG:
+			print >> sys.stderr, "#TIME TO COMM",timetocomm
+		if timetocomm > 9:
+			cdd["color_commago"] = 'st4'
+		elif timetocomm < -4:
+			cdd["color_commago"] = 'st6'
+		else:
+			cdd["color_commago"] = 'st5'
 
 		###
 		###   GPS DISPLAY
