@@ -1013,6 +1013,7 @@ else:   #not opt report
 	"text_ampago",
 	"text_cellago",
 	"text_flowago",
+	"text_gpsago",
 	"text_logago",
 	"text_logtime"
 ]
@@ -1138,6 +1139,9 @@ else:   #not opt report
 		###
 		cdd["text_gps"] = hours(gpstime)
 		cdd["color_gps"] = ['st4','st5'][(now - gpstime > 3600000)]
+		ago_gps = gpstime - now
+		cdd["text_gpsago"] = elapsed(ago_gps)
+	
 		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
 		# cdd["text_# bearing"] = "tbd&#x00B0;"  #
 		cdd["text_bearing"] = "%d" % (int(bearing)) + "&#x00B0;"  # degree sign
