@@ -1094,9 +1094,6 @@ else:   #not opt report
 	if noteTime:
 		cdd["text_note"] = note
 		cdd["text_notetime"] = elapsed(noteTime)
-	if Scheduled:
-		cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
-		cdd["color_scheduled"] = ['st27','st25'][Scheduled in mission_defaults]   
 
 
 	
@@ -1133,14 +1130,19 @@ else:   #not opt report
 	#		if DEBUG:
 	#			print >> sys.stderr, "#SPEED:",speed
 			cdd["text_speed"]= "%.1f" % speed + "m/s"
+		if Scheduled:
+			cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
+			cdd["color_scheduled"] = ['st27','st25'][Scheduled in mission_defaults]   
 
 		###
 		###   GPS DISPLAY
 		###
 		cdd["text_gps"] = hours(gpstime)
 		cdd["color_gps"] = ['st4','st5'][(now - gpstime > 3600000)]
-		ago_gps = gpstime - now
-		cdd["text_gpsago"] = elapsed(ago_gps)
+		if gpstime:
+			ago_gps = gpstime - now
+			cdd["text_gpsago"] = elapsed(ago_gps)
+
 	
 		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
 		# cdd["text_# bearing"] = "tbd&#x00B0;"  #
