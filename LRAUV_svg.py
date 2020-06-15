@@ -155,6 +155,7 @@ svgtext = '''
 <text desc="text_speed" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">{text_speed}<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
+<text desc="reckoned_detail" transform="matrix(1 0 0 1 599 294)" class="st12 st9 st24">{text_reckondistance}</text>
 
 <!-- Static labels -->
 <text transform="matrix(1 0 0 1 439.0 186)" class="st9 st10">MISSION:</text>
@@ -162,7 +163,7 @@ svgtext = '''
 '''
 svglabels='''
 <!-- create new variable for these -->
-<text desc="reckoned_label" transform="matrix(1 0 0 1 599 283)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
+<text desc="reckoned_label" transform="matrix(1 0 0 1 599 287)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>

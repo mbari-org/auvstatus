@@ -656,7 +656,7 @@ def elapsed(rawdur):
 			HourString = str(hours%24) + "h "
 			DayString = str(hours//24) + "d " 
 		DurationString = DurationBase.format(DayString,HourString,MinuteString)
-		if days > 30:
+		if days > 4:
 			DurationString = "long time"
 		if rawdur < 1:
 			DurationString += " ago"
@@ -1011,6 +1011,7 @@ else:   #not opt report
 	"text_gf",
 	"text_bearing",
 	"text_thrusttime",
+	"text_reckondistance",
 	"text_commago",
 	"text_ampago",
 	"text_cellago",
@@ -1176,6 +1177,9 @@ else:   #not opt report
 		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
 		# cdd["text_# bearing"] = "tbd&#x00B0;"  #
 		cdd["text_bearing"] = "%d" % (int(bearing)) + "&#x00B0;"  # degree sign
+		if (deltadist and deltat):
+			reckontext="%.1fkm in %.1fh" % (deltadist,deltat)
+			cdd["text_reckondistance"] = reckontext
 
 
 		###
