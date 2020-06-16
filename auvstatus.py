@@ -167,7 +167,7 @@ def getNotes(starttime):
 	
 def getCritical(starttime):
 	'''get critical entries, like drop weight'''
-	qString = runQuery(event="logCritical",limit="2000",timeafter=starttime)
+	qString = runQuery(event="logCritical",limit="1000",timeafter=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
@@ -190,8 +190,8 @@ def getFaults(starttime):
 		retstring = qString	
 	return retstring
 
-def getImportant(starttime):
-	qString = runQuery(event="logImportant",limit="1000",timeafter=starttime)
+def getImportant(starttime,inputname=""):
+	qString = runQuery(event="logImportant",name=inputname,limit="1000",timeafter=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
@@ -433,7 +433,8 @@ def parseMission(recordlist):
 	MissionTime=False
 	## PARSE MISSION NAME
 	for Record in recordlist:
-		if Record["name"]=="MissionManager":
+		# if Record["name"]=="MissionManager":
+		if Record["name"]=="MissionManager" and Record["text"].startswith("Started mission"):
 			if DEBUG:
 				print >> sys.stderr,"## MISSION RECORD",Record
 			MissionName = Record.get("text","mission NA").split("mission ")[1]
@@ -558,12 +559,14 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	if DEBUG:
 		print >>sys.stderr, "## Parsing defaults"
 	for Record in recordlist:
-		# if DEBUG:
-		# 	print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",Record["text"]
+		if DEBUG and Record["name"] != 'CBIT':
+			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"])
 		## PARSE TIMEOUTS Assumes HOURS
 		if TimeoutDuration == False and Record["name"]=="CommandLine" and ".MissionTimeout" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
+			if DEBUG:
+				print >> sys.stderr, "# Found TimeOut of ",TimeoutDuration
 			TimeoutStart    = Record["unixTime"]
 		if Scheduled == False and not Cleared and Record["name"]=="CommandLine" and \
 				Record.get("text","NA").startswith('got command schedule "run'):
@@ -836,9 +839,14 @@ if (not recovered) or DEBUG:
 		logtime = startTime
 	
 	# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
-	postmission = getImportant(missionTime)
-	duration,timeoutstart,needcomms,speed,Scheduled  = parseDefaults(postmission,mission_defaults,missionName,missionTime)
-
+	postmission = getImportant(missionTime-100,inputname="CommandLine")
+	if DEBUG:
+		print >> sys.stderr, "MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime
+	missionduration,timeoutstart,needcomms,speed,Scheduled  = parseDefaults(postmission,mission_defaults,missionName,missionTime)
+	
+	if DEBUG:
+		print >> sys.stderr,"#DURATION and timeout start", missionduration,timeoutstart
+	
 	#this is volt, amp, time
 	volt,amphr,batttime = getDataAsc(startTime)
 	satcomms,cellcomms = parseComms(getComms(startTime))
@@ -857,7 +865,7 @@ if (not recovered) or DEBUG:
 else:   
 	gf = False
 	gftime = False
-	duration = False
+	missionduration = False
 	timeoutstart = False
 	needcomms = False
 	satcomms = False
@@ -889,7 +897,7 @@ if Opt.report:
 	print "###############\nVehicle: " ,VEHICLE.upper()
 	print "Now: " ,hours(now)
 	print "GroundFault: ",gf,hours(gftime)
-	print "Duration:    ",duration
+	print "MissionDuration:    ",missionduration
 	print "TimeoutStart:",hours(timeoutstart)
 	print "NeedComms:",needcomms
 	print "SatComms:",satcomms
@@ -1077,9 +1085,9 @@ else:   #not opt report
 	###
 
 	# This in in hours
-	# cdd["text_timeout"] = hours(timeoutstart+duration*3600*1000)
+	# cdd["text_timeout"] = hours(timeoutstart+missionduration*3600*1000)
 
-	cdd["text_timeout"] = hours(missionTime+duration*3600*1000) + " - " + elapsed((missionTime+duration*3600*1000) - now )
+	cdd["text_timeout"] = hours(missionTime+missionduration*3600*1000) + " - " + elapsed((missionTime+missionduration*3600*1000) - now )
 
 	# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
 	cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
@@ -1139,7 +1147,7 @@ else:   #not opt report
 			cdd["color_scheduled"] = ['st27','st25'][Scheduled in mission_defaults]   
 
 		# MISSION TIMES
-		timetotimeout =  ((missionTime+duration*3600*1000)  - now) / (60*1000)
+		timetotimeout =  ((missionTime+missionduration*3600*1000)  - now) / (60*1000)
 	
 		if DEBUG:
 			print >> sys.stderr, "#TIME TO MISSION TIMEOUT",timetotimeout
@@ -1285,6 +1293,8 @@ else:   #not opt report
 	# 	print "Recovered: ",hours(recovered)
 
 	if Opt.savefile:
+		if DEBUG:
+			print >> sys.stderr, "#Saving file ", OutPath.format(VEHICLE)
 		with open(OutPath.format(VEHICLE),'w') as outfile:
 			outfile.write(svghead)
 			outfile.write(svgtext.format(**cdd))
@@ -1297,7 +1307,7 @@ else:   #not opt report
 			outfile.write(svgtail)
 		
 		
-	elif not Opt.report and not DEBUG:
+	elif not Opt.report:
 		print svghead
 		print svgtext.format(**cdd)
 		if BadBattery:
