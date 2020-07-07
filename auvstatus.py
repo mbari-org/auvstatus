@@ -617,7 +617,7 @@ def handleURLerror():
 		with open(OutPath.format(VEHICLE),'w') as outfile:
 			outfile.write(svgerrorhead)
 			outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
-		print >> sys.stderr ("URL ACCESS ERROR:"+VEHICLE)
+		print >> sys.stderr, "URL ACCESS ERROR:",VEHICLE
 		
 	elif not Opt.report:
 		print svgerrorhead
