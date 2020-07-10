@@ -691,7 +691,10 @@ def distance(site,time,oldsite,oldtime):
 		math.sin(dlon / 2) * math.sin(dlon / 2))
 	c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 	d = radius * c
-	speed = d / hours
+	if (hours > 0):
+		speed = d / hours
+	else:
+		speed = 0
 	# BEARING: 
 	Y = math.sin(dlon) *  math.cos(math.radians(lat2))	
 	X = math.cos(math.radians(lat1))*math.sin(math.radians(lat2)) - math.sin(math.radians(lat1))*math.cos(math.radians(lat2))*math.cos(dlon)
