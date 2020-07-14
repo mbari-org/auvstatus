@@ -12,12 +12,12 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st6{fill:#EF9D30;stroke:#000000; } <!--Orange Fill -->
 	.st7{fill:#FFFFFF;stroke:#000000;stroke-linecap:round; }
 	.st8{fill:#C6C4C4;stroke:#000000;stroke-linecap:round; }
-	.st9{font-family:'HelveticaNeue';}
+	.st9{font-family:HelveticaNeue, Helvetica, Arial, sans-serif;}
 	.st10{font-size:9px;}
 	.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
 	.st12{fill:#606060;}  <!--MidGray text -->
 	.st13{font-size:7px;}
-	.st14{font-family:'HelveticaNeue-Medium';}
+	.st14{font-family:HelveticaNeue-Medium, Helvetica, Arial, sans-serif; }
 	.st15{font-size:11px;}
 	.st16{fill:#929090;} <!-- Arrow gray-->
 	.st17{fill:#e3cfa7;} <!-- DirtBrown-->
