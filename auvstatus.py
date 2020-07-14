@@ -876,13 +876,14 @@ else:
 	
 # TIMEOUTS are in hours? or days?
 mission_defaults = {
-	"profile_station"  : {"MissionTimeout": 4,   "NeedCommsTime":60, "Speed":1 },
-	"sci2"             : {"MissionTimeout": 2,   "NeedCommsTime":60, "Speed":1 },
-	"mbts_sci2"        : {"MissionTimeout": 48,  "NeedCommsTime":60, "Speed":1 },
-	"keepstation"      : {"MissionTimeout": 4,   "NeedCommsTime":45, "Speed":.75 },
-	"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45, "Speed":0.1 },
-	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45, "Speed":.75 },
-	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30, "Speed":1 },
+	"profile_station"  : {"MissionTimeout": 4,   "NeedCommsTime":60,  "Speed":1 },
+	"portuguese_ledge" : {"MissionTimeout": 4,   "NeedCommsTime":120, "Speed":1 },
+	"sci2"             : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1 },
+	"mbts_sci2"        : {"MissionTimeout": 48,  "NeedCommsTime":60,  "Speed":1 },
+	"keepstation"      : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
+	"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45,  "Speed":0.1 },
+	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
+	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1 },
 	"spiral_cast"      : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 }
 }
 
