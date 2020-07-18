@@ -247,7 +247,10 @@ def getDataAsc(starttime):
 
 	Bailout=False
 	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
-	
+	volt = 0
+	amp  = 0
+	volttime = 0
+
 	record = runQuery(event="dataProcessed",limit="2",timeafter=starttime)
 	for pathpart in record:
 		volt=0
@@ -297,6 +300,7 @@ def getData(starttime):
 	if DEBUG:
 		print >> sys.stderr, "# Data URL",NewURL
 	lastlines = deque(datacon, 10)
+
 	for nextline in lastlines:
 		if "V," in nextline:
 			try:
@@ -573,6 +577,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				Record.get("text","NA").startswith('got command schedule "run'):
 			'''got command schedule "run Science/mbts_sci2.xml"'''
 			Scheduled = Record["text"].split("/")[1].replace('.xml"','')
+# 
 			if DEBUG:
 				print >> sys.stderr, "## Found Scheduled",Scheduled
 		if Record["name"]=="CommandLine" and \
@@ -1277,7 +1282,7 @@ else:   #not opt report
 		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
 		# cdd["text_# bearing"] = "tbd&#x00B0;"  #
 		cdd["text_bearing"] = "%d" % (int(bearing)) + "&#x00B0;"  # degree sign
-		if (deltadist and deltat):
+		if (deltadist and deltat) and (deltadist < 100):
 			reckontext="%.1fkm in %.1fh" % (deltadist,deltat)
 			cdd["text_reckondistance"] = reckontext
 
