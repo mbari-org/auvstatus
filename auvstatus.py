@@ -889,6 +889,7 @@ mission_defaults = {
 	"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45,  "Speed":0.1 },
 	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1 },
+	"calibrate_sparton_compass"      : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"spiral_cast"      : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 }
 }
 
