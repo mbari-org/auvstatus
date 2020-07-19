@@ -177,7 +177,7 @@
 	<text transform="matrix(1 0 0 1 351.7762 129.1205)" class="st19 st5 st6">Last GF scan</text>
 	<text transform="matrix(1 0 0 1 439.3318 121.9586)" class="st19 st5 st6">UBAT on &amp; flow OK</text>
 	<text transform="matrix(1 0 0 1 309.5522 19.0735)" class="st19 st5 st6">Mission found in default list</text>
-	<text transform="matrix(1 0 0 1 309.5522 30.5092)" class="st21"><tspan x="0" y="0" class="st19 st5 st6">Mission not in default list </tspan><tspan x="0" y="10.8" class="st19 st5 st6">  (mission timeout, nextcomm, speed not reliable) </tspan></text>
+	<text transform="matrix(1 0 0 1 309.5522 30.5092)" class="st19 st5 st6">Mission not in default list  </text>
 	<circle class="st10" cx="304.2" cy="15.8" r="2"/>
 	<circle class="st22" cx="304.2" cy="27.8" r="2"/>
 	<rect x="15.8" y="212.4" class="st20" width="212.5" height="39.1"/>
@@ -188,7 +188,7 @@
 	<rect x="326.7" y="220.4" class="st23" width="38.1" height="8.4"/>
 	<rect x="326.7" y="208.2" class="st11" width="38.1" height="10"/>
 	<rect x="326.7" y="196.7" class="st24" width="38.1" height="9.2"/>
-	<text transform="matrix(1 0 0 1 320.3983 193.2434)" class="st21"><tspan x="0" y="0" class="st19 st5 st6">GF:   </tspan><tspan x="0" y="11.2" class="st19 st5 st6">    </tspan><tspan x="10" y="11.2" class="st19 st5 st25">ok </tspan><tspan x="0" y="22.4" class="st19 st5 st25">    medium</tspan><tspan x="0" y="33.6" class="st19 st5 st25">    high</tspan></text>
+	<text transform="matrix(1 0 0 1 320.3983 193.2434)" class="st21"><tspan x="0" y="0" class="st19 st5 st6">GF:   </tspan><tspan x="0" y="11.2" class="st19 st5 st6">    </tspan><tspan x="10" y="11.2" class="st19 st5 st25">        </tspan></text>
 	<g>
 		<g>
 			<path class="st18" d="M478.5,169.6c-6.7,8.8-7,45.6,1.2,47.3"/>
@@ -247,9 +247,8 @@
 	<text transform="matrix(1 0 0 1 36.4543 234.8258)" class="st19 st5 st6">In the future</text>
 	<text transform="matrix(1 0 0 1 100.6253 234.4354)" class="st21"><tspan x="0" y="0" class="st19 st5 st6">in 9 mins or</tspan><tspan x="46.9" y="0" class="st19 st5 st6"> </tspan><tspan x="0" y="10.8" class="st19 st5 st6">&lt; 5 mins ago</tspan></text>
 	<text transform="matrix(1 0 0 1 168.9319 234.8258)" class="st21"><tspan x="0" y="0" class="st19 st5 st6">In the past</tspan><tspan x="0" y="10.8" class="st19 st5 st6">or no default</tspan></text>
-	<rect x="145.7" y="55" class="st20" width="75.6" height="11.9"/>
-	<rect x="164.9" y="85.1" class="st20" width="75.6" height="11.9"/>
-	<text transform="matrix(1 0 0 1 151.3148 63.4639)" class="st19 st5 st6">Last sat comms </text>
+	<rect x="145.7" y="55" class="st20" width="100.4" height="11.9"/>
+	<rect x="164.9" y="85.1" class="st20" width="88.3" height="11.9"/>
 	<text transform="matrix(1 0 0 1 151.3148 63.4639)" class="st19 st5 st6">Last sat comms </text>
 	<text transform="matrix(1 0 0 1 170.5626 93.5899)" class="st19 st5 st6">Last cell comms </text>
 	<rect x="28.4" y="72.2" class="st20" width="82.7" height="25.4"/>
@@ -266,8 +265,13 @@
 	<text transform="matrix(1 0 0 1 22.4912 130.9908)" class="st19 st5 st6">Commanded speed</text>
 	<text transform="matrix(1 0 0 1 21.0029 171.573)" class="st19 st5 st6">Thruster Servo error</text>
 	<rect x="170.7" y="190.2" class="st20" width="95.6" height="11.9"/>
-	<text transform="matrix(1 0 0 1 179.776 199.1396)" class="st19 st5 st6">  OK or      dropped</text>
+	<text transform="matrix(1 0 0 1 184.2473 199.1399)" class="st19 st5 st6">OK or      </text>
 	<rect x="173.9" y="191.9" class="st9" width="8.9" height="8.2"/>
 	<rect x="211.4" y="191.9" class="st7" width="8.9" height="8.2"/>
+	<text transform="matrix(1 0 0 1 224.7519 199.1396)" class="st19 st5 st6">dropped</text>
+	<text transform="matrix(1 0 0 1 314.0085 40.2036)" class="st19 st5 st6">(mission timeout, nextcomm, speed not reliable)</text>
+	<text transform="matrix(1 0 0 1 332.19 203.8692)" class="st19 st5 st25">ok </text>
+	<text transform="matrix(1 0 0 1 330.6996 215.6415)" class="st19 st5 st25">medium</text>
+	<text transform="matrix(1 0 0 1 330.6975 226.992)" class="st19 st5 st25">high &gt; .6</text>
 </g>
 </svg>
