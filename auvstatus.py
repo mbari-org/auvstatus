@@ -595,9 +595,13 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					
 		# SETTING STATION. Will fail on multi-station missions..?		
 		
+		if StationLon == False and Record["name"]=="Important" and Record.get("text","NA").startswith("got command set") and ".Lon" in Record.get("text","NA"):
+			StationLon = Record.get("text").split("Lon ")[1]
+
 		if StationLat == False and Record["name"]=="Important" and Record.get("text","NA").startswith("got command set") and ".Lat" in Record.get("text","NA"):
 			StationLat = Record.get("text").split("Lat ")[1]
-			print >> sys.stderr, "## Got Lat", StationLat
+			if DEBUG:
+				print >> sys.stderr, "## Got Lat", StationLat
 
 		## PARSE NEED COMMS Assumes MINUTES
 		if NeedComms == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("got command") and ".NeedCommsTime" in Record.get("text","NA"):
@@ -626,7 +630,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			TimeoutStart = MissionTime
 	
 			
-	return TimeoutDuration, TimeoutStart, NeedComms,Speed,Scheduled
+	return TimeoutDuration, TimeoutStart, NeedComms,Speed,Scheduled,StationLat,StationLon
 
 def handleURLerror():
 	now = 1000 * time.mktime(time.localtime())
@@ -698,9 +702,6 @@ def distance(site,time,oldsite,oldtime):
 	"""
 	lat1, lon1 = oldsite
 	lat2, lon2 = site
-	deltat = time - oldtime
-	seconds = deltat / 1000.0
-	hours = seconds / (60*60)
 	radius = 6371  # km
 	dlat = math.radians(lat2 - lat1)
 	dlon = math.radians(lon2 - lon1)
@@ -709,14 +710,20 @@ def distance(site,time,oldsite,oldtime):
 		math.sin(dlon / 2) * math.sin(dlon / 2))
 	c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 	d = radius * c
+
+	Y = math.sin(dlon) *  math.cos(math.radians(lat2))	
+	X = math.cos(math.radians(lat1))*math.sin(math.radians(lat2)) - math.sin(math.radians(lat1))*math.cos(math.radians(lat2))*math.cos(dlon)
+	Bearing = -1* int(math.degrees(math.atan2(X,Y)) - 90 ) % 360
+
+	deltat = time - oldtime
+	seconds = deltat / 1000.0
+	hours = seconds / (60*60)
+
 	if (hours > 0):
 		speed = d / hours
 	else:
 		speed = 0
 	# BEARING: 
-	Y = math.sin(dlon) *  math.cos(math.radians(lat2))	
-	X = math.cos(math.radians(lat1))*math.sin(math.radians(lat2)) - math.sin(math.radians(lat1))*math.cos(math.radians(lat2))*math.cos(dlon)
-	Bearing = -1* int(math.degrees(math.atan2(X,Y)) - 90 ) % 360
 	return d,hours,speed,Bearing
 	
 
@@ -903,6 +910,7 @@ mission_defaults = {
 	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1 },
 	"calibrate_sparton_compass"      : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
+	"SpartonCompassCal"      : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"spiral_cast"      : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 }
 }
 
@@ -950,10 +958,18 @@ if (not recovered) or DEBUG:
 		logtime = startTime
 	
 	# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
-	postmission = getImportant(missionTime-1000,inputname="CommandLine")
+	postmission = getImportant(missionTime-15000,inputname="CommandLine")
 	if DEBUG:
 		print >> sys.stderr, "MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime
-	missionduration,timeoutstart,needcomms,speed,Scheduled  = parseDefaults(postmission,mission_defaults,missionName,missionTime)
+		
+	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon  = \
+	          parseDefaults(postmission,mission_defaults,missionName,missionTime)
+	
+	# TODO:
+	# stationdist,stationdeltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
+	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
+	
+	
 	
 	if DEBUG:
 		print >> sys.stderr,"#DURATION and timeout start", missionduration,timeoutstart
