@@ -560,19 +560,25 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	Scheduled = False
 	Cleared = False
 	Speed = 0
+	StationLat = False
+	StationLon = False
 	
 	if DEBUG:
 		print >>sys.stderr, "## Parsing defaults"
 	for Record in recordlist:
+	
 		if DEBUG and Record["name"] != 'CBIT':
 			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"])
+			
 		## PARSE TIMEOUTS Assumes HOURS
-		if TimeoutDuration == False and Record["name"]=="CommandLine" and ".MissionTimeout" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
+		if TimeoutDuration == False and Record["name"]=="CommandLine" and\
+		     ".MissionTimeout" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
 			if DEBUG:
 				print >> sys.stderr, "# Found TimeOut of ",TimeoutDuration
 			TimeoutStart    = Record["unixTime"]
+			
 		if Scheduled == False and not Cleared and Record["name"]=="CommandLine" and \
 				Record.get("text","NA").startswith('got command schedule "run'):
 			'''got command schedule "run Science/mbts_sci2.xml"'''
@@ -580,12 +586,19 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 # 
 			if DEBUG:
 				print >> sys.stderr, "## Found Scheduled",Scheduled
+				
 		if Record["name"]=="CommandLine" and \
 				Record.get("text","NA").startswith('got command schedule clear'):
 				Cleared = True
 				if DEBUG:
 					print >> sys.stderr, "## Got CLEAR"
-				
+					
+		# SETTING STATION. Will fail on multi-station missions..?		
+		
+		if StationLat == False and Record["name"]=="Important" and Record.get("text","NA").startswith("got command set") and ".Lat" in Record.get("text","NA"):
+			StationLat = Record.get("text").split("Lat ")[1]
+			print >> sys.stderr, "## Got Lat", StationLat
+
 		## PARSE NEED COMMS Assumes MINUTES
 		if NeedComms == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("got command") and ".NeedCommsTime" in Record.get("text","NA"):
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
@@ -597,7 +610,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 			### For the moment this will just go from the start of the mission, but once we get SatComms, use that time
 			
-		## PARSE UBAT (make vehicle-specific)
+		## PARSE UBAT (make vehicle-specific
 		## PARSE SPEED # THis used to be ".Speed"
 		if Speed == False and Record["name"]=="CommandLine" and ".speedCmd" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
 			Speed = "%.1f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
