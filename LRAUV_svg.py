@@ -109,7 +109,7 @@ svgtext = '''
 <rect desc="amps"    x="336.28" y="261.76" class="{color_amps}" width="25.5" height="10.5"/>
 <rect desc="volts"   x="336.28" y="249.85" class="{color_volts}" width="25.5" height="10.5"/>
 <rect desc="gf_rect" x="480" y="254.0" class="{color_gf}" width="24.43" height="10.5"/>
-<polygon desc="sonar" class="{color_sonar}" points="541.91,287.26 553.41,287.26 558.97,295.79 541.52,295.79 "/>
+<polygon desc="dvl" class="{color_dvl}" points="541.91,287.26 553.41,287.26 558.97,295.79 541.52,295.79 "/>
 
 <!--cart-->
 <polygon desc="cart" class="{color_cart}" points="348.8,282.24 348.8,315.73 524.05,315.73 524.05,282.24 503.4,282.24 496.15,301.22 381.17,301.22 
@@ -156,6 +156,7 @@ svgtext = '''
 <text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
 <text desc="reckoned_detail" transform="matrix(1 0 0 1 599 294)" class="st12 st9 st24">{text_reckondistance}</text>
+<text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">{text_dvlstatus}</text>
 
 <!-- Static labels -->  
 <text transform="matrix(1 0 0 1 439.0 186)" class="st9 st10">MISSION:</text>

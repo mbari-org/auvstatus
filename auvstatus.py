@@ -391,8 +391,9 @@ def parseFaults(recordlist):
 				print >> sys.stderr,"\n\n## BAD BATTERY in FAULT\n\n"
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 
-		# if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder"] and "failed" in Record.get("text","NA").lower():
-		# 	DVLError=Record["unixTime"]
+		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder"] and "failed" in Record.get("text","NA").lower():
+		 	DVLError=Record["unixTime"]
+		 	
 	return BadBattery,DVLError
 
 def parseDVL(recordlist):
@@ -526,6 +527,8 @@ def parseImptMisc(recordlist):
 	FlowTime = False
 	
 	LogTime = False
+	DVL_on = True
+	GotDVL = False
 	
 	for Record in recordlist:
 		#if DEBUG:
@@ -533,13 +536,33 @@ def parseImptMisc(recordlist):
 				
 		if not LogTime and Record["name"] =='CommandLine' and 'got command restart logs' in Record.get("text","NA"):
 			LogTime = Record["unixTime"]
-
+		
+		''' DVL PARSING
+		DVL potential instruments: 
+			DVL_micro
+			Rowe_600
+			RDI_Pathfinder
+'''
 		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
-				
+ 		if GotDVL == False and (
+ 		      ("DVL_micro.loadAtStartup"      in Record.get("text","NA")) or 
+ 		      ("RDI_Pathfinder.loadAtStartup" in Record.get("text","NA")) or 
+ 		      ("Rowe_600.loadAtStartup"       in Record.get("text","NA"))
+ 		      ):
+ 		    # TO CHECK. this might split icorrectly on the space because sometimes config set?
+ 		    # configSet
+			DVL_on = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
+			GotDVL = True
+			if DEBUG: 
+				print >> sys.stderr, "# FOUND DVL: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"])
+				print >> sys.stderr, "DVL Value: ", DVL_on
+
+	
+			
 		'''Change to got command ubat on'''
 		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
-			ubatBool = bool(float(Record["text"].split("loadAtStartup ")[1].split(" ")[0]))
+			ubatBool = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
 			ubatStatus = ["st6","st4"][ubatBool]
 			ubatTime   = Record["unixTime"]
 			
@@ -547,7 +570,7 @@ def parseImptMisc(recordlist):
 			FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 			FlowTime   = Record["unixTime"]
 
-	return ubatStatus, ubatTime, FlowRate,FlowTime, LogTime
+	return ubatStatus, ubatTime, FlowRate,FlowTime, LogTime, DVL_on
 
 def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	''' parse events that get reset after missions and might be default'''
@@ -571,10 +594,11 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"])
 			
 		## PARSE TIMEOUTS Assumes HOURS
-		if TimeoutDuration == False and Record["name"]=="CommandLine" and\
+		if TimeoutDuration == False and \
 		     ".MissionTimeout" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
+			'''got command set Smear.MissionTimeout 8.000000 hour'''
 			if DEBUG:
 				print >> sys.stderr, "# Found TimeOut of ",TimeoutDuration
 			TimeoutStart    = Record["unixTime"]
@@ -626,6 +650,9 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	if not NeedComms:
 			NeedComms = mission_defaults.get(MissionName,{}).get("NeedCommsTime",0)
 	if not TimeoutDuration:
+			if DEBUG:
+				print >> sys.stderr, "# NO TIMEOUT - checking defaults"
+			
 			TimeoutDuration = mission_defaults.get(MissionName,{}).get("MissionTimeout",0)
 			TimeoutStart = MissionTime
 	
@@ -791,7 +818,7 @@ def sim():
 	"color_amps"           : "st4",
 	"color_volts"          : "st4",
 	"color_gf"             : "st6",
-	"color_sonar"          : "st3",
+	"color_dvl"            : "st3",
 	"color_bt2"            : "st3",
 	"color_bt1"            : "st3",
 	"color_ubat"           : "st3",
@@ -950,7 +977,7 @@ if (not recovered) or DEBUG:
 	important = getImportant(startTime)
 
 	missionName,missionTime = parseMission(important)
-	ubatStatus,ubatTime,flowrate,flowtime,logtime  = parseImptMisc(important)
+	ubatStatus,ubatTime,flowrate,flowtime,logtime,DVLon  = parseImptMisc(important)
 	
 	gf,gftime = parseCBIT(gfrecords)
 
@@ -958,7 +985,7 @@ if (not recovered) or DEBUG:
 		logtime = startTime
 	
 	# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
-	postmission = getImportant(missionTime-15000,inputname="CommandLine")
+	postmission = getImportant(missionTime-60000,inputname="CommandLine")
 	if DEBUG:
 		print >> sys.stderr, "MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime
 		
@@ -988,6 +1015,7 @@ if (not recovered) or DEBUG:
 	if faults:
 		BadBattery,DVLError = parseFaults(faults)
 
+	
 # vehicle has been recovered
 else:   
 	gf = False
@@ -1105,7 +1133,7 @@ else:   #not opt report
 	"color_amps",
 	"color_volts",
 	"color_gf",
-	"color_sonar",
+	"color_dvl",
 	"color_bt2",
 	"color_bt1",
 	"color_ubat",
@@ -1152,7 +1180,8 @@ else:   #not opt report
 	"text_cellago",
 	"text_flowago",
 	"text_gpsago",
-	"text_logago",
+	"text_logago",	
+	"text_dvlstatus",
 	"text_logtime"
 ]
 	for tname in textnames:
@@ -1404,6 +1433,18 @@ else:   #not opt report
 		
 		# cdd["color_bat8"] = ['st4','st6'][volt < 16.5]
 
+		if DVLError:
+			DVLcolor = 'st6'
+			cdd["text_dvlstatus"]="ERROR"
+		elif DVLon:
+			DVLcolor = 'st4'
+			cdd["text_dvlstatus"]="ON"
+		else:
+			DVLcolor = 'st5'
+			cdd["text_dvlstatus"]="OFF"
+		
+			
+		cdd["color_dvl"] = DVLcolor
 
 		cdd["color_thrust"] = ['st4','st6'][(ThrusterServo>100)]
 
