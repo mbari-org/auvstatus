@@ -589,13 +589,14 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	if DEBUG:
 		print >>sys.stderr, "## Parsing defaults"
 	for Record in recordlist:
-	
-		if DEBUG and Record["name"] != 'CBIT':
-			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"])
+		RecordText = Record.get("text","NA")
+		
+# 		if DEBUG and Record["name"] != 'CBIT':
+# 			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",RecordText, "[{}]".format(Record["unixTime"])
 			
 		## PARSE TIMEOUTS Assumes HOURS
 		if TimeoutDuration == False and \
-		     ".MissionTimeout" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
+		     ".MissionTimeout" in RecordText and RecordText.startswith("got"):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
 			'''got command set Smear.MissionTimeout 8.000000 hour'''
@@ -604,31 +605,39 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			TimeoutStart    = Record["unixTime"]
 			
 		if Scheduled == False and not Cleared and Record["name"]=="CommandLine" and \
-				Record.get("text","NA").startswith('got command schedule "run'):
+				RecordText.startswith('got command schedule "run'):
 			'''got command schedule "run Science/mbts_sci2.xml"'''
 			Scheduled = Record["text"].split("/")[1].replace('.xml"','')
-# 
+
 			if DEBUG:
 				print >> sys.stderr, "## Found Scheduled",Scheduled
 				
 		if Record["name"]=="CommandLine" and \
-				Record.get("text","NA").startswith('got command schedule clear'):
+				RecordText.startswith('got command schedule clear'):
 				Cleared = True
 				if DEBUG:
 					print >> sys.stderr, "## Got CLEAR"
 					
 		# SETTING STATION. Will fail on multi-station missions..?		
 		
-		if StationLon == False and Record["name"]=="Important" and Record.get("text","NA").startswith("got command set") and ".Lon" in Record.get("text","NA"):
-			StationLon = Record.get("text").split("Lon ")[1]
+		if StationLon == False and RecordText.startswith("got command set") and (".Lon" in RecordText or ".CenterLongitude" in RecordText):
+			if "itude" in RecordText:
+				StationLon = RecordText.split("itude ")[1]
+			else:
+				StationLon = RecordText.split("Lon ")[1]
+			StationLon = float(StationLon.split(" ")[0])
 
-		if StationLat == False and Record["name"]=="Important" and Record.get("text","NA").startswith("got command set") and ".Lat" in Record.get("text","NA"):
-			StationLat = Record.get("text").split("Lat ")[1]
+		if StationLat == False and RecordText.startswith("got command set") and (".Lat" in RecordText or ".CenterLatitude" in RecordText):
+			if "itude" in RecordText:
+				StationLat = RecordText.split("itude ")[1]
+			else:
+				StationLat = RecordText.split("Lat ")[1]
+			StationLat = float(StationLat.split(" ")[0])
 			if DEBUG:
 				print >> sys.stderr, "## Got Lat", StationLat
 
 		## PARSE NEED COMMS Assumes MINUTES
-		if NeedComms == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("got command") and ".NeedCommsTime" in Record.get("text","NA"):
+		if NeedComms == False and Record["name"]=="CommandLine" and RecordText.startswith("got command") and ".NeedCommsTime" in RecordText:
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
@@ -640,7 +649,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 		## PARSE UBAT (make vehicle-specific
 		## PARSE SPEED # THis used to be ".Speed"
-		if Speed == False and Record["name"]=="CommandLine" and ".speedCmd" in Record.get("text","NA") and Record.get("text","NA").startswith("got"):
+		if Speed == False and Record["name"]=="CommandLine" and ".speedCmd" in RecordText and RecordText.startswith("got"):
 			Speed = "%.1f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
 			
 			# Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].split(" ")[0]))
@@ -718,6 +727,30 @@ def elapsed(rawdur):
 		return DurationString
 	else:
 		return "NA"
+
+def parseDistance(site,StationLat,StationLon,knownspeed,knownbearing,gpstime):
+	''' using already calculated reckoned speed, get distance and time to last waypoint'''
+	if knownspeed > 0 and abs(site[0]) > 1:
+		deltadist,deltat,speedmadegood,bearing = distance((StationLat,StationLon),3600000,site,7200000)
+		if DEBUG:
+			print >> sys.stderr, "# StationDistance, bearing:", deltadist,bearing
+			print >> sys.stderr, "# OldBearing:", knownbearing
+						
+		if (deltadist > 0.3):			
+			timetogo = deltadist / knownspeed
+			return 3600000 * timetogo, deltadist
+		elif abs(bearing-knownbearing) < 20:
+			# heading mismatch
+			return bearing,deltadist			  
+			if DEBUG:									  
+				print "# Station close or bearing mismatch"
+		else:
+			return -1,deltadist							  
+	else:
+		return -1,0
+		
+
+
 
 def distance(site,time,oldsite,oldtime):
 	"""
@@ -828,6 +861,7 @@ def sim():
 	"color_missiondefault" : "st25",
 	"color_commago"        : "st5",
 	"color_missionago"     : "st6",
+	"color_arrow"          : "st16",
 	"color_scheduled"      : "st26"
 	
 	}
@@ -868,6 +902,9 @@ def sim():
 	"text_lastupdate"     : "12:34",
 	"text_note"           : "", 
 	"text_notetime"       : "",
+	"text_arrivestation"  : "12:34 in 1h 12m",
+	"text_stationdist"    : "4.5km",
+	"text_stationdist"    : "1.2km",
 	"text_scheduled"      : "SCHEDULED: keep_station"
 	}
 
@@ -986,13 +1023,22 @@ if (not recovered) or DEBUG:
 	
 	# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
 	postmission = getImportant(missionTime-60000,inputname="CommandLine")
+	
 	if DEBUG:
 		print >> sys.stderr, "MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime
 		
 	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon  = \
 	          parseDefaults(postmission,mission_defaults,missionName,missionTime)
 	
-	# TODO:
+
+	# Time to waypoint:
+	if abs(StationLat) > 0:
+		waypointtime,waypointdist = parseDistance(site,StationLat,StationLon,speedmadegood,bearing,gpstime)
+	else:
+		waypointtime = -1
+
+			
+
 	# stationdist,stationdeltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
@@ -1147,7 +1193,9 @@ else:   #not opt report
 	"color_missiondefault" ]
 	for cname in colornames:
 		cdd[cname]='st3'
-
+	
+	cdd["color_arrow"] = "st16"
+	
 	cartcolors=["color_bigcable",
 	"color_smallcable",
 	"color_cart",
@@ -1182,15 +1230,17 @@ else:   #not opt report
 	"text_gpsago",
 	"text_logago",	
 	"text_dvlstatus",
-	"text_logtime"
-]
+	"text_logtime" ]
+	
 	for tname in textnames:
 		cdd[tname]='na'
 
 	# these should persist after recovery
 	specialnames=[
 	"text_vehicle","text_lastupdate",
-	"text_note", "text_notetime","text_scheduled"
+	"text_note", "text_notetime","text_scheduled","text_arrivestation",
+	"text_stationdist","text_currentdist"
+
 
 	]
 	for tname in specialnames:
@@ -1208,7 +1258,7 @@ else:   #not opt report
 	 TODO: Check thruster color to make sure it detects a fault
 	 Change GPS calculation to look over a longer time scale
 	 add more time ago fields
-	 GO HOME
+	 GO TO SLEEP
  
 	 '''
 
@@ -1276,6 +1326,7 @@ else:   #not opt report
 			cdd[tname]=''
 	
 		cdd["color_wavecolor"] = 'st18' # invisible
+		cdd["color_arrow"]     = 'st18'
 		cdd["color_dirtbox"] = 'st17'   # brown
 		if plugged:
 			cdd["text_mission"]     = "PLUGGED IN " + hours(plugged) + " &#x2022; " + dates(plugged)
@@ -1283,6 +1334,7 @@ else:   #not opt report
 			cdd["color_cartcircle"] = 'st20'
 			cdd["color_smallcable"] = 'st23'
 			cdd["color_bigcable"]   = 'st22'
+			
 		
 		else:
 			cdd["text_mission"] = "RECOVERED " + hours(recovered)+ " &#x2022; " + dates(recovered)
@@ -1337,6 +1389,9 @@ else:   #not opt report
 			ago_gps = gpstime - now
 			cdd["text_gpsago"] = elapsed(ago_gps)
 
+		###
+		###   RECKON SPEED DISPLAY
+		###
 	
 		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
 		# cdd["text_# bearing"] = "tbd&#x00B0;"  #
@@ -1345,6 +1400,34 @@ else:   #not opt report
 			reckontext="%.1fkm in %.1fh" % (deltadist,deltat)
 			cdd["text_reckondistance"] = reckontext
 
+
+		###
+		###   ARRIVAL ESTIMATE
+		###
+
+
+		if DEBUG and (waypointtime >= 0):
+			print >> sys.stderr, "TIME TO STATION from GPS TIME, not now:",hours(waypointtime),elapsed(waypointtime)
+		if waypointtime == -1:
+			arrivetext = "Now, or no data"
+		# Cheating by storing heading in waypointtime if mismatch in function
+		elif waypointtime < 361:
+			 	arrivetext = "Heading mismatch:",waypointtime
+		else:
+			timeatstation = gpstime + waypointtime
+			arriveago = timeatstation - now
+
+			distancetext   = "%.1fkm from last fix" % waypointdist
+			currentdist = speedmadegood * (timeatstation - now) / 3600000
+			currenttext   = "%.1fkm from est.veh" % currentdist
+
+			cdd["text_stationdist"]   = distancetext
+			cdd["text_currentdist"]   = currenttext
+
+			arrivetext="%s - %s" % (hours(timeatstation),elapsed(arriveago))
+			
+		cdd["text_arrivestation"] = arrivetext
+								
 
 		###
 		###   UBAT FLOW DISPLAY

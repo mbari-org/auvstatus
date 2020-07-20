@@ -19,7 +19,7 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st13{font-size:7px;}
 	.st14{font-family:HelveticaNeue-Medium, Helvetica, Arial, sans-serif; }
 	.st15{font-size:11px;}
-	.st16{fill:#929090;} <!-- Arrow gray-->
+	.st16{fill:#A2A0A0;} <!-- Arrow gray-->
 	.st17{fill:#e3cfa7;} <!-- DirtBrown-->
 	.st18{fill:none;stroke:none; } <!--invisible-->
 	.st19{fill:#555555;stroke:#000000;stroke-miterlimit:10;}  <!-- Cart color -->
@@ -128,6 +128,12 @@ svgtext = '''
 <circle desc="BT2" class="{color_bt2}" cx="546.72" cy="225.78" r="4.07"/>
 <circle desc="BT1" class="{color_bt1}" cx="535.99" cy="225.78" r="4.07"/>
 -->
+<g desc="arrow">
+	<rect x="594.14" y="256.24" class="{color_arrow}" width="11.73" height="7"/>
+	<g>
+		<polygon class="{color_arrow}" points="618.22,259.74 600.81,266.86 604.94,259.74 600.81,252.63 		"/>
+	</g>
+</g>
 
 <!-- Dynamic values -->
 <text desc="mission" transform="matrix(1 0 0 1 482.0 186)" class="st9 st10 st12">{text_mission}</text>
@@ -137,8 +143,8 @@ svgtext = '''
 <text desc="test_notetime" transform="matrix(1 0 0 1 134 180)" class="st12 st9 st24">{text_notetime}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
-<text desc="text_bearing" transform="matrix(1 0 0 1 598 250)" class="st9 st10">{text_bearing}</text>
-<text desc="text_thrusttime" transform="matrix(1 0 0 1 598 276.3205)" class="st9 st10">{text_thrusttime}</text>
+<text desc="text_bearing" transform="matrix(1 0 0 1 596 262.3)" class="st9 st13">{text_bearing}</text>
+<text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">{text_thrusttime}</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">{text_nextcomm}</text>
 <text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
@@ -155,8 +161,12 @@ svgtext = '''
 <text desc="text_speed" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">{text_speed}<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
-<text desc="reckoned_detail" transform="matrix(1 0 0 1 599 294)" class="st12 st9 st24">{text_reckondistance}</text>
+<text desc="reckoned_detail" transform="matrix(1 0 0 1 592 294)" class="st12 st9 st24">{text_reckondistance}</text>
+<text desc="text_arrivestation" transform="matrix(1 0 0 1 582 230)" class="st9 st13">{text_arrivestation}</text>
+<text desc="text_stationdist" transform="matrix(1 0 0 1 582 238)" class="st12 st9 st24">{text_stationdist}</text>
+<text desc="text_currentdist" transform="matrix(1 0 0 1 582 245)" class="st12 st9 st24">{text_currentdist}</text>
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">{text_dvlstatus}</text>
+
 
 <!-- Static labels -->  
 <text transform="matrix(1 0 0 1 439.0 186)" class="st9 st10">MISSION:</text>
@@ -164,7 +174,7 @@ svgtext = '''
 '''
 svglabels='''
 <!-- create new variable for these -->
-<text desc="reckoned_label" transform="matrix(1 0 0 1 599 287)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
+<text desc="reckoned_label" transform="matrix(1 0 0 1 592 287)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
@@ -181,6 +191,7 @@ svglabels='''
 <text transform="matrix(1 0 0 1 291.6499 221.6039)" class="st9 st10">Cell comms</text>
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
+<text desc="arrive_label" transform="matrix(1 0 0 1 580 222)" class="st12 st9 st24">Arrive Station (beta)</text>
 '''
 
 svgbadbattery='''<g><title>Bad battery cell detected</title>
@@ -200,32 +211,11 @@ svgpontus='''
 <text desc="" transform="matrix(1 0 0 1 551.3628 263.259)" class="st9 st10">FLOW</text>
 '''
 
-svgtail = '''<g desc="arrow">
-	<rect x="594.14" y="256.24" class="st16" width="11.73" height="7"/>
-	<g>
-		<polygon class="st16" points="618.22,259.74 600.81,266.86 604.94,259.74 600.81,252.63 		"/>
-	</g>
-</g>
-
+svgtail = '''
 </svg>
 '''
 
-# svgerrorhead =  '''<?xml version="1.0" encoding="utf-8"?>
-# <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-# 	 viewBox="120 155 534 176" xml:space="preserve">
-# <style type="text/css">
-# 	.st0{fill:#CFDEE2;} <!-- WaveColor -->
-# 	.st9{font-family:'HelveticaNeue';}
-# 	.st10{font-size:14px;}
-# 	.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
-# 	.st12{fill:#606060;}  <!--MidGray text -->
-# 	</style>
-# 	'''
-# svgerror ='''
-# 	<rect desc="backgroundbox" x="126.91" y="161.76" class="st0" width="514.08" height="156.08"/>
-# 	<text desc="text_vehicle" transform="matrix(1 0 0 1 398.7397 254.7336)" class="st9 st10 st12">{text_vehicle}-OFFLINE</text>
-# 	<text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st9 st10 st12">{text_lastupdate}</text>
-# </svg>'''
+
 
 svgerrorhead =  '''<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" 
 	id="Layer_1" width="514" height="156" viewbox = "0 0 514 156" xml:space="preserve">
