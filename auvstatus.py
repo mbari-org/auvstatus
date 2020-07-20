@@ -1269,7 +1269,7 @@ else:   #not opt report
 	if gf=="NA":
 		gfnum = 3
 	elif gf and gf != "OK":
-		gfnum=int(4+ 1*(float(gf)>0.08) + 1*(float(gf)>0.2))
+		gfnum=int(4+ 1*(abs(float(gf))>0.08) + 1*(abs(float(gf))>0.2))
 	else:
 		gfnum=4    # OK means no GF. NA is no data
 
