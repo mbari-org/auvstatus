@@ -27,6 +27,9 @@ Scripts and cron jobs are run in the `widget` folder on the server.
 ## TODO
 
   * Long list of TODOs in the code, and see [Issues](https://bitbucket.org/beroe/auvstatus/issues?status=new&status=open) for more
+## LEGEND:
+
+![Widget Legend](./legend.png)
 
 ## UPDATED API
 ```
