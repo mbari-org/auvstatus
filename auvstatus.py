@@ -618,7 +618,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				if DEBUG:
 					print >> sys.stderr, "## Got CLEAR"
 					
-		# SETTING STATION. Will fail on multi-station missions..?		
+		# SETTING STATION. Will fail on multi-station missions..?
+		#		
 		
 		if StationLon == False and RecordText.startswith("got command set") and (".Lon" in RecordText or ".CenterLongitude" in RecordText):
 			if "itude" in RecordText:
@@ -649,9 +650,14 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 		## PARSE UBAT (make vehicle-specific
 		## PARSE SPEED # THis used to be ".Speed"
-		if Speed == False and Record["name"]=="CommandLine" and ".speedCmd" in RecordText and RecordText.startswith("got"):
-			Speed = "%.1f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
+		if Speed == 0 and Record["name"]=="CommandLine" and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText) and RecordText.startswith("got"):
+			if (".SpeedTransit" in RecordText):
+				Speed = "%.2f" % (float(Record["text"].split(".SpeedTransit")[1].strip().split(" ")[0]))
+			else:
+				Speed = "%.2f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
 			
+			if DEBUG:
+				print >> sys.stderr, "# FOUND SPEED:",Speed
 			# Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].split(" ")[0]))
 		
 	if not Speed:
@@ -1021,8 +1027,12 @@ if (not recovered) or DEBUG:
 	if not logtime:
 		logtime = startTime
 	
-	# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
-	postmission = getImportant(missionTime-60000,inputname="CommandLine")
+	if missionTime > 60000: 
+		querytime = missionTime-60000
+		# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
+		postmission = getImportant(querytime,inputname="CommandLine")
+	else:
+		postmission = ''
 	
 	if DEBUG:
 		print >> sys.stderr, "MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime
@@ -1057,7 +1067,9 @@ if (not recovered) or DEBUG:
 	
 	if (critical):
 		dropWeight,ThrusterServo = parseCritical(critical)
-		
+
+	DVLError=False
+	BadBattery=False
 	if faults:
 		BadBattery,DVLError = parseFaults(faults)
 
@@ -1349,7 +1361,11 @@ else:   #not opt report
 		if speed != 'na':
 	#		if DEBUG:
 	#			print >> sys.stderr, "#SPEED:",speed
-			cdd["text_speed"]= "%.1f" % speed + "m/s"
+			try:
+				cdd["text_speed"]= speed + "m/s"
+			except TypeError:
+				cdd["text_speed"]= "%.2f" % speed + "m/s"
+				
 		if Scheduled:
 			cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
 			cdd["color_scheduled"] = ['st27','st25'][Scheduled in mission_defaults]   
