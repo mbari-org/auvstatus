@@ -28,6 +28,7 @@ import os
 import urllib2
 import json
 import math
+import re
 from collections import deque
 from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead   # define the svg text?
 
@@ -400,7 +401,7 @@ def parseFaults(recordlist):
 		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"):
 			BadBattery=Record["unixTime"]
 			if DEBUG:
-				print >> sys.stderr,"\n\n## BAD BATTERY in FAULT\n\n"
+				print >> sys.stderr,"## BAD BATTERY in FAULT"
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder"] and "failed" in Record.get("text","NA").lower():
@@ -454,7 +455,7 @@ def parseMission(recordlist):
 		# if Record["name"]=="MissionManager":
 		if Record["name"]=="MissionManager" and Record["text"].startswith("Started mission"):
 			if DEBUG:
-				print >> sys.stderr,"## MISSION RECORD",Record
+				print >> sys.stderr,"\n\n## MISSION RECORD",Record
 			MissionName = Record.get("text","mission NA").split("mission ")[1]
 			MissionTime = Record["unixTime"]
 			break
@@ -542,6 +543,11 @@ def parseImptMisc(recordlist):
 	DVL_on = True
 	GotDVL = False
 	
+	StationLat=False
+	StationLon=False
+	myre =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
+
+
 	for Record in recordlist:
 		#if DEBUG:
 		#	print Record["name"],"<-->",Record.get("text","NO TEXT FIELD")
@@ -555,6 +561,14 @@ def parseImptMisc(recordlist):
 			Rowe_600
 			RDI_Pathfinder
 '''
+		if StationLon == False and Record["text"].startswith("Navigating to"):
+			textlat,textlon = myre.search(Record["text"].replace("arcdeg","")).groups()
+			if textlat:
+				StationLat = float(textlat)
+				StationLon = float(textlon)
+			if DEBUG:
+				print >> sys.stderr, "## Got LatLon from Navigating To", StationLat,StationLon
+
 		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
  		if GotDVL == False and (
@@ -582,7 +596,8 @@ def parseImptMisc(recordlist):
 			FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 			FlowTime   = Record["unixTime"]
 
-	return ubatStatus, ubatTime, FlowRate,FlowTime, LogTime, DVL_on
+	return ubatStatus, ubatTime, FlowRate,FlowTime, LogTime, DVL_on, StationLat, StationLon
+	
 
 def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	''' parse events that get reset after missions and might be default'''
@@ -600,11 +615,13 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	
 	if DEBUG:
 		print >>sys.stderr, "## Parsing defaults"
+		
+
 	for Record in recordlist:
 		RecordText = Record.get("text","NA")
 		
- 		if DEBUG and Record["name"] != 'CBIT':
- 			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",RecordText, "[{}]".format(Record["unixTime"])
+#  		if DEBUG and Record["name"] != 'CBIT':
+# 			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",RecordText, "[{}]".format(Record["unixTime"])
 			
 		## PARSE TIMEOUTS Assumes HOURS
 		if TimeoutDuration == False and \
@@ -635,6 +652,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 		# CHECK For Reached Waypoint: 36.821898,-121.885600   
 		# MOre parsing challenges: got command set IsothermDepthSampling.Lon1 -121.847000 degree [1595360755976]	
 		
+		# MIGHT NEED THIS TO GO BEFORE STARTING MISSION?
+		
 		if StationLon == False and RecordText.startswith("got command set") and (".Lon " in RecordText or ".CenterLongitude" in RecordText):
 			if "itude" in RecordText:
 				StationLon = RecordText.split("itude ")[1]
@@ -649,7 +668,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				StationLat = RecordText.split(".Lat ")[1]
 			StationLat = float(StationLat.split(" ")[0])
 			if DEBUG:
-				print >> sys.stderr, "## Got Lat", StationLat
+				print >> sys.stderr, "## Got Lat from mission", StationLat
 
 		## PARSE NEED COMMS Assumes MINUTES
 		if NeedComms == False and Record["name"]=="CommandLine" and RecordText.startswith("got command") and ".NeedCommsTime" in RecordText:
@@ -1047,7 +1066,7 @@ if (not recovered) or DEBUG:
 	important = getImportant(startTime)
 
 	missionName,missionTime = parseMission(important)
-	ubatStatus,ubatTime,flowrate,flowtime,logtime,DVLon  = parseImptMisc(important)
+	ubatStatus,ubatTime,flowrate,flowtime,logtime,DVLon,NavLat,NavLon  = parseImptMisc(important)
 	
 	gf,gftime = parseCBIT(gfrecords)
 
@@ -1069,7 +1088,9 @@ if (not recovered) or DEBUG:
 	
 
 	# Time to waypoint:
-	if abs(StationLat) > 0:
+	if abs(NavLon) > 0:
+		waypointtime,waypointdist = parseDistance(site,NavLat,NavLon,speedmadegood,bearing,gpstime)
+	elif abs(StationLat) > 0:
 		waypointtime,waypointdist = parseDistance(site,StationLat,StationLon,speedmadegood,bearing,gpstime)
 	else:
 		waypointtime = -2
