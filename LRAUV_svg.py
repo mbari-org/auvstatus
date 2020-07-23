@@ -167,7 +167,7 @@ svgtext = '''
 <text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
 <text desc="reckoned_detail" transform="matrix(1 0 0 1 592 294)" class="st12 st9 st24">{text_reckondistance}</text>
-<text desc="text_arrivestation" transform="matrix(1 0 0 1 582 230)" class="st9 st13">{text_arrivestation}</text>
+<text desc="text_arrivestation" transform="matrix(1 0 0 1 581 230)" class="st9 st13">{text_arrivestation}</text>
 <text desc="text_stationdist" transform="matrix(1 0 0 1 582 238)" class="st12 st9 st24">{text_stationdist}</text>
 <text desc="text_currentdist" transform="matrix(1 0 0 1 582 245)" class="st12 st9 st24">{text_currentdist}</text>
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">{text_dvlstatus}</text>
