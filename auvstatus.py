@@ -352,23 +352,35 @@ def parseCritical(recordlist):
 	'''Maybe some of these are in logFault?'''
 	Drop          = False
 	ThrusterServo = False
-
+	CriticalError = ""
+	CriticalTime  = False
 	
 	# if DEBUG:
 	# 	print "### Start Recordlist"
 	# 	print recordlist
 	# 	print "### End Recordlist"
 	# 	# need to split this record?
+	'''WATER DETECTED IN PRESSURE HULL. BURNWIRE ACTIVATED CBIT'''
+	
 	
 	for Record in recordlist:
+		RecordText = Record.get("text","NA")
 		# if DEBUG:
 		# 	print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
-		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
+		if "burnwire activated" in RecordText.lower():
+			Drop = Record["unixTime"]
+		if (not ThrusterServo) and RecordText=="ThrusterServo":
 			ThrusterServo = Record["unixTime"]
+		elif (not CriticalError) and not RecordText.startswith("Could not open") and not Record["name"] == "NAL9602" and not "NAL9602" in RecordText and not "Hardware Fault in component" in RecordText:
+			CriticalError = RecordText[:41]
+			if len(RecordText)> 41:
+				CriticalError += "..."
+			CriticalTime = Record["unixTime"]
+			
 		# if Record["name"]=="CBIT" and Record.get("text","NA").startswith("LAST"):
-	return Drop, ThrusterServo
+	return Drop, ThrusterServo, CriticalError, CriticalTime
 
 def parseFaults(recordlist):
 	'''https://okeanids.mbari.org/TethysDash/api/events?vehicles=brizo&eventTypes=logFault&from=1591731032512
@@ -591,8 +603,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	for Record in recordlist:
 		RecordText = Record.get("text","NA")
 		
-# 		if DEBUG and Record["name"] != 'CBIT':
-# 			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",RecordText, "[{}]".format(Record["unixTime"])
+ 		if DEBUG and Record["name"] != 'CBIT':
+ 			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",RecordText, "[{}]".format(Record["unixTime"])
 			
 		## PARSE TIMEOUTS Assumes HOURS
 		if TimeoutDuration == False and \
@@ -604,6 +616,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				print >> sys.stderr, "# Found TimeOut of ",TimeoutDuration
 			TimeoutStart    = Record["unixTime"]
 			
+			"esp samples have 3h timeout"
 		if Scheduled == False and not Cleared and Record["name"]=="CommandLine" and \
 				RecordText.startswith('got command schedule "run'):
 			'''got command schedule "run Science/mbts_sci2.xml"'''
@@ -619,20 +632,21 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					print >> sys.stderr, "## Got CLEAR"
 					
 		# SETTING STATION. Will fail on multi-station missions..?
-		#		
+		# CHECK For Reached Waypoint: 36.821898,-121.885600   
+		# MOre parsing challenges: got command set IsothermDepthSampling.Lon1 -121.847000 degree [1595360755976]	
 		
-		if StationLon == False and RecordText.startswith("got command set") and (".Lon" in RecordText or ".CenterLongitude" in RecordText):
+		if StationLon == False and RecordText.startswith("got command set") and (".Lon " in RecordText or ".CenterLongitude" in RecordText):
 			if "itude" in RecordText:
 				StationLon = RecordText.split("itude ")[1]
 			else:
-				StationLon = RecordText.split("Lon ")[1]
+				StationLon = RecordText.split(".Lon ")[1]
 			StationLon = float(StationLon.split(" ")[0])
 
-		if StationLat == False and RecordText.startswith("got command set") and (".Lat" in RecordText or ".CenterLatitude" in RecordText):
+		if StationLat == False and RecordText.startswith("got command set") and (".Lat " in RecordText or ".CenterLatitude" in RecordText):
 			if "itude" in RecordText:
 				StationLat = RecordText.split("itude ")[1]
 			else:
-				StationLat = RecordText.split("Lat ")[1]
+				StationLat = RecordText.split(".Lat ")[1]
 			StationLat = float(StationLat.split(" ")[0])
 			if DEBUG:
 				print >> sys.stderr, "## Got Lat", StationLat
@@ -641,7 +655,11 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 		if NeedComms == False and Record["name"]=="CommandLine" and RecordText.startswith("got command") and ".NeedCommsTime" in RecordText:
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
-			NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
+			try:
+				NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
+			except IndexError:
+				NeedComms = int(float(Record["text"].split("NeedCommsTimeInTransect ")[1].split(" ")[0]))
+				
 			if DEBUG:
 				print >> sys.stderr, "#FOUND NEEDCOMMS",NeedComms
 			## ADD FLOW RATE FOR UBAT...
@@ -650,11 +668,17 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 		## PARSE UBAT (make vehicle-specific
 		## PARSE SPEED # THis used to be ".Speed"
-		if Speed == 0 and Record["name"]=="CommandLine" and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText) and RecordText.startswith("got"):
+		if Speed == 0 and Record["name"]=="CommandLine" and ("set" in RecordText) and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText or "ApproachSpeed" in RecordText) and RecordText.startswith("got"):
 			if (".SpeedTransit" in RecordText):
 				Speed = "%.2f" % (float(Record["text"].split(".SpeedTransit")[1].strip().split(" ")[0]))
+			elif (".ApproachSpeed" in RecordText):
+				Speed = "%.2f" % (float(Record["text"].split(".ApproachSpeed")[1].strip().split(" ")[0]))
 			else:
-				Speed = "%.2f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
+				try:
+					Speed = "%.2f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
+				except ValueError:
+					print >> sys.stderr, "Error parsing speed",Record["text"]
+					Speed = "na"
 			
 			if DEBUG:
 				print >> sys.stderr, "# FOUND SPEED:",Speed
@@ -736,7 +760,7 @@ def elapsed(rawdur):
 
 def parseDistance(site,StationLat,StationLon,knownspeed,knownbearing,gpstime):
 	''' using already calculated reckoned speed, get distance and time to last waypoint'''
-	if knownspeed > 0 and abs(site[0]) > 1:
+	if knownspeed > 0.09 and abs(site[0]) > 1:
 		deltadist,deltat,speedmadegood,bearing = distance((StationLat,StationLon),3600000,site,7200000)
 		if DEBUG:
 			print >> sys.stderr, "# StationDistance, bearing:", deltadist,bearing
@@ -753,7 +777,7 @@ def parseDistance(site,StationLat,StationLon,knownspeed,knownbearing,gpstime):
 		else:
 			return -1,deltadist							  
 	else:
-		return -1,0
+		return -2,0
 		
 
 
@@ -911,7 +935,9 @@ def sim():
 	"text_arrivestation"  : "12:34 in 1h 12m",
 	"text_stationdist"    : "4.5km",
 	"text_stationdist"    : "1.2km",
-	"text_scheduled"      : "SCHEDULED: keep_station"
+	"text_scheduled"      : "SCHEDULED: keep_station",
+	"text_criticaltime"   : "12:34",
+	"text_criticalerror"   : "SW LEAK"
 	}
 
 
@@ -979,9 +1005,10 @@ mission_defaults = {
 	"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45,  "Speed":0.1 },
 	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1 },
-	"calibrate_sparton_compass"      : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
-	"SpartonCompassCal"      : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
-	"spiral_cast"      : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 }
+	"esp_sample_at_depth"        : {"MissionTimeout": 4,   "NeedCommsTime":180,  "Speed":.7 },
+	"calibrate_sparton_compass"  : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
+	"SpartonCompassCal"          : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
+	"spiral_cast"                : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 }
 }
 
 #########
@@ -1045,7 +1072,7 @@ if (not recovered) or DEBUG:
 	if abs(StationLat) > 0:
 		waypointtime,waypointdist = parseDistance(site,StationLat,StationLon,speedmadegood,bearing,gpstime)
 	else:
-		waypointtime = -1
+		waypointtime = -2
 
 			
 
@@ -1066,7 +1093,9 @@ if (not recovered) or DEBUG:
 	
 	
 	if (critical):
-		dropWeight,ThrusterServo = parseCritical(critical)
+		if DEBUG:
+			print >> sys.stderr,"# CRITICAL "
+		dropWeight,ThrusterServo,CriticalError,CriticalTime = parseCritical(critical)
 
 	DVLError=False
 	BadBattery=False
@@ -1242,7 +1271,9 @@ else:   #not opt report
 	"text_gpsago",
 	"text_logago",	
 	"text_dvlstatus",
-	"text_logtime" ]
+	"text_logtime",
+
+ ]
 	
 	for tname in textnames:
 		cdd[tname]='na'
@@ -1251,7 +1282,9 @@ else:   #not opt report
 	specialnames=[
 	"text_vehicle","text_lastupdate",
 	"text_note", "text_notetime","text_scheduled","text_arrivestation",
-	"text_stationdist","text_currentdist"
+	"text_stationdist","text_currentdist",	"text_criticaltime",
+	"text_criticalerror"
+
 
 
 	]
@@ -1425,10 +1458,12 @@ else:   #not opt report
 		if DEBUG and (waypointtime >= 0):
 			print >> sys.stderr, "TIME TO STATION from GPS TIME, not now:",hours(waypointtime),elapsed(waypointtime)
 		if waypointtime == -1:
-			arrivetext = "Now, or no data"
+			arrivetext = "On Station %.1f km" % waypointdist
+		elif waypointtime == -2:
+			arrivetext = "Nav missing"
 		# Cheating by storing heading in waypointtime if mismatch in function
 		elif waypointtime < 361:
-			 	arrivetext = "Heading mismatch:",waypointtime
+			 arrivetext = "Heading? %d" % waypointtime
 		else:
 			timeatstation = gpstime + waypointtime
 			arriveago = timeatstation - now
@@ -1542,6 +1577,9 @@ else:   #not opt report
 			DVLcolor = 'st5'
 			cdd["text_dvlstatus"]="OFF"
 		
+		if CriticalError:
+			cdd["text_criticalerror"] = "CRITICAL: "+ CriticalError
+			cdd["text_criticaltime"]  = elapsed(CriticalTime-now)
 			
 		cdd["color_dvl"] = DVLcolor
 

@@ -31,6 +31,11 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st25{fill:#5AC1A4;stroke:none; } <!--Green No Stroke -->
 	.st26{fill:#FFE850;stroke:none; } <!--Yellow No Stroke -->
 	.st27{fill:#EF9D30;stroke:none; } <!--Orange No Stroke -->	
+	
+	.st28{fill:#333333; } <!-- DarkGray Fill-->
+	.st30{font-size:8px;} 
+	.st31{fill:#B4372D;} <!-- Maroon text-->
+
 	</style>
 '''
 
@@ -166,6 +171,9 @@ svgtext = '''
 <text desc="text_stationdist" transform="matrix(1 0 0 1 582 238)" class="st12 st9 st24">{text_stationdist}</text>
 <text desc="text_currentdist" transform="matrix(1 0 0 1 582 245)" class="st12 st9 st24">{text_currentdist}</text>
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">{text_dvlstatus}</text>
+<text desc="text_criticalerror" transform="matrix(1 0 0 1 154.0 176)" class="st9 st30 st31">{text_criticalerror}</text>
+<text desc="text_criticaltime" transform="matrix(1 0 0 1 156 183)" class="st12 st9 st13">{text_criticaltime}</text>
+
 
 
 <!-- Static labels -->  
@@ -228,7 +236,7 @@ svgerrorhead =  '''<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://w
 	</style>
 '''
 svgerror ='''<rect desc="backgroundbox" class="st0" width="512" height="154"/>
-		<text desc="text_vehicle" x="50%" y="40%" text-anchor="middle" class="st9 st10 st12">TRANSITIONING: {text_vehicle}</text>
+		<text desc="text_vehicle" x="50%" y="40%" text-anchor="middle" class="st9 st10 st12">COMMS INTERRUPTED: {text_vehicle}</text>
 		<text desc="text_lastupdate" x="50%" y="55%" text-anchor="middle" class="st9 st10 st12">{text_lastupdate}</text>
 		
 </svg>
