@@ -540,7 +540,7 @@ def parseImptMisc(recordlist):
 	FlowTime = False
 	
 	LogTime = False
-	DVL_on = True
+	DVL_on = False
 	GotDVL = False
 	
 	StationLat=False
@@ -704,11 +704,13 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 		## PARSE UBAT (make vehicle-specific
 		## PARSE SPEED # THis used to be ".Speed"
-		if Speed == 0 and Record["name"]=="CommandLine" and ("set" in RecordText) and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText or "ApproachSpeed" in RecordText) and RecordText.startswith("got"):
+		if Speed == 0 and Record["name"]=="CommandLine" and ("set" in RecordText) and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText or "ApproachSpeed" in RecordText or ".Speed " in RecordText) and RecordText.startswith("got"):
 			if (".SpeedTransit" in RecordText):
 				Speed = "%.2f" % (float(Record["text"].split(".SpeedTransit")[1].strip().split(" ")[0]))
 			elif (".ApproachSpeed" in RecordText):
 				Speed = "%.2f" % (float(Record["text"].split(".ApproachSpeed")[1].strip().split(" ")[0]))
+			elif (".Speed" in RecordText):
+				Speed = "%.2f" % (float(Record["text"].split(".Speed")[1].strip().split(" ")[0]))
 			else:
 				try:
 					Speed = "%.2f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
