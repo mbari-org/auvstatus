@@ -101,6 +101,7 @@ svgtext = '''
 <circle desc="bat5" class="{color_bat5}" cx="349" cy="241.38" r="4"/>
 <circle desc="bat6" class="{color_bat6}" cx="359" cy="241.38" r="4"/>
 <circle desc="bat7" class="{color_bat7}" cx="369" cy="241.38" r="4"/>
+<circle desc="bat8" class="{color_bat8}" cx="379" cy="241.38" r="4"/>
 </g>
 
 

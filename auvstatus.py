@@ -913,6 +913,7 @@ def sim():
 	"color_bat5"           : "st6",
 	"color_bat6"           : "st6",
 	"color_bat7"           : "st6",
+	"color_bat8"           : "st6",
 	"color_satcomm"        : "st5",
 	"color_cell"           : "st6",
 	"color_gps"            : "st4",
@@ -1256,7 +1257,7 @@ else:   #not opt report
 	"color_bat5",
 	"color_bat6",
 	"color_bat7",
-	# "color_bat8",
+	"color_bat8",
 	"color_satcomm",
 	"color_cell",
 	"color_gps",
@@ -1604,15 +1605,15 @@ else:   #not opt report
 		if volt > 0:
 			cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range
 			cdd["color_volts"] = "st{}".format(voltnum)
-			cdd["color_bat1"] = ['st4',LowBattColor][volt <= 13.5]
-			cdd["color_bat2"] = ['st4',LowBattColor][volt < 14.0]
+			cdd["color_bat1"] = ['st4',LowBattColor][volt <= 13.6]
+			cdd["color_bat2"] = ['st4',LowBattColor][volt < 14.1]
 			cdd["color_bat3"] = ['st4',LowBattColor][volt < 14.5]
-			cdd["color_bat4"] = ['st4',LowBattColor][volt < 15.0]
-			cdd["color_bat5"] = ['st4',LowBattColor][volt < 15.5]
-			cdd["color_bat6"] = ['st4',LowBattColor][volt < 16.0]
-			cdd["color_bat7"] = ['st4',LowBattColor][volt < 16.5]
+			cdd["color_bat4"] = ['st4',LowBattColor][volt < 14.9]
+			cdd["color_bat5"] = ['st4',LowBattColor][volt < 15.3]
+			cdd["color_bat6"] = ['st4',LowBattColor][volt < 15.7]
+			cdd["color_bat7"] = ['st4',LowBattColor][volt < 16.1]
+			cdd["color_bat8"] = ['st4',LowBattColor][volt < 16.5]
 		
-		# cdd["color_bat8"] = ['st4','st6'][volt < 16.5]
 
 		if DVLError:
 			DVLcolor = 'st6'
