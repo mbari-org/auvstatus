@@ -1,0 +1,50 @@
+svghead = '''<svg id="Layer_1" data-name="Layer 1" 
+xmlns="http://www.w3.org/2000/svg"  
+x="0px" y="0px" viewBox="0 0 440 330" xml:space="preserve">
+
+
+
+ <defs>
+ <style>
+ .st1 { fill: #dcddde; }
+ .st2, .st3 { fill: #fff; }
+ .st2 { stroke: #9b509f; }
+ .st10, .st2, .st3 { stroke-miterlimit: 10; }
+ .st10, .st2 { stroke-width: 2px; }
+ .st3 { stroke: #231f20; }
+ .st4 { fill: #ef972c; }
+ .st5 { fill: #727373; }
+ .st6 { fill: #5cba48; }
+ .st7, .st8, .st9 { font-size: 7px; }
+ .st7, .st8 { fill: #231f20; }
+ .st7, .st9 { font-family: Helvetica; }
+ .st8 { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
+ .st9 { fill: #919396; }
+ .st10 { fill: none; stroke: #fff; }
+
+ .fill_gray { fill: #dcddde; }
+ .fill_white { fill: #fff; }
+ .stroke_purple { stroke: #9b509f; fill:none; stroke-width: 2px; }
+ .stroke_black  { stroke: #000; fill:none; stroke-width: 2px; }
+ .stroke_2px { stroke-width: 2px; }
+ .stroke_white { fill: none; stroke: #fff; }
+ .stroke_darkGray { stroke: #231f20; fill: none; stroke-width: 2px;}
+ .fill_orange { fill: #ef972c; }
+ .fill_lightgray { fill: #727373; }
+ .fill_green { fill: #5cba48; }
+ .font_size7 { font-size: 7px; }
+ .fill_darkgray { fill: #231f20; }
+ .font_helv { font-family: Helvetica; }
+ .font_helvBold { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
+ .fill_lightergray { fill: #919396; }
+    </style>
+  </defs>
+  <rect class="fill_gray" x="3.91" width="400" height="300"/> 
+  '''
+  
+#  <circle class="st2" cx="21.29" cy="24.04" r="15"/>
+ 
+svgtail=''' 
+
+</svg>
+'''

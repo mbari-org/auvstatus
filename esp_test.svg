@@ -1,0 +1,590 @@
+<svg id="Layer_1" data-name="Layer 1" 
+xmlns="http://www.w3.org/2000/svg"  
+x="0px" y="0px" viewBox="0 0 440 330" xml:space="preserve">
+
+
+
+ <defs>
+ <style>
+ .st1 { fill: #dcddde; }
+ .st2, .st3 { fill: #fff; }
+ .st2 { stroke: #9b509f; }
+ .st10, .st2, .st3 { stroke-miterlimit: 10; }
+ .st10, .st2 { stroke-width: 2px; }
+ .st3 { stroke: #231f20; }
+ .st4 { fill: #ef972c; }
+ .st5 { fill: #727373; }
+ .st6 { fill: #5cba48; }
+ .st7, .st8, .st9 { font-size: 7px; }
+ .st7, .st8 { fill: #231f20; }
+ .st7, .st9 { font-family: Helvetica; }
+ .st8 { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
+ .st9 { fill: #919396; }
+ .st10 { fill: none; stroke: #fff; }
+
+ .fill_gray { fill: #dcddde; }
+ .fill_white { fill: #fff; }
+ .stroke_purple { stroke: #9b509f; fill:none; stroke-width: 2px; }
+ .stroke_black  { stroke: #000; fill:none; stroke-width: 2px; }
+ .stroke_2px { stroke-width: 2px; }
+ .stroke_white { fill: none; stroke: #fff; }
+ .stroke_darkGray { stroke: #231f20; fill: none; stroke-width: 2px;}
+ .fill_orange { fill: #ef972c; }
+ .fill_lightgray { fill: #727373; }
+ .fill_green { fill: #5cba48; }
+ .font_size7 { font-size: 7px; }
+ .fill_darkgray { fill: #231f20; }
+ .font_helv { font-family: Helvetica; }
+ .font_helvBold { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
+ .fill_lightergray { fill: #919396; }
+    </style>
+  </defs>
+  <rect class="fill_gray" x="3.91" width="400" height="300"/> 
+  
+<circle desc="c_big_01" class="stroke_darkGray" cx="31" cy="24" r="13"/>
+<circle desc="c_big_02" class="stroke_darkGray" cx="63" cy="24" r="13"/>
+<circle desc="c_big_03" class="stroke_darkGray" cx="95" cy="24" r="13"/>
+<circle desc="c_big_04" class="stroke_darkGray" cx="127" cy="24" r="13"/>
+<circle desc="c_big_05" class="stroke_darkGray" cx="159" cy="24" r="13"/>
+<circle desc="c_big_06" class="stroke_darkGray" cx="191" cy="24" r="13"/>
+<circle desc="c_big_07" class="stroke_darkGray" cx="223" cy="24" r="13"/>
+<circle desc="c_big_08" class="stroke_darkGray" cx="255" cy="24" r="13"/>
+<circle desc="c_big_09" class="stroke_darkGray" cx="287" cy="24" r="13"/>
+<circle desc="c_big_10" class="stroke_darkGray" cx="319" cy="24" r="13"/>
+<circle desc="c_big_11" class="stroke_purple" cx="31" cy="64" r="13"/>
+<circle desc="c_big_12" class="stroke_darkGray" cx="63" cy="64" r="13"/>
+<circle desc="c_big_13" class="stroke_darkGray" cx="95" cy="64" r="13"/>
+<circle desc="c_big_14" class="stroke_darkGray" cx="127" cy="64" r="13"/>
+<circle desc="c_big_15" class="stroke_darkGray" cx="159" cy="64" r="13"/>
+<circle desc="c_big_16" class="stroke_darkGray" cx="191" cy="64" r="13"/>
+<circle desc="c_big_17" class="stroke_darkGray" cx="223" cy="64" r="13"/>
+<circle desc="c_big_18" class="stroke_darkGray" cx="255" cy="64" r="13"/>
+<circle desc="c_big_19" class="stroke_darkGray" cx="287" cy="64" r="13"/>
+<circle desc="c_big_20" class="stroke_darkGray" cx="319" cy="64" r="13"/>
+<circle desc="c_big_21" class="stroke_darkGray" cx="31" cy="104" r="13"/>
+<circle desc="c_big_22" class="stroke_purple" cx="63" cy="104" r="13"/>
+<circle desc="c_big_23" class="stroke_darkGray" cx="95" cy="104" r="13"/>
+<circle desc="c_big_24" class="stroke_darkGray" cx="127" cy="104" r="13"/>
+<circle desc="c_big_25" class="stroke_darkGray" cx="159" cy="104" r="13"/>
+<circle desc="c_big_26" class="stroke_darkGray" cx="191" cy="104" r="13"/>
+<circle desc="c_big_27" class="stroke_darkGray" cx="223" cy="104" r="13"/>
+<circle desc="c_big_28" class="stroke_darkGray" cx="255" cy="104" r="13"/>
+<circle desc="c_big_29" class="stroke_darkGray" cx="287" cy="104" r="13"/>
+<circle desc="c_big_30" class="stroke_darkGray" cx="319" cy="104" r="13"/>
+<circle desc="c_big_31" class="stroke_darkGray" cx="31" cy="144" r="13"/>
+<circle desc="c_big_32" class="stroke_darkGray" cx="63" cy="144" r="13"/>
+<circle desc="c_big_33" class="stroke_purple" cx="95" cy="144" r="13"/>
+<circle desc="c_big_34" class="stroke_darkGray" cx="127" cy="144" r="13"/>
+<circle desc="c_big_35" class="stroke_darkGray" cx="159" cy="144" r="13"/>
+<circle desc="c_big_36" class="stroke_darkGray" cx="191" cy="144" r="13"/>
+<circle desc="c_big_37" class="stroke_darkGray" cx="223" cy="144" r="13"/>
+<circle desc="c_big_38" class="stroke_darkGray" cx="255" cy="144" r="13"/>
+<circle desc="c_big_39" class="stroke_darkGray" cx="287" cy="144" r="13"/>
+<circle desc="c_big_40" class="stroke_darkGray" cx="319" cy="144" r="13"/>
+<circle desc="c_big_41" class="stroke_darkGray" cx="31" cy="184" r="13"/>
+<circle desc="c_big_42" class="stroke_darkGray" cx="63" cy="184" r="13"/>
+<circle desc="c_big_43" class="stroke_darkGray" cx="95" cy="184" r="13"/>
+<circle desc="c_big_44" class="stroke_purple" cx="127" cy="184" r="13"/>
+<circle desc="c_big_45" class="stroke_darkGray" cx="159" cy="184" r="13"/>
+<circle desc="c_big_46" class="stroke_darkGray" cx="191" cy="184" r="13"/>
+<circle desc="c_big_47" class="stroke_darkGray" cx="223" cy="184" r="13"/>
+<circle desc="c_big_48" class="stroke_darkGray" cx="255" cy="184" r="13"/>
+<circle desc="c_big_49" class="stroke_darkGray" cx="287" cy="184" r="13"/>
+<circle desc="c_big_50" class="stroke_darkGray" cx="319" cy="184" r="13"/>
+<circle desc="c_big_51" class="stroke_darkGray" cx="31" cy="224" r="13"/>
+<circle desc="c_big_52" class="stroke_darkGray" cx="63" cy="224" r="13"/>
+<circle desc="c_big_53" class="stroke_darkGray" cx="95" cy="224" r="13"/>
+<circle desc="c_big_54" class="stroke_darkGray" cx="127" cy="224" r="13"/>
+<circle desc="c_big_55" class="stroke_purple" cx="159" cy="224" r="13"/>
+<circle desc="c_big_56" class="stroke_darkGray" cx="191" cy="224" r="13"/>
+<circle desc="c_big_57" class="stroke_darkGray" cx="223" cy="224" r="13"/>
+<circle desc="c_big_58" class="stroke_darkGray" cx="255" cy="224" r="13"/>
+<circle desc="c_big_59" class="stroke_darkGray" cx="287" cy="224" r="13"/>
+<circle desc="c_big_60" class="stroke_darkGray" cx="319" cy="224" r="13"/>
+
+
+	<circle r="10" cx="31" cy="24" class="fill_green"></circle>
+	<circle desc="pie_01" r="5.0" cx="31" cy="24" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="0.31416 31.416"
+	transform="rotate(-90) translate(-55 7)"></circle>
+	
+	<circle r="10" cx="63" cy="24" class="fill_green"></circle>
+	<circle desc="pie_02" r="5.0" cx="63" cy="24" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="0.62832 31.416"
+	transform="rotate(-90) translate(-87 39)"></circle>
+	
+	<circle r="10" cx="95" cy="24" class="fill_green"></circle>
+	<circle desc="pie_03" r="5.0" cx="95" cy="24" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="0.9424799999999999 31.416"
+	transform="rotate(-90) translate(-119 71)"></circle>
+	
+	<circle r="10" cx="127" cy="24" class="fill_green"></circle>
+	<circle desc="pie_04" r="5.0" cx="127" cy="24" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="1.25664 31.416"
+	transform="rotate(-90) translate(-151 103)"></circle>
+	
+	<circle r="10" cx="159" cy="24" class="fill_green"></circle>
+	<circle desc="pie_05" r="5.0" cx="159" cy="24" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="1.5708000000000002 31.416"
+	transform="rotate(-90) translate(-183 135)"></circle>
+	
+	<circle r="10" cx="191" cy="24" class="fill_green"></circle>
+	<circle desc="pie_06" r="5.0" cx="191" cy="24" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="1.8849599999999997 31.416"
+	transform="rotate(-90) translate(-215 167)"></circle>
+	
+	<circle r="10" cx="223" cy="24" class="fill_green"></circle>
+	<circle desc="pie_07" r="5.0" cx="223" cy="24" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="2.1991199999999997 31.416"
+	transform="rotate(-90) translate(-247 199)"></circle>
+	
+	<circle r="10" cx="255" cy="24" class="fill_green"></circle>
+	<circle desc="pie_08" r="5.0" cx="255" cy="24" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="2.51328 31.416"
+	transform="rotate(-90) translate(-279 231)"></circle>
+	
+	<circle r="10" cx="287" cy="24" class="fill_green"></circle>
+	<circle desc="pie_09" r="5.0" cx="287" cy="24" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="2.82744 31.416"
+	transform="rotate(-90) translate(-311 263)"></circle>
+	
+	<circle r="10" cx="319" cy="24" class="fill_green"></circle>
+	<circle desc="pie_10" r="5.0" cx="319" cy="24" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="3.1416000000000004 31.416"
+	transform="rotate(-90) translate(-343 295)"></circle>
+	
+	<circle r="10" cx="31" cy="64" class="fill_green"></circle>
+	<circle desc="pie_11" r="5.0" cx="31" cy="64" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="3.45576 31.416"
+	transform="rotate(-90) translate(-95 -33)"></circle>
+	
+	<circle r="10" cx="63" cy="64" class="fill_green"></circle>
+	<circle desc="pie_12" r="5.0" cx="63" cy="64" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="3.7699199999999995 31.416"
+	transform="rotate(-90) translate(-127 -1)"></circle>
+	
+	<circle r="10" cx="95" cy="64" class="fill_green"></circle>
+	<circle desc="pie_13" r="5.0" cx="95" cy="64" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="4.08408 31.416"
+	transform="rotate(-90) translate(-159 31)"></circle>
+	
+	<circle r="10" cx="127" cy="64" class="fill_green"></circle>
+	<circle desc="pie_14" r="5.0" cx="127" cy="64" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="4.3982399999999995 31.416"
+	transform="rotate(-90) translate(-191 63)"></circle>
+	
+	<circle r="10" cx="159" cy="64" class="fill_green"></circle>
+	<circle desc="pie_15" r="5.0" cx="159" cy="64" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="4.7124 31.416"
+	transform="rotate(-90) translate(-223 95)"></circle>
+	
+	<circle r="10" cx="191" cy="64" class="fill_green"></circle>
+	<circle desc="pie_16" r="5.0" cx="191" cy="64" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="5.02656 31.416"
+	transform="rotate(-90) translate(-255 127)"></circle>
+	
+	<circle r="10" cx="223" cy="64" class="fill_green"></circle>
+	<circle desc="pie_17" r="5.0" cx="223" cy="64" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="5.34072 31.416"
+	transform="rotate(-90) translate(-287 159)"></circle>
+	
+	<circle r="10" cx="255" cy="64" class="fill_green"></circle>
+	<circle desc="pie_18" r="5.0" cx="255" cy="64" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="5.65488 31.416"
+	transform="rotate(-90) translate(-319 191)"></circle>
+	
+	<circle r="10" cx="287" cy="64" class="fill_green"></circle>
+	<circle desc="pie_19" r="5.0" cx="287" cy="64" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="5.96904 31.416"
+	transform="rotate(-90) translate(-351 223)"></circle>
+	
+	<circle r="10" cx="319" cy="64" class="fill_green"></circle>
+	<circle desc="pie_20" r="5.0" cx="319" cy="64" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="6.283200000000001 31.416"
+	transform="rotate(-90) translate(-383 255)"></circle>
+	
+	<circle r="10" cx="31" cy="104" class="fill_green"></circle>
+	<circle desc="pie_21" r="5.0" cx="31" cy="104" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="6.597360000000001 31.416"
+	transform="rotate(-90) translate(-135 -73)"></circle>
+	
+	<circle r="10" cx="63" cy="104" class="fill_green"></circle>
+	<circle desc="pie_22" r="5.0" cx="63" cy="104" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="6.91152 31.416"
+	transform="rotate(-90) translate(-167 -41)"></circle>
+	
+	<circle r="10" cx="95" cy="104" class="fill_green"></circle>
+	<circle desc="pie_23" r="5.0" cx="95" cy="104" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="7.22568 31.416"
+	transform="rotate(-90) translate(-199 -9)"></circle>
+	
+	<circle r="10" cx="127" cy="104" class="fill_green"></circle>
+	<circle desc="pie_24" r="5.0" cx="127" cy="104" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="7.539839999999999 31.416"
+	transform="rotate(-90) translate(-231 23)"></circle>
+	
+	<circle r="10" cx="159" cy="104" class="fill_green"></circle>
+	<circle desc="pie_25" r="5.0" cx="159" cy="104" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="7.853999999999998 31.416"
+	transform="rotate(-90) translate(-263 55)"></circle>
+	
+	<circle r="10" cx="191" cy="104" class="fill_green"></circle>
+	<circle desc="pie_26" r="5.0" cx="191" cy="104" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="8.16816 31.416"
+	transform="rotate(-90) translate(-295 87)"></circle>
+	
+	<circle r="10" cx="223" cy="104" class="fill_green"></circle>
+	<circle desc="pie_27" r="5.0" cx="223" cy="104" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="8.48232 31.416"
+	transform="rotate(-90) translate(-327 119)"></circle>
+	
+	<circle r="10" cx="255" cy="104" class="fill_green"></circle>
+	<circle desc="pie_28" r="5.0" cx="255" cy="104" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="8.796479999999999 31.416"
+	transform="rotate(-90) translate(-359 151)"></circle>
+	
+	<circle r="10" cx="287" cy="104" class="fill_green"></circle>
+	<circle desc="pie_29" r="5.0" cx="287" cy="104" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="9.11064 31.416"
+	transform="rotate(-90) translate(-391 183)"></circle>
+	
+	<circle r="10" cx="319" cy="104" class="fill_green"></circle>
+	<circle desc="pie_30" r="5.0" cx="319" cy="104" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="9.4248 31.416"
+	transform="rotate(-90) translate(-423 215)"></circle>
+	
+	<circle r="10" cx="31" cy="144" class="fill_green"></circle>
+	<circle desc="pie_31" r="5.0" cx="31" cy="144" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="9.738959999999999 31.416"
+	transform="rotate(-90) translate(-175 -113)"></circle>
+	
+	<circle r="10" cx="63" cy="144" class="fill_green"></circle>
+	<circle desc="pie_32" r="5.0" cx="63" cy="144" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="10.05312 31.416"
+	transform="rotate(-90) translate(-207 -81)"></circle>
+	
+	<circle r="10" cx="95" cy="144" class="fill_green"></circle>
+	<circle desc="pie_33" r="5.0" cx="95" cy="144" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="10.367280000000001 31.416"
+	transform="rotate(-90) translate(-239 -49)"></circle>
+	
+	<circle r="10" cx="127" cy="144" class="fill_green"></circle>
+	<circle desc="pie_34" r="5.0" cx="127" cy="144" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="10.68144 31.416"
+	transform="rotate(-90) translate(-271 -17)"></circle>
+	
+	<circle r="10" cx="159" cy="144" class="fill_green"></circle>
+	<circle desc="pie_35" r="5.0" cx="159" cy="144" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="10.9956 31.416"
+	transform="rotate(-90) translate(-303 15)"></circle>
+	
+	<circle r="10" cx="191" cy="144" class="fill_green"></circle>
+	<circle desc="pie_36" r="5.0" cx="191" cy="144" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="11.30976 31.416"
+	transform="rotate(-90) translate(-335 47)"></circle>
+	
+	<circle r="10" cx="223" cy="144" class="fill_green"></circle>
+	<circle desc="pie_37" r="5.0" cx="223" cy="144" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="11.62392 31.416"
+	transform="rotate(-90) translate(-367 79)"></circle>
+	
+	<circle r="10" cx="255" cy="144" class="fill_green"></circle>
+	<circle desc="pie_38" r="5.0" cx="255" cy="144" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="11.93808 31.416"
+	transform="rotate(-90) translate(-399 111)"></circle>
+	
+	<circle r="10" cx="287" cy="144" class="fill_green"></circle>
+	<circle desc="pie_39" r="5.0" cx="287" cy="144" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="12.252240000000002 31.416"
+	transform="rotate(-90) translate(-431 143)"></circle>
+	
+	<circle r="10" cx="319" cy="144" class="fill_green"></circle>
+	<circle desc="pie_40" r="5.0" cx="319" cy="144" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="12.566400000000002 31.416"
+	transform="rotate(-90) translate(-463 175)"></circle>
+	
+	<circle r="10" cx="31" cy="184" class="fill_green"></circle>
+	<circle desc="pie_41" r="5.0" cx="31" cy="184" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="12.880560000000001 31.416"
+	transform="rotate(-90) translate(-215 -153)"></circle>
+	
+	<circle r="10" cx="63" cy="184" class="fill_green"></circle>
+	<circle desc="pie_42" r="5.0" cx="63" cy="184" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="13.194720000000002 31.416"
+	transform="rotate(-90) translate(-247 -121)"></circle>
+	
+	<circle r="10" cx="95" cy="184" class="fill_green"></circle>
+	<circle desc="pie_43" r="5.0" cx="95" cy="184" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="13.50888 31.416"
+	transform="rotate(-90) translate(-279 -89)"></circle>
+	
+	<circle r="10" cx="127" cy="184" class="fill_green"></circle>
+	<circle desc="pie_44" r="5.0" cx="127" cy="184" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="13.82304 31.416"
+	transform="rotate(-90) translate(-311 -57)"></circle>
+	
+	<circle r="10" cx="159" cy="184" class="fill_green"></circle>
+	<circle desc="pie_45" r="5.0" cx="159" cy="184" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="14.137199999999998 31.416"
+	transform="rotate(-90) translate(-343 -25)"></circle>
+	
+	<circle r="10" cx="191" cy="184" class="fill_green"></circle>
+	<circle desc="pie_46" r="5.0" cx="191" cy="184" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="14.45136 31.416"
+	transform="rotate(-90) translate(-375 7)"></circle>
+	
+	<circle r="10" cx="223" cy="184" class="fill_green"></circle>
+	<circle desc="pie_47" r="5.0" cx="223" cy="184" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="14.765520000000002 31.416"
+	transform="rotate(-90) translate(-407 39)"></circle>
+	
+	<circle r="10" cx="255" cy="184" class="fill_green"></circle>
+	<circle desc="pie_48" r="5.0" cx="255" cy="184" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="15.079679999999998 31.416"
+	transform="rotate(-90) translate(-439 71)"></circle>
+	
+	<circle r="10" cx="287" cy="184" class="fill_green"></circle>
+	<circle desc="pie_49" r="5.0" cx="287" cy="184" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="15.39384 31.416"
+	transform="rotate(-90) translate(-471 103)"></circle>
+	
+	<circle r="10" cx="319" cy="184" class="fill_green"></circle>
+	<circle desc="pie_50" r="5.0" cx="319" cy="184" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="15.707999999999997 31.416"
+	transform="rotate(-90) translate(-503 135)"></circle>
+	
+	<circle r="10" cx="31" cy="224" class="fill_green"></circle>
+	<circle desc="pie_51" r="5.0" cx="31" cy="224" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="16.02216 31.416"
+	transform="rotate(-90) translate(-255 -193)"></circle>
+	
+	<circle r="10" cx="63" cy="224" class="fill_green"></circle>
+	<circle desc="pie_52" r="5.0" cx="63" cy="224" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="16.33632 31.416"
+	transform="rotate(-90) translate(-287 -161)"></circle>
+	
+	<circle r="10" cx="95" cy="224" class="fill_green"></circle>
+	<circle desc="pie_53" r="5.0" cx="95" cy="224" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="16.650479999999998 31.416"
+	transform="rotate(-90) translate(-319 -129)"></circle>
+	
+	<circle r="10" cx="127" cy="224" class="fill_green"></circle>
+	<circle desc="pie_54" r="5.0" cx="127" cy="224" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="16.96464 31.416"
+	transform="rotate(-90) translate(-351 -97)"></circle>
+	
+	<circle r="10" cx="159" cy="224" class="fill_green"></circle>
+	<circle desc="pie_55" r="5.0" cx="159" cy="224" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="17.2788 31.416"
+	transform="rotate(-90) translate(-383 -65)"></circle>
+	
+	<circle r="10" cx="191" cy="224" class="fill_green"></circle>
+	<circle desc="pie_56" r="5.0" cx="191" cy="224" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="17.592959999999998 31.416"
+	transform="rotate(-90) translate(-415 -33)"></circle>
+	
+	<circle r="10" cx="223" cy="224" class="fill_green"></circle>
+	<circle desc="pie_57" r="5.0" cx="223" cy="224" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="17.90712 31.416"
+	transform="rotate(-90) translate(-447 -1)"></circle>
+	
+	<circle r="10" cx="255" cy="224" class="fill_green"></circle>
+	<circle desc="pie_58" r="5.0" cx="255" cy="224" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="18.22128 31.416"
+	transform="rotate(-90) translate(-479 31)"></circle>
+	
+	<circle r="10" cx="287" cy="224" class="fill_green"></circle>
+	<circle desc="pie_59" r="5.0" cx="287" cy="224" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="18.535439999999998 31.416"
+	transform="rotate(-90) translate(-511 63)"></circle>
+	
+	<circle r="10" cx="319" cy="224" class="fill_green"></circle>
+	<circle desc="pie_60" r="5.0" cx="319" cy="224" fill="transparent"
+	stroke="#ef972c"
+	stroke-width="10"
+	stroke-dasharray="18.8496 31.416"
+	transform="rotate(-90) translate(-543 95)"></circle>
+	
+<text desc="t_label_01" class="st7" transform="translate(27 26)">01</text>
+<text desc="t_label_02" class="st7" transform="translate(59 26)">02</text>
+<text desc="t_label_03" class="st7" transform="translate(91 26)">03</text>
+<text desc="t_label_04" class="st7" transform="translate(123 26)">04</text>
+<text desc="t_label_05" class="st7" transform="translate(155 26)">05</text>
+<text desc="t_label_06" class="st7" transform="translate(187 26)">06</text>
+<text desc="t_label_07" class="st7" transform="translate(219 26)">07</text>
+<text desc="t_label_08" class="st7" transform="translate(251 26)">08</text>
+<text desc="t_label_09" class="st7" transform="translate(283 26)">09</text>
+<text desc="t_label_10" class="st7" transform="translate(315 26)">10</text>
+<text desc="t_label_11" class="st7" transform="translate(27 66)">11</text>
+<text desc="t_label_12" class="st7" transform="translate(59 66)">12</text>
+<text desc="t_label_13" class="st7" transform="translate(91 66)">13</text>
+<text desc="t_label_14" class="st7" transform="translate(123 66)">14</text>
+<text desc="t_label_15" class="st7" transform="translate(155 66)">15</text>
+<text desc="t_label_16" class="st7" transform="translate(187 66)">16</text>
+<text desc="t_label_17" class="st7" transform="translate(219 66)">17</text>
+<text desc="t_label_18" class="st7" transform="translate(251 66)">18</text>
+<text desc="t_label_19" class="st7" transform="translate(283 66)">19</text>
+<text desc="t_label_20" class="st7" transform="translate(315 66)">20</text>
+<text desc="t_label_21" class="st7" transform="translate(27 106)">21</text>
+<text desc="t_label_22" class="st7" transform="translate(59 106)">22</text>
+<text desc="t_label_23" class="st7" transform="translate(91 106)">23</text>
+<text desc="t_label_24" class="st7" transform="translate(123 106)">24</text>
+<text desc="t_label_25" class="st7" transform="translate(155 106)">25</text>
+<text desc="t_label_26" class="st7" transform="translate(187 106)">26</text>
+<text desc="t_label_27" class="st7" transform="translate(219 106)">27</text>
+<text desc="t_label_28" class="st7" transform="translate(251 106)">28</text>
+<text desc="t_label_29" class="st7" transform="translate(283 106)">29</text>
+<text desc="t_label_30" class="st7" transform="translate(315 106)">30</text>
+<text desc="t_label_31" class="st7" transform="translate(27 146)">31</text>
+<text desc="t_label_32" class="st7" transform="translate(59 146)">32</text>
+<text desc="t_label_33" class="st7" transform="translate(91 146)">33</text>
+<text desc="t_label_34" class="st7" transform="translate(123 146)">34</text>
+<text desc="t_label_35" class="st7" transform="translate(155 146)">35</text>
+<text desc="t_label_36" class="st7" transform="translate(187 146)">36</text>
+<text desc="t_label_37" class="st7" transform="translate(219 146)">37</text>
+<text desc="t_label_38" class="st7" transform="translate(251 146)">38</text>
+<text desc="t_label_39" class="st7" transform="translate(283 146)">39</text>
+<text desc="t_label_40" class="st7" transform="translate(315 146)">40</text>
+<text desc="t_label_41" class="st7" transform="translate(27 186)">41</text>
+<text desc="t_label_42" class="st7" transform="translate(59 186)">42</text>
+<text desc="t_label_43" class="st7" transform="translate(91 186)">43</text>
+<text desc="t_label_44" class="st7" transform="translate(123 186)">44</text>
+<text desc="t_label_45" class="st7" transform="translate(155 186)">45</text>
+<text desc="t_label_46" class="st7" transform="translate(187 186)">46</text>
+<text desc="t_label_47" class="st7" transform="translate(219 186)">47</text>
+<text desc="t_label_48" class="st7" transform="translate(251 186)">48</text>
+<text desc="t_label_49" class="st7" transform="translate(283 186)">49</text>
+<text desc="t_label_50" class="st7" transform="translate(315 186)">50</text>
+<text desc="t_label_51" class="st7" transform="translate(27 226)">51</text>
+<text desc="t_label_52" class="st7" transform="translate(59 226)">52</text>
+<text desc="t_label_53" class="st7" transform="translate(91 226)">53</text>
+<text desc="t_label_54" class="st7" transform="translate(123 226)">54</text>
+<text desc="t_label_55" class="st7" transform="translate(155 226)">55</text>
+<text desc="t_label_56" class="st7" transform="translate(187 226)">56</text>
+<text desc="t_label_57" class="st7" transform="translate(219 226)">57</text>
+<text desc="t_label_58" class="st7" transform="translate(251 226)">58</text>
+<text desc="t_label_59" class="st7" transform="translate(283 226)">59</text>
+<text desc="t_label_60" class="st7" transform="translate(315 226)">60</text>
+
+ 
+
+</svg>
+
