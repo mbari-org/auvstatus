@@ -7,12 +7,13 @@ import argparse
 import sys
 import time
 import os
-import requests
+# import requests
 import json
 import re
 import ssl
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+import urllib2
+# import urllib3
+# urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -58,10 +59,12 @@ def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 	
 	if DEBUG:
 		print("### QUERY:",URL, file=sys.stderr)
-	
-	connection = requests.get(URL,timeout=5,verify=False)		
+		
+	connection = urllib2.urlopen(URL,timeout=5)	
+# 	connection = requests.get(URL,timeout=5,verify=False)		# requests version
 	if connection:
-		raw = connection.text
+# 		raw = connection.text
+		raw = connection.read()
 		# if DEBUG:
 		# 	print("##### START RAW #######\n",raw[:100],"##### START RAW #######\n",file=sys.stderr)
 		structured = json.loads(raw)
@@ -120,7 +123,8 @@ def dates(unixtime):
 def elapsed(rawdur):
 	'''input in millis not seconds'''
 	if rawdur:
-		DurationBase = '{}{}{}'
+		MinuteString=""
+		DurationBase = '{d}{h}{m}'
 		duration = abs(rawdur/1000)
 		minutes = int(duration/60)
 		hours = int(minutes/60)
@@ -138,7 +142,9 @@ def elapsed(rawdur):
 		if (hours)>23:
 			HourString = str(hours%24) + "h "
 			DayString = str(hours//24) + "d " 
-		DurationString = DurationBase.format(DayString,HourString,MinuteString)
+		if DEBUG:
+			print("D",DayString,"\nH",HourString,"\nM",MinuteString)
+		DurationString = DurationBase.format(d=DayString,h=HourString,m=MinuteString)
 		if days > 4:
 			DurationString = "long time"
 		if rawdur < 1:
@@ -294,14 +300,14 @@ if Opt.savefile:
 	
 # For the server, use tethysdash
 if 'tethysdash' in os.uname()[1]:
-	OutPath       = '/var/www/html/widget/esp_{}.svg'
+	OutPath       = '/var/www/html/widget/esp_{0}.svg'
 	
 # *** Can specify your username and path here
 elif 'jellywatch' in os.uname():
-	OutPath       = '/home/jellywatch/jellywatch.org/misc/esp_{}.svg'
+	OutPath       = '/home/jellywatch/jellywatch.org/misc/esp_{0}.svg'
 
 else:
-	OutPath = './esp_{}.svg'
+	OutPath = './esp_{0}.svg'
 
 
 now = 1000 * time.mktime(time.localtime())  # (*1000?)
@@ -314,7 +320,7 @@ startTime = getDeployment()
 
 if not startTime:
 	if DEBUG:
-		sys.exit("##  Vehicle {} has no deployments".format(VEHICLE))
+		sys.exit("##  Vehicle {0} has no deployments".format(VEHICLE))
 	else:
 		sys.exit()
 
@@ -386,7 +392,7 @@ if Opt.testout:
 	# print(string_pie.format(*percentlist))
 	print(string_text_label)
 
-	print('<text class="font_helv font_size9" transform="translate(25 190)">Last Sample: {}</text>'.format(text_lastsample))
+	print('<text class="font_helv font_size9" transform="translate(25 190)">Last Sample: {0}</text>'.format(text_lastsample))
 
 	print(svgtail)
 
@@ -398,7 +404,9 @@ if Opt.savefile:
 		outfile.write(string_circle_big.format(*style_circle_big))
 		outfile.write(string_circle_small.format(*stylelist))
 		outfile.write(string_text_label)
-		outfile.write('<text class="font_helv font_size9" transform="translate(25 190)">Last Sample: {}</text>'.format(text_lastsample))
+		outfile.write('<text class="font_helv font_size9" transform="translate(25 190)">Last Sample: {0}</text>'.format(text_lastsample))
+		timestring = dates(now) + " - " +hours(now)
+		outfile.write('<text class="font_helv font_size7" transform="translate(175 190)">UPDATED: {0}</text>'.format(timestring))
 		outfile.write(svgtail)
 		
 

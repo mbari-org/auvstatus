@@ -577,7 +577,7 @@ def parseImptMisc(recordlist):
 					print >> sys.stderr, "## Got ReachedWaypoint", StationLat,StationLon
 				ReachedWaypoint = Record["unixTime"]
 				
-			elif Record["text"].startswith("Navigating to"):
+			elif Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
 				textlat,textlon = myre.search(Record["text"].replace("arcdeg","")).groups()
 				if textlat:
 					StationLat = float(textlat)
