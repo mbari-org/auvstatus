@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+from __future__ import print_function
 
 from ESPelements import svghead,svgtail
 
@@ -10,6 +11,8 @@ import requests
 import json
 import re
 import ssl
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -56,7 +59,7 @@ def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 	if DEBUG:
 		print("### QUERY:",URL, file=sys.stderr)
 	
-	connection = requests.get(URL,timeout=5)		
+	connection = requests.get(URL,timeout=5,verify=False)		
 	if connection:
 		raw = connection.text
 		# if DEBUG:
@@ -298,7 +301,7 @@ elif 'jellywatch' in os.uname():
 	OutPath       = '/home/jellywatch/jellywatch.org/misc/esp_{}.svg'
 
 else:
-	OutPath = './auv_{}.svg'
+	OutPath = './esp_{}.svg'
 
 
 now = 1000 * time.mktime(time.localtime())  # (*1000?)
