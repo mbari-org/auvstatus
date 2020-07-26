@@ -1,6 +1,6 @@
 svghead = '''<svg id="Layer_1" data-name="Layer 1" 
 xmlns="http://www.w3.org/2000/svg"  
-x="0px" y="0px" viewBox="0 0 440 330" xml:space="preserve">
+x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 
 
 
@@ -22,24 +22,27 @@ x="0px" y="0px" viewBox="0 0 440 330" xml:space="preserve">
  .st9 { fill: #919396; }
  .st10 { fill: none; stroke: #fff; }
 
- .fill_gray { fill: #dcddde; }
+ .fill_gray { fill: #bbbbbb; }
  .fill_white { fill: #fff; }
  .stroke_purple { stroke: #9b509f; fill:none; stroke-width: 2px; }
  .stroke_black  { stroke: #000; fill:none; stroke-width: 2px; }
  .stroke_2px { stroke-width: 2px; }
  .stroke_white { fill: none; stroke: #fff; }
+ .stroke_none {stroke: none; fill:none};
  .stroke_darkGray { stroke: #231f20; fill: none; stroke-width: 2px;}
  .fill_orange { fill: #ef972c; }
- .fill_lightgray { fill: #727373; }
+ .fill_yellow { fill: #efef00; }
+ .fill_lightgray { fill: #e2e2e2 }
  .fill_green { fill: #5cba48; }
  .font_size7 { font-size: 7px; }
+ .font_size9 { font-size: 9px; }
  .fill_darkgray { fill: #231f20; }
  .font_helv { font-family: Helvetica; }
  .font_helvBold { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
  .fill_lightergray { fill: #919396; }
     </style>
   </defs>
-  <rect class="fill_gray" x="3.91" width="400" height="300"/> 
+  <rect class="fill_lightgray" x="3.91" width="290" height="200"/> 
   '''
   
 #  <circle class="st2" cx="21.29" cy="24.04" r="15"/>
