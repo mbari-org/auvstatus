@@ -179,6 +179,7 @@ def getCritical(starttime):
 def getFaults(starttime):
 	'''
 	Software Overcurrent Add swatch to thruster section? 
+	LCB fault: Software Overcurrent
 	Hardware Overcurrent 
 	On overcurrent errors, the component varies. Probably worth having a special indicator and report what is flagged
 		LCB Fault
@@ -379,6 +380,11 @@ def parseCritical(recordlist):
 			if len(RecordText)> 41:
 				CriticalError += "..."
 			CriticalTime = Record["unixTime"]
+			if DEBUG:
+				print >> sys.stderr, (now-CriticalTime)/3600000
+			if (((now - CriticalTime)/3600000) > 8):
+				CriticalError = ""
+				CriticalTime = False
 			
 		# if Record["name"]=="CBIT" and Record.get("text","NA").startswith("LAST"):
 	return Drop, ThrusterServo, CriticalError, CriticalTime
@@ -389,7 +395,7 @@ def parseFaults(recordlist):
 	Also includes RudderServo and DVL_Micro, RDI_Pathfinder'''
 	BadBattery    = False
 	DVLError = False
-	
+	Software = False
 	# if DEBUG:
 	# 	print "### Start Recordlist"
 	# 	print recordlist
@@ -402,12 +408,14 @@ def parseFaults(recordlist):
 			BadBattery=Record["unixTime"]
 			if DEBUG:
 				print >> sys.stderr,"## BAD BATTERY in FAULT"
+		if "software overcurrent" in Record["text"].lower():
+			Software = Record["unixTime"]
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder"] and "failed" in Record.get("text","NA").lower():
 		 	DVLError=Record["unixTime"]
 		 	
-	return BadBattery,DVLError
+	return BadBattery,DVLError,Software
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -578,12 +586,14 @@ def parseImptMisc(recordlist):
 				ReachedWaypoint = Record["unixTime"]
 				
 			elif Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
-				textlat,textlon = myre.search(Record["text"].replace("arcdeg","")).groups()
-				if textlat:
-					StationLat = float(textlat)
-					StationLon = float(textlon)
-				if DEBUG:
-					print >> sys.stderr, "## Got LatLon from Navigating To", StationLat,StationLon
+				NavRes = myre.search(Record["text"].replace("arcdeg",""))
+				if NavRes:
+					textlat,textlon = NavRes.groups()
+					if textlat:
+						StationLat = float(textlat)
+						StationLon = float(textlon)
+					if DEBUG:
+						print >> sys.stderr, "## Got LatLon from Navigating To", StationLat,StationLon
 			
 		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
@@ -925,6 +935,7 @@ def sim():
 	"color_bt1"            : "st3",
 	"color_ubat"           : "st3",
 	"color_flow"           : "st3",
+	"color_sw"        	   : "st3",
 	"color_wavecolor"      : "st0",
 	"color_dirtbox"        : "st18",
 	"color_missiondefault" : "st25",
@@ -1144,7 +1155,7 @@ if (not recovered) or DEBUG:
 	DVLError=False
 	BadBattery=False
 	if faults:
-		BadBattery,DVLError = parseFaults(faults)
+		BadBattery,DVLError,SWError = parseFaults(faults)
 
 	
 # vehicle has been recovered
@@ -1274,6 +1285,7 @@ else:   #not opt report
 	"color_bigcable",
 	"color_smallcable",
 	"color_cart",
+	"color_sw" ,
 	"color_cartcircle",
 	"color_missiondefault" ]
 	for cname in colornames:
@@ -1613,7 +1625,9 @@ else:   #not opt report
 			cdd["color_bat6"] = ['st4',LowBattColor][volt < 15.7]
 			cdd["color_bat7"] = ['st4',LowBattColor][volt < 16.1]
 			cdd["color_bat8"] = ['st4',LowBattColor][volt < 16.5]
-		
+			
+ 		if ((now - SWError)/3600000 < 8):
+			cdd["color_sw"] = 'st5'
 
 		if DVLError:
 			DVLcolor = 'st6'

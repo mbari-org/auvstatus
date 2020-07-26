@@ -31,6 +31,10 @@ import urllib2
  .fill_yellow { fill: #efef00; }
  .fill_lightgray { fill: #727373; }
  .fill_green { fill: #5cba48; }
+ .thick_orange     { stroke-width:4px; fill:none; stroke: #ef972c; }
+ .thick_yellow     { stroke-width:4px; fill:none; stroke: #efef00; } 
+ .thick_lightgray  { stroke-width:4px; fill:none; stroke: #727373; } 
+ .thick_green      { stroke-width:4px; fill:none; stroke: #5cba48; } 
  .font_size7 { font-size: 7px; }
  .fill_darkgray { fill: #231f20; }
  .font_helv { font-family: Helvetica; }
@@ -163,11 +167,15 @@ def getstrings():
 
 	spcol = 26 # between columns across
 	sprow = 26
+	if Opt.lines:
+		spcol=7
+		sprow=15
 	# generate circles
 	string_circle_big = ''
 	string_circle_small = ''
 	string_text_label= ''
 	string_pie = ''
+	string_line_small=''
 	# Generate matrix of circles
 
 	for row in range(nrows):
@@ -175,14 +183,17 @@ def getstrings():
 			ind = row*ncols + col+1
 			xval = 31 + spcol * col
 			yval = 24 + sprow * row
-			string_circle_big   += '<circle desc="c_big_{ind:02d}" class="{{{ind}}}" cx="{xval}" cy="{yval}" r="13"/>\n'.format(ind=ind,xval=xval,yval=yval)
+			
+			string_line_small   +=  '<line desc="line_{ind:02d}" class="{{{ind}}}" x1="{xval}" x2="{xval}" y1="{yval}" y2="{y2val}" />\n'.format(ind=ind,xval=xval,yval=yval,y2val=yval+small_radius+8)
+
+			string_circle_big   += '<circle desc="c_big_{ind:02d}" class="{{{ind}}}" cx="{xval}" cy="{yval}" r="{radius}"/>\n'.format(ind=ind,xval=xval,yval=yval,radius = small_radius+2)
 			string_circle_small += '<circle desc="c_small_{ind:02d}" class="{{{ind}}}" cx="{xval}" cy="{yval}" r="{radius}"/>\n'.format(ind=ind,xval=xval,yval=yval,radius=small_radius)
 			# change colors in function makepiestring()
 			string_pie += makepiestring(index=ind,xp=xval,yp=yval,radius=small_radius)
 			xval = 27 + spcol * col
 			yval = 26 + sprow * row
 			string_text_label   += '<text desc="t_label_{ind:02d}" class="st7" transform="translate({xval} {yval})">{ind:02d}</text>\n'.format(ind=ind,st=style_text_label,xval=xval,yval=yval)
-	return string_circle_big, string_circle_small, string_pie, string_text_label
+	return string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label
 	
 def getpieval(pct,radius):
 	pi = 3.1416
@@ -280,6 +291,7 @@ def get_options():
 #	parser.add_argument('infile', type = argparse.FileType('rU'), nargs='?',default = sys.stdin, help="output of vars_retrieve")
 	parser.add_argument("-b", "--DEBUG",	action="store_true", help="Print debug info")
 	parser.add_argument("-t", "--testout",	action="store_true", help="print testmatrix")
+	parser.add_argument("-l", "--lines",	action="store_true", help="use lines not circles")
 	parser.add_argument("-f", "--savefile",action="store_true", help="save to SVG named by vehicle at default location")
 	parser.add_argument("-v", "--vehicle",	default="pontus"  , help="specify vehicle")
 	parser.add_argument("Args", nargs='*')
@@ -343,7 +355,7 @@ ncols = 10
 ncells = nrows * ncols
 
 stylelist = [999] * (ncells +1)
-
+linestylelist = ["thick_gray"] * (ncells +1)
 style_circle_big = ["stroke_none"] * (ncells +1)
 
 style_circle_small = ["fill_green"] * (ncells+1)
@@ -355,6 +367,8 @@ text_label = ["00"] * (ncells +1)
 percentlist = [5] * (ncells + 1)
 
 small_radius = 10
+if Opt.lines:
+	small_radius=1
 
 # PARSE RECORDS and SET FORMAT HERE
 
@@ -365,12 +379,19 @@ if (not recovered) or DEBUG:
 	
 	if esprecords:
 		outlist,mostrecent,lastsample = parseESP(esprecords)
-		'''['r' if i > 50 else 'y' if i > 2 else 'g' for i in x]'''
+		#['r' if i > 50 else 'y' if i > 2 else 'g' for i in x]
 		stylelist = \
 		['fill_gray' if i > 500 \
 		else 'fill_green' if i > 95  \
 		else 'fill_orange' if i < 0  \
 		else  'fill_yellow' for i in outlist]
+		
+		linestylelist = \
+		['thick_gray' if i > 500 \
+		else 'thick_green' if i > 95  \
+		else 'thick_orange' if i < 0  \
+		else 'thick_yellow' for i in outlist]
+
 		if mostrecent:
 			style_circle_big[mostrecent] = 'stroke_purple'
 			text_lastsample = elapsed(lastsample - now)
@@ -381,7 +402,7 @@ for p in range(61):
 ########################	
 # GENERATE SVG HERE
 
-string_circle_big, string_circle_small, string_pie, string_text_label = getstrings()
+string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label = getstrings()
 
 if Opt.testout:
 	print(svghead)
@@ -402,8 +423,11 @@ if Opt.savefile:
 	with open(OutPath.format(VEHICLE),'w') as outfile:
 		outfile.write(svghead)
 		outfile.write(string_circle_big.format(*style_circle_big))
-		outfile.write(string_circle_small.format(*stylelist))
-		outfile.write(string_text_label)
+		if Opt.lines:
+			outfile.write(string_line_small.format(*linestylelist))
+		else:	
+			outfile.write(string_circle_small.format(*stylelist))
+			outfile.write(string_text_label)
 		outfile.write('<text class="font_helv font_size9" transform="translate(25 190)">Last Sample: {0}</text>'.format(text_lastsample))
 		timestring = dates(now) + " - " +hours(now)
 		outfile.write('<text class="font_helv font_size7" transform="translate(175 190)">UPDATED: {0}</text>'.format(timestring))
