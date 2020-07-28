@@ -23,6 +23,7 @@ import urllib2
  .fill_white { fill: #fff; }
  .stroke_purple { stroke: #9b509f; fill:none; stroke-width: 2px; }
  .stroke_black  { stroke: #000; fill:none; stroke-width: 2px; }
+  .stroke_blue  { stroke: #5eafe2; fill:none; stroke-width: 2px; }
  .stroke_none {stroke: none; fill:none};
  .stroke_2px { stroke-width: 2px; }
  .stroke_white { fill: none; stroke: #fff; }
@@ -43,7 +44,10 @@ import urllib2
 '''
 
 
-def runQuery(event="",limit="",name="",timeafter="1234567890123"):
+def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
+	'''https://okeanids.mbari.org/TethysDash/api/events?vehicles=makai&text.matches=.*Select.*&limit=50&from=1595181435290'''
+	if match:
+		match = "&text.matches=" + match
 	if limit:
 		limit = "&limit=" + limit
 	if name:
@@ -58,8 +62,8 @@ def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 	if not timeafter:
 		timeafter="1234567890123"
 		
-	BaseQuery = "https://okeanids.mbari.org/TethysDash/api/events?vehicles={v}{e}{n}{l}&from={t}"
-	URL = BaseQuery.format(v=vehicle,e=event,n=name,l=limit,t=timeafter)
+	BaseQuery = "https://okeanids.mbari.org/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
+	URL = BaseQuery.format(v=vehicle,e=event,n=name,tm=match,l=limit,t=timeafter)
 	
 	if DEBUG:
 		print("### QUERY:",URL, file=sys.stderr)
@@ -241,14 +245,14 @@ def makepiechart(percent,xp,yp,radius):
 def getESP(starttime):
 	'''get critical entries, like drop weight
 	ESPComponent'''
-	qString = runQuery(name="ESPComponent",limit="2000",timeafter=starttime)
+	qString = runQuery(name="ESPComponent",limit="500",match=".*Selecting.*",timeafter=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
 	
 	return retstring
 	
-def parseESP(recordlist):
+def parseESP(recordlist,big_circle_list):
 	'''
 [sample #30] ESP log summary report (2 messages):
 @20:23:06.72 Selecting Cartridge 22
@@ -258,6 +262,13 @@ def parseESP(recordlist):
 @21:35:45.54 Selecting Cartridge 29
 @22:29:01.26 Cartridge::Sampler::Clogged in FILTERING -- Cartridge clogged
 @22:29:01.45 Sampled 872.3ml
+
+@17:07:18.55 Selecting Cartridge 31
+@17:10:22.88 Cartridge::Sampler::Leak in FILTERING -- Isolated cartridge pressure fell by 15% to 58.6psia
+@17:10:22.89 Retry #1 of 2
+@17:10:22.94 Selecting Cartridge 30
+@18:07:41.18 Sampled  1000.0ml"
+
 '''
 	ESPL = [999] * 61 # Initialize 
 	cartre = re.compile(r"Selecting Cartridge (\d+)")
@@ -268,23 +279,39 @@ def parseESP(recordlist):
 		RecordText = Record.get("text","NA")
 		
 		if "Cartridge" in RecordText:
-			CartResult = cartre.search(RecordText)	
+			CartResult = cartre.findall(RecordText)	
 			if CartResult:
-				Cartnum = int(CartResult.groups()[0])
-				
-				if not firstnum: # MOST RECENT
-					firstnum = Cartnum
-					firsttime = Record["unixTime"]
-					
-				VolumeResult = mlre.search(RecordText)				
+				if DEBUG:
+					print("C",CartResult,file=sys.stderr)
+# 									
+				VolumeResult = mlre.findall(RecordText)				
 				if VolumeResult:
-					mls = VolumeResult.groups()[0]
+					if DEBUG:
+						print(VolumeResult,file=sys.stderr)
+					
+				if len(CartResult) == 1:
+					Cartnum = int(CartResult[-1])
+					mls = VolumeResult[-1]
 					ESPL[Cartnum] = round(float(mls)/10)
+					
+					if not firstnum: # MOST RECENT
+						firstnum = Cartnum
+						firsttime = Record["unixTime"]
+				else:
+					# insert errors numbers to the cartridge numbers
+					vols = ["-99"] * (len(CartResult)-len(VolumeResult)) + VolumeResult[:]
+					if DEBUG:
+						print("VOLS:",vols,"\nCARTS:",CartResult,file=sys.stderr)
+					for c,v in zip(CartResult,vols):
+						if v != "-99":
+							big_circle_list[int(c)] = "stroke_blue"
+						ESPL[int(c)]= round(float(v)/10)
+					if not firstnum:
+						firstnum = int(c)
+						firsttime = Record["unixTime"]
+
 			
-			if DEBUG:
-				print(RecordText,Record["name"],file=sys.stderr)
-			
-	return ESPL,firstnum,firsttime
+	return ESPL,firstnum,firsttime,big_circle_list
 
 def get_options():
 	parser = argparse.ArgumentParser(usage = __doc__) 
@@ -373,12 +400,12 @@ if Opt.lines:
 # PARSE RECORDS and SET FORMAT HERE
 
 if (not recovered) or DEBUG:
-	esprecords  = getESP(startTime)
+	esprecords = getESP(startTime)
 	if DEBUG:
 		print(esprecords,file=sys.stderr)
 	
 	if esprecords:
-		outlist,mostrecent,lastsample = parseESP(esprecords)
+		outlist,mostrecent,lastsample,style_circle_big  = parseESP(esprecords,style_circle_big)
 		#['r' if i > 50 else 'y' if i > 2 else 'g' for i in x]
 		stylelist = \
 		['fill_gray' if i > 500 \
