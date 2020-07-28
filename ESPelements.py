@@ -26,13 +26,18 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
  .fill_white { fill: #fff; }
  .stroke_purple { stroke: #9b509f; fill:none; stroke-width: 2px; }
  .stroke_black  { stroke: #000; fill:none; stroke-width: 2px; }
+ .stroke_blue  { stroke: #5eafe2; fill:none; stroke-width: 2px; }
  .stroke_2px { stroke-width: 2px; }
  .stroke_white { fill: none; stroke: #fff; }
  .stroke_none {stroke: none; fill:none};
  .stroke_darkGray { stroke: #231f20; fill: none; stroke-width: 2px;}
  .fill_orange { fill: #ef972c; }
  .fill_yellow { fill: #efef00; }
- .fill_lightgray { fill: #e2e2e2 }
+ .fill_lightgray { fill: #e2e2e2; }
+ .thick_orange     { stroke-width:4px; fill:none; stroke: #ef972c; }
+ .thick_yellow     { stroke-width:4px; fill:none; stroke: #f7ca0b; }
+ .thick_gray       { stroke-width:4px; fill:none; stroke: #bbbbbb; }
+ .thick_green      { stroke-width:4px; fill:none; stroke: #5cba48; }
  .fill_green { fill: #5cba48; }
  .font_size7 { font-size: 7px; }
  .font_size9 { font-size: 9px; }

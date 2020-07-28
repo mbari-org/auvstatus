@@ -71,10 +71,6 @@ svgtext = '''
 <text desc="HardwareLabel" text-anchor="right" transform="matrix(1 0 0 1 245 254)" class="st9 st10">HW</text>
 <text desc="SoftwareLabel" text-anchor="right" transform="matrix(1 0 0 1 245 267)" class="st9 st10">SW</text>
 <text desc="OtherLabel"    text-anchor="right" transform="matrix(1 0 0 1 245 280)" class="st9 st10">OT</text>
-<circle desc="HW" class="st3" cx="267" cy="251" r="4" /> 
-<circle desc="SW" class="st3" cx="267" cy="264" r="4"/>
-<circle desc="OT" class="st3" cx="267" cy="277" r="4" /> 
-
 
 
 
@@ -115,6 +111,11 @@ svgtext = '''
 <rect desc="amps"    x="336.28" y="261.76" class="{color_amps}" width="25.5" height="10.5"/>
 <rect desc="volts"   x="336.28" y="249.85" class="{color_volts}" width="25.5" height="10.5"/>
 <rect desc="gf_rect" x="480" y="254.0" class="{color_gf}" width="24.43" height="10.5"/>
+<circle desc="HW" class="st3" cx="267" cy="251" r="4" /> 
+<circle desc="SW" class="{color_sw}" cx="267" cy="264" r="4"/>
+<circle desc="OT" class="st3" cx="267" cy="277" r="4" /> 
+
+
 <polygon desc="dvl" class="{color_dvl}" points="541.91,287.26 553.41,287.26 558.97,295.79 541.52,295.79 "/>
 
 <!--cart-->
