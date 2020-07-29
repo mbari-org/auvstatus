@@ -169,11 +169,6 @@ def elapsed(rawdur):
 
 def getstrings():
 
-	spcol = 26 # between columns across
-	sprow = 26
-	if Opt.lines:
-		spcol=7
-		sprow=15
 	# generate circles
 	string_circle_big = ''
 	string_circle_small = ''
@@ -194,8 +189,8 @@ def getstrings():
 			string_circle_small += '<circle desc="c_small_{ind:02d}" class="{{{ind}}}" cx="{xval}" cy="{yval}" r="{radius}"/>\n'.format(ind=ind,xval=xval,yval=yval,radius=small_radius)
 			# change colors in function makepiestring()
 			string_pie += makepiestring(index=ind,xp=xval,yp=yval,radius=small_radius)
-			xval = 27 + spcol * col
-			yval = 26 + sprow * row
+			xval = 1 + spcol * (col + 1)
+			yval = sprow * (row +1)
 			string_text_label   += '<text desc="t_label_{ind:02d}" class="st7" transform="translate({xval} {yval})">{ind:02d}</text>\n'.format(ind=ind,st=style_text_label,xval=xval,yval=yval)
 	return string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label
 	
@@ -381,6 +376,13 @@ nrows = 6
 ncols = 10
 ncells = nrows * ncols
 
+spcol = 26 # between columns across
+sprow = 26
+
+textoffset = 10
+lowerright = (spcol * ncols,sprow * nrows + textoffset)
+lowerleft  = (spcol, sprow * nrows + textoffset)
+
 stylelist = [999] * (ncells +1)
 linestylelist = ["thick_gray"] * (ncells +1)
 style_circle_big = ["stroke_none"] * (ncells +1)
@@ -394,7 +396,10 @@ text_label = ["00"] * (ncells +1)
 percentlist = [5] * (ncells + 1)
 
 small_radius = 10
+
 if Opt.lines:
+	spcol=7
+	sprow=15
 	small_radius=1
 
 # PARSE RECORDS and SET FORMAT HERE
@@ -433,14 +438,14 @@ string_circle_big, string_circle_small, string_line_small, string_pie, string_te
 
 if Opt.testout:
 	print(svghead)
-	# printmatrix()
-	# print(makepiechart(percent=75,xp=79,yp=48,radius=10))
-	print(string_circle_big.format(*style_circle_big))
+# 	printmatrix()   # not used?
+	print(makepiechart(percent=75,xp=79,yp=48,radius=10))
+# 	print(string_circle_big.format(*style_circle_big))
 	print(string_circle_small.format(*stylelist))
-	# print(string_pie.format(*percentlist))
+	print(string_pie.format(*percentlist))
 	print(string_text_label)
-
-	print('<text class="font_helv font_size9" transform="translate(25 190)">Last Sample: {0}</text>'.format(text_lastsample))
+	
+	print('<text class="font_helv font_size9" transform="translate(25 190)">Last Sample: {0}</text>'.format("Last sampled: 21:34"))
 
 	print(svgtail)
 

@@ -638,6 +638,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	Speed = 0
 	StationLat = False
 	StationLon = False
+	hash = "9x9x9"
 	
 	if DEBUG:
 		print >>sys.stderr, "## Parsing defaults"
@@ -660,16 +661,34 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			TimeoutStart    = Record["unixTime"]
 			
 			"esp samples have 3h timeout"
-		if Scheduled == False and not Cleared and Record["name"]=="CommandLine" and \
-				RecordText.startswith('got command schedule "run'):
-			'''got command schedule "run Science/mbts_sci2.xml"'''
-			Scheduled = Record["text"].split("/")[1].replace('.xml"','')
-
+		if Scheduled == False and not Cleared and RecordText.startswith('got command schedule "run'):
+			'''got command schedule "run " 3p78c'''
 			if DEBUG:
-				print >> sys.stderr, "## Found Scheduled",Scheduled
-				
-		if Record["name"]=="CommandLine" and \
-				RecordText.startswith('got command schedule clear'):
+				print >> sys.stderr, "## Schedule Record",RecordText
+
+			if RecordText.startswith('got command schedule "run "'):
+				hashre = re.compile(r'got command schedule "run " (\w+)')
+				'''got command schedule "run " 3p78c '''
+				hash_result = hashre.search(RecordText)
+				if hash_result:
+					hash=hash_result.group(1)
+			else:
+				'''got command schedule "run Science/mbts_sci2.xml"'''
+				Scheduled = Record["text"].split("/")[1].replace('.xml"','')
+
+				if DEBUG:
+					print >> sys.stderr, "## Found Scheduled",Scheduled
+					
+					'''TODO REPLACE WITH REGEX 
+Scheduled #27 (#1 of 2 with id='3p78c'): "load Science/profile_station.xml;set profile_station.MissionTimeout 14 hour;set profile_station.Lat 36.7970 degree;set profile_station.L'''
+
+		if Scheduled == False and not Cleared and RecordText.startswith('Scheduled #') and "load" in RecordText and hash in RecordText:
+			Scheduled = RecordText.split(': "load ')[1].split('.xml')[0].split("/")[1]
+			''': "load Science/profile_station.xml'''
+			if DEBUG:
+				print >> sys.stderr, "## Found Scheduled hash",Scheduled
+
+		if RecordText.startswith('got command schedule clear'):
 				Cleared = True
 				if DEBUG:
 					print >> sys.stderr, "## Got CLEAR"
