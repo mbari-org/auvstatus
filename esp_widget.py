@@ -328,7 +328,7 @@ global DEBUG
 DEBUG = Opt.DEBUG
 global VEHICLE
 VEHICLE = Opt.vehicle
-
+text_lastsample = "na"
 if Opt.savefile:
 	Opt.testout = False
 	
@@ -379,8 +379,8 @@ ncells = nrows * ncols
 spcol = 26 # between columns across
 sprow = 26
 
-textoffset = 10
-lowerright = (spcol * ncols,sprow * nrows + textoffset)
+textoffset = 2
+lowerright = (spcol * ncols, sprow * nrows + textoffset)
 lowerleft  = (spcol, sprow * nrows + textoffset)
 
 stylelist = [999] * (ncells +1)
@@ -460,9 +460,10 @@ if Opt.savefile:
 		else:	
 			outfile.write(string_circle_small.format(*stylelist))
 			outfile.write(string_text_label)
-		outfile.write('<text class="font_helv font_size9" transform="translate(25 190)">Last Sample: {0}</text>'.format(text_lastsample))
+			
+		outfile.write('<text class="font_helv font_size9" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample,tx=lowerleft[0],ty=lowerleft[1])) # 25 190
 		timestring = dates(now) + " - " +hours(now)
-		outfile.write('<text class="font_helv font_size7" transform="translate(175 190)">UPDATED: {0}</text>'.format(timestring))
+		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0],ty=lowerright[1])) # 175 190
 		outfile.write(svgtail)
 		
 
