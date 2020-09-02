@@ -373,7 +373,7 @@ def parseCritical(recordlist):
 			Drop=Record["unixTime"]
 		if "burnwire activated" in RecordText.lower():
 			Drop = Record["unixTime"]
-		if (not ThrusterServo) and RecordText=="ThrusterServo":
+		if (not ThrusterServo) and "ThrusterServo" in RecordText and "Hardware Fault" in RecordText:
 			ThrusterServo = Record["unixTime"]
 		elif (not CriticalError) and not RecordText.startswith("Could not open") and not Record["name"] == "NAL9602" and not "NAL9602" in RecordText and not "Hardware Fault in component" in RecordText:
 			CriticalError = RecordText[:41]
@@ -396,6 +396,7 @@ def parseFaults(recordlist):
 	BadBattery    = False
 	DVLError = False
 	Software = False
+	Overload = False
 	# if DEBUG:
 	# 	print "### Start Recordlist"
 	# 	print recordlist
@@ -408,14 +409,17 @@ def parseFaults(recordlist):
 			BadBattery=Record["unixTime"]
 			if DEBUG:
 				print >> sys.stderr,"## BAD BATTERY in FAULT"
-		if "software overcurrent" in Record["text"].lower():
+		if (not Software) and "software overcurrent" in Record["text"].lower():
 			Software = Record["unixTime"]
+		
+		if (not Overload) and "overload error" in Record["text"].lower():
+			Overload = Record["unixTime"]
+		
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder"] and "failed" in Record.get("text","NA").lower():
 		 	DVLError=Record["unixTime"]
-		 	
-	return BadBattery,DVLError,Software
+	return BadBattery,DVLError,Software,Overload
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -557,7 +561,15 @@ def parseImptMisc(recordlist):
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 
 	ReachedWaypoint=False
-
+	
+	# CONFIGURE DVL config defaults
+	GetDVLStartup = {
+		'pontus':True,
+		'tethys':True,
+		'daphne':False
+	}
+	DVL_on = GetDVLStartup.get(VEHICLE,False)
+	
 	for Record in recordlist:
 		if DEBUG:
 			if "dvl" in Record["text"].lower():
@@ -572,6 +584,7 @@ def parseImptMisc(recordlist):
 			Rowe_600
 			RDI_Pathfinder
 '''
+	
 		if not StationLon and not ReachedWaypoint: 
 			if Record["text"].startswith("Reached Waypoint"):
 			
@@ -604,6 +617,9 @@ def parseImptMisc(recordlist):
  		      ):
  		    # TO CHECK. this might split icorrectly on the space because sometimes config set?
  		    # configSet
+ 		    
+ 		    ## SHOULD ADD A CHECK FOR restart HERE TO SEE IF DVL WENT BACK TO CONFIG that will override these later events
+ 		    
 			DVL_on = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
 			GotDVL = True
 			if DEBUG: 
@@ -1173,8 +1189,10 @@ if (not recovered) or DEBUG:
 
 	DVLError=False
 	BadBattery=False
+	SWError = False
+	OverloadError = False
 	if faults:
-		BadBattery,DVLError,SWError = parseFaults(faults)
+		BadBattery,DVLError,SWError,OverloadError = parseFaults(faults)
 
 	
 # vehicle has been recovered
@@ -1460,7 +1478,9 @@ else:   #not opt report
 			cdd["text_mission"] = "RECOVERED " + hours(recovered)+ " &#x2022; " + dates(recovered)
 			
 	# NOT RECOVERED
-	else:                                                                  # unicode bullet
+	else:   
+		# SWError = False
+		CriticalError = False                                                               # unicode bullet
 		if missionName and missionTime:
 			cdd["text_mission"]=missionName + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
 		else:
@@ -1644,8 +1664,11 @@ else:   #not opt report
 			cdd["color_bat6"] = ['st4',LowBattColor][volt < 15.7]
 			cdd["color_bat7"] = ['st4',LowBattColor][volt < 16.1]
 			cdd["color_bat8"] = ['st4',LowBattColor][volt < 16.5]
-			
- 		if ((now - SWError)/3600000 < 8):
+
+		if DEBUG and SWError:
+			print >> sys.stderr, "SOFTWARE ERROR: " ,(now-SWError)/3600000
+ 			
+ 		if (SWError and ((now - SWError)/3600000 < 8)):
 			cdd["color_sw"] = 'st5'
 
 		if DVLError:
