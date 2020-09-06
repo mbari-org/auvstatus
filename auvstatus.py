@@ -29,7 +29,7 @@ import urllib2
 import json
 import math
 import re
-import collections
+from collections import deque
 from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead   # define the svg text?
 
 import ssl
@@ -265,23 +265,25 @@ def getDataAsc(starttime):
 			print >> sys.stderr, "# DATA NewURL",NewURL
 		datacon = urllib2.urlopen(NewURL,timeout=5)
 		# pull last X lines from queue. This was causing problems on some missions so increased it
-		lastlines = collections.deque(datacon, 1500)
+		lastlines = deque(datacon)
+		lastlines.reverse() #in place
 		for nextline in lastlines:
 # 			if DEBUG:
 # 				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
 			if "platform_battery_" in nextline:
 				fields = nextline.split("=")
-# 				if (volt==0) and "voltage" in nextline:
-				if "voltage" in nextline:
+				
+ 				if (volt==0) and "voltage" in nextline:
+# 				if "voltage" in nextline:
 					volt     = float(fields[3].split(" ")[0])
 					volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  # in seconds not MS
-				elif "charge" in nextline:
+				if amp == 0 and "charge" in nextline:
 					amp      = float(fields[3].split(" ")[0])
-# 			if (volt) and (amp):
-# 				Bailout = True
-# 				break
-# 		if Bailout == True:
-# 			break
+ 			if (volt) and (amp):
+ 				Bailout = True
+ 				break
+ 		if Bailout == True:
+ 			break
 	return volt,amp,volttime
 
 def getData(starttime):
@@ -1647,7 +1649,7 @@ else:   #not opt report
 		cdd["text_volts"]= "%.1f" % volt
 		cdd["text_amps"]= "%.1f" % amphr 
 	
-		voltnum=int(4 + 1*(volt<15) + 1*(volt<14))
+		voltnum=int(4 + 1*(volt<15) + 1*(volt<14.2))
 
 		if BadBattery > 100: # this is the unixtine
 			if DEBUG:
