@@ -29,7 +29,7 @@ import urllib2
 import json
 import math
 import re
-from collections import deque
+import collections
 from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead   # define the svg text?
 
 import ssl
@@ -261,24 +261,27 @@ def getDataAsc(starttime):
 		
 		extrapath = pathpart['path']
 		NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
+		if DEBUG:
+			print >> sys.stderr, "# DATA NewURL",NewURL
 		datacon = urllib2.urlopen(NewURL,timeout=5)
 		# pull last X lines from queue. This was causing problems on some missions so increased it
-		lastlines = deque(datacon, 1500)
+		lastlines = collections.deque(datacon, 1500)
 		for nextline in lastlines:
-			# if DEBUG:
-			# 	print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
+# 			if DEBUG:
+# 				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
 			if "platform_battery_" in nextline:
 				fields = nextline.split("=")
-				if (volt==0) and "voltage" in nextline:
+# 				if (volt==0) and "voltage" in nextline:
+				if "voltage" in nextline:
 					volt     = float(fields[3].split(" ")[0])
 					volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  # in seconds not MS
 				elif "charge" in nextline:
 					amp      = float(fields[3].split(" ")[0])
-			if (volt) and (amp):
-				Bailout = True
-				break
-		if Bailout == True:
-			break
+# 			if (volt) and (amp):
+# 				Bailout = True
+# 				break
+# 		if Bailout == True:
+# 			break
 	return volt,amp,volttime
 
 def getData(starttime):
@@ -638,7 +641,7 @@ def parseImptMisc(recordlist):
 			FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 			FlowTime   = Record["unixTime"]
 
-	return ubatStatus, ubatTime, FlowRate,FlowTime, LogTime, DVL_on, StationLat, StationLon, ReachedWaypoint
+	return ubatStatus, ubatTime, FlowRate,FlowTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint
 	
 
 def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
@@ -1132,7 +1135,7 @@ if (not recovered) or DEBUG:
 	important = getImportant(startTime)
 
 	missionName,missionTime = parseMission(important)
-	ubatStatus,ubatTime,flowrate,flowtime,logtime,DVLon,NavLat,NavLon,ReachedWaypoint  = parseImptMisc(important)
+	ubatStatus,ubatTime,flowrate,flowtime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint  = parseImptMisc(important)
 	
 	gf,gftime = parseCBIT(gfrecords)
 
@@ -1184,7 +1187,7 @@ if (not recovered) or DEBUG:
 	
 	if (critical):
 		if DEBUG:
-			print >> sys.stderr,"# CRITICAL "
+			print >> sys.stderr,"# Starting CRITICAL parse  "
 		dropWeight,ThrusterServo,CriticalError,CriticalTime = parseCritical(critical)
 
 	DVLError=False
@@ -1667,11 +1670,12 @@ else:   #not opt report
 
 		if DEBUG and SWError:
 			print >> sys.stderr, "SOFTWARE ERROR: " ,(now-SWError)/3600000
- 			
- 		if (SWError and ((now - SWError)/3600000 < 8)):
+ 		
+		# Ignore SW errors more than 4 hours old	
+ 		if (SWError and ((now - SWError)/3600000 < 4)):
 			cdd["color_sw"] = 'st5'
 
-		if DVLError:
+		if DVLError and not GotDVL:
 			DVLcolor = 'st6'
 			cdd["text_dvlstatus"]="ERROR"
 		elif DVLon:
@@ -1687,7 +1691,11 @@ else:   #not opt report
 			
 		cdd["color_dvl"] = DVLcolor
 
-		cdd["color_thrust"] = ['st4','st6'][(ThrusterServo>100)]
+ 		if (ThrusterServo>100) and ((now - ThrusterServo)/3600000 < 4):
+			cdd["color_thrust"] = 'st6'
+		else:
+			cdd["color_thrust"] = 'st4'
+
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
 		if dropWeight > 100:
