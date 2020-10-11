@@ -245,6 +245,7 @@ def getDataAsc(starttime):
 	
 	look for platform_battery_charge or platform_battery_voltage
 	
+	WetLabsUBAT.flow_rate=0.333607 l/s
 '''
 
 	Bailout=False
@@ -252,6 +253,7 @@ def getDataAsc(starttime):
 	volt = 0
 	amp  = 0
 	volttime = 0
+	flow = 999
 
 	record = runQuery(event="dataProcessed",limit="2",timeafter=starttime)
 	for pathpart in record:
@@ -279,12 +281,20 @@ def getDataAsc(starttime):
 					volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  # in seconds not MS
 				if amp == 0 and "charge" in nextline:
 					amp      = float(fields[3].split(" ")[0])
+			if VEHICLE == 'pontus':
+				'''WetLabsUBAT.flow_rate=0.333607 l/s'''
+				if (flow == 999) and "WetLabsUBAT.flow_rate" in nextline:
+					if DEBUG:
+						print >> sys.stderr, "# FLOWDATA",nextline
+					flowfields = nextline.split("=")
+					flow      = int(1000 * float(flowfields[-1].split(" ")[0]))
+					flowtime = int(float(flowfields[0].split(',')[1].split(" ")[0])*1000)
  			if (volt) and (amp):
  				Bailout = True
  				break
  		if Bailout == True:
  			break
-	return volt,amp,volttime
+	return volt,amp,volttime,flow,flowtime
 
 def getData(starttime):
 	'''NOT USED? see getDataAsc'''
@@ -647,12 +657,12 @@ def parseImptMisc(recordlist):
 			ubatBool = Record["text"].startswith("Enabl")
 			ubatStatus = ["st5","st4"][ubatBool]
 			ubatTime   = Record["unixTime"]
-			
+		# THIS IS NOT CURRENTLY REPORTED	
 		if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("WetLabsUBAT.flow_rate"):
 			FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 			FlowTime   = Record["unixTime"]
 
-	return ubatStatus, ubatTime, FlowRate,FlowTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint
 	
 
 def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
@@ -1148,7 +1158,7 @@ if (not recovered) or DEBUG:
 	important = getImportant(startTime)
 
 	missionName,missionTime = parseMission(important)
-	ubatStatus,ubatTime,flowrate,flowtime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint  = parseImptMisc(important)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint  = parseImptMisc(important)
 	
 	gf,gftime = parseCBIT(gfrecords)
 
@@ -1191,7 +1201,7 @@ if (not recovered) or DEBUG:
 		print >> sys.stderr,"#DURATION and timeout start", missionduration,timeoutstart
 	
 	#this is volt, amp, time
-	volt,amphr,batttime = getDataAsc(startTime)
+	volt,amphr,batttime,flowdat,flowtime = getDataAsc(startTime)
 	satcomms,cellcomms = parseComms(getComms(startTime))
 
 	if not needcomms: 
@@ -1257,7 +1267,7 @@ if Opt.report:
 	print "LogRestart",hours(logtime), elapsed(ago_log), logtime
 	if VEHICLE=="pontus" and not recovered:
 		print "UBAT: ", ubatStatus, hours(ubatTime)
-		print "FLOW: ",flowrate, hours(flowtime)
+		print "FLOW: ",flowdat, hours(flowtime)
 	print "SPEED: ",speed  
 	print "GPS",site
 	print "GPSTIme",hours(gpstime)
@@ -1601,8 +1611,8 @@ else:   #not opt report
 		###   UBAT FLOW DISPLAY
 		###
 		if VEHICLE == 'pontus':
-			if flowrate:
-				if (.25 < flowrate <.45):
+			if (flowdat < 999) and (ubatStatus=="st4"):
+				if ((250 < flowdat) and (flowdat < 500)):
 					cdd["color_flow"]= 'st4'
 				else:
 					cdd["color_flow"]= 'st6'
