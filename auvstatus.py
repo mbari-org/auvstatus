@@ -401,6 +401,7 @@ def parseFaults(recordlist):
 	BadBattery    = False
 	DVLError = False
 	Software = False
+	Hardware = False
 	Overload = False
 	# if DEBUG:
 	# 	print "### Start Recordlist"
@@ -420,11 +421,14 @@ def parseFaults(recordlist):
 		if (not Overload) and "overload error" in Record["text"].lower():
 			Overload = Record["unixTime"]
 		
+		if (not Hardware) and "thruster uart error" in Record["text"].lower():
+			Hardware = Record["unixTime"]
+		
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder"] and "failed" in Record.get("text","NA").lower():
 		 	DVLError=Record["unixTime"]
-	return BadBattery,DVLError,Software,Overload
+	return BadBattery,DVLError,Software,Overload,Hardware
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -636,7 +640,12 @@ def parseImptMisc(recordlist):
 		'''Change to got command ubat on'''
 		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
 			ubatBool = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
-			ubatStatus = ["st6","st4"][ubatBool]
+			ubatStatus = ["st5","st4"][ubatBool]
+			ubatTime   = Record["unixTime"]
+		
+		elif VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "abling UBAT" in Record.get("text","NA"):
+			ubatBool = Record["text"].startswith("Enabl")
+			ubatStatus = ["st5","st4"][ubatBool]
 			ubatTime   = Record["unixTime"]
 			
 		if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("WetLabsUBAT.flow_rate"):
@@ -1121,6 +1130,8 @@ plugged = getPlugged(recovered)
 
 note,noteTime = parseNotes(getNotes(startTime))
 
+bearing = 999
+
 # vehicle not recovered
 if (not recovered) or DEBUG:
 	critical  = getCritical(startTime)
@@ -1195,9 +1206,10 @@ if (not recovered) or DEBUG:
 	DVLError=False
 	BadBattery=False
 	SWError = False
+	HWError = False
 	OverloadError = False
 	if faults:
-		BadBattery,DVLError,SWError,OverloadError = parseFaults(faults)
+		BadBattery,DVLError,SWError,OverloadError,HWError = parseFaults(faults)
 
 	
 # vehicle has been recovered
@@ -1328,6 +1340,7 @@ else:   #not opt report
 	"color_smallcable",
 	"color_cart",
 	"color_sw" ,
+	"color_hw",
 	"color_cartcircle",
 	"color_missiondefault" ]
 	for cname in colornames:
@@ -1676,6 +1689,9 @@ else:   #not opt report
 		# Ignore SW errors more than 4 hours old	
  		if (SWError and ((now - SWError)/3600000 < 4)):
 			cdd["color_sw"] = 'st5'
+
+ 		if (HWError and ((now - HWError)/3600000 < 4)):
+			cdd["color_hw"] = 'st5'
 
 		if DVLError and not GotDVL:
 			DVLcolor = 'st6'

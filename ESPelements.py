@@ -17,16 +17,17 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
  .st6 { fill: #5cba48; }
  .st7, .st8, .st9 { font-size: 7px; }
  .st7, .st8 { fill: #231f20; }
- .st7, .st9 { font-family: Helvetica; }
+ .te5, .st7, .st9 { font-family: Helvetica; }
  .st8 { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
  .st9 { fill: #919396; }
  .st10 { fill: none; stroke: #fff; }
 
  .fill_gray { fill: #bbbbbb; }
  .fill_white { fill: #fff; }
- .stroke_purple { stroke: #9b509f; fill:none; stroke-width: 2px; }
+ .stroke_purple { stroke: #ab60af; fill:none; stroke-width: 2px; }
  .stroke_black  { stroke: #000; fill:none; stroke-width: 2px; }
- .stroke_blue  { stroke: #5eafe2; fill:none; stroke-width: 2px; }
+ .stroke_blue  { stroke: #067878; fill:none; stroke-width: 2px; stroke-dasharray:1;}
+ .stroke_dash  { stroke-dasharray:1;}
  .stroke_2px { stroke-width: 2px; }
  .stroke_white { fill: none; stroke: #fff; }
  .stroke_none {stroke: none; fill:none};
@@ -39,8 +40,10 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
  .thick_gray       { stroke-width:4px; fill:none; stroke: #bbbbbb; }
  .thick_green      { stroke-width:4px; fill:none; stroke: #5cba48; }
  .fill_green { fill: #5cba48; }
+ .font_size5 { font-size: 5px; }
  .font_size7 { font-size: 7px; }
  .font_size9 { font-size: 9px; }
+ .fill_red {fill: #e24466; }
  .fill_darkgray { fill: #231f20; }
  .font_helv { font-family: Helvetica; }
  .font_helvBold { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }

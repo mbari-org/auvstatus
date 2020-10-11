@@ -101,8 +101,8 @@ svgtext = '''
 </g>
 
 
-<circle desc="missiondefault"   class="{color_missiondefault}" cx="435" cy="183" r="2"/>
-<circle desc="scheduleddefault" class="{color_scheduled}"      cx="435" cy="193.5" r="1.6"/>
+<circle desc="missiondefault"   class="{color_missiondefault}" cx="415" cy="183" r="2"/>
+<circle desc="scheduleddefault" class="{color_scheduled}"      cx="415" cy="193.5" r="1.6"/>
 <circle desc="commoverdue"     class="{color_commago}"        cx="138.5" cy="295.5" r="2"/>
 <circle desc="missionoverdue"     class="{color_missionago}"     cx="138.5" cy="306" r="2"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="{color_satcomm}" width="24.43" height="11.5"/>
@@ -143,8 +143,8 @@ svgtext = '''
 </g>
 
 <!-- Dynamic values -->
-<text desc="mission" transform="matrix(1 0 0 1 482.0 186)" class="st9 st10 st12">{text_mission}</text>
-<text desc="mission" transform="matrix(1 0 0 1 439.5 196)" class="st12 st9 st13">{text_scheduled}</text>
+<text desc="mission" transform="matrix(1 0 0 1 462.0 186)" class="st9 st10 st12">{text_mission}</text>
+<text desc="missionsched" transform="matrix(1 0 0 1 419.5 196)" class="st12 st9 st13">{text_scheduled}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
 <text desc="test_note" transform="matrix(1 0 0 1 133 174)" class="st12 st9 st13">{text_note}</text>
 <text desc="test_notetime" transform="matrix(1 0 0 1 134 180)" class="st12 st9 st24">{text_notetime}</text>
@@ -179,7 +179,7 @@ svgtext = '''
 
 
 <!-- Static labels -->  
-<text transform="matrix(1 0 0 1 439.0 186)" class="st9 st10">MISSION:</text>
+<text transform="matrix(1 0 0 1 419.0 186)" class="st9 st10">MISSION:</text>
 <text transform="matrix(1 0 0 1 404.0 268.0)" class="st12 st9 st13">UPDATED:</text>
 '''
 svglabels='''

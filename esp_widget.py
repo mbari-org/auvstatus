@@ -170,11 +170,12 @@ def elapsed(rawdur):
 def getstrings():
 
 	# generate circles
-	string_circle_big = ''
+	string_circle_big   = ''
 	string_circle_small = ''
-	string_text_label= ''
-	string_pie = ''
-	string_line_small=''
+	string_text_label   = ''
+	string_pct_label    = ''
+	string_pie          = ''
+	string_line_small   = ''
 	# Generate matrix of circles
 
 	for row in range(nrows):
@@ -192,7 +193,11 @@ def getstrings():
 			xval = 1 + spcol * (col + 1)
 			yval = sprow * (row +1)
 			string_text_label   += '<text desc="t_label_{ind:02d}" class="st7" transform="translate({xval} {yval})">{ind:02d}</text>\n'.format(ind=ind,st=style_text_label,xval=xval,yval=yval)
-	return string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label
+			
+			# Percent labels for incomplete samples
+			string_pct_label   += '<text desc="pct_label_{ind:02d}" class="te5 font_size5 fill_red" transform="translate({xval} {yval})">{{{ind}}}</text>\n'.format(ind=ind,xval=xval,yval=yval+5)
+
+	return string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label, string_pct_label
 	
 def getpieval(pct,radius):
 	pi = 3.1416
@@ -308,6 +313,63 @@ def parseESP(recordlist,big_circle_list):
 			
 	return ESPL,firstnum,firsttime,big_circle_list
 
+def printLegend(lowerleft):
+	lowerx=lowerleft[0]
+	lowery=lowerleft[1]+12
+	offsetx=24
+	legend=''
+	
+	'''		string_circle_big   += '<circle desc="c_big_{ind:02d}" class="{{{ind}}}" cx="{xval}" cy="{yval}" r="{radius}"/>\n'.format(ind=ind,xval=xval,yval=yval,radius = small_radius+2)
+			string_circle_small += '<circle desc="c_small_{ind:02d}" class="{{{ind}}}" cx="{xval}" cy="{yval}" r="{radius}"/>\n'.format(ind=ind,xval=xval,yval=yval,radius=small_radius)
+			# change colors in function makepiestring()
+			string_pie += makepiestring(index=ind,xp=xval,yp=yval,radius=small_radius)
+			xval = 1 + spcol * (col + 1)
+			yval = sprow * (row +1)
+			string_text_label   += '<text desc="t_label_{ind:02d}" class="st7" transform="translate({xval} {yval})">{ind:02d}</text>\n'.format(ind=ind,st=style_text_label,xval=xval,yval=yval)
+			
+			# Percent labels for incomplete samples
+			string_pct_label   += '<text desc="pct_label_{ind:02d}" class="te5 font_size5 fill_red" transform="translate({xval} {yval})">{{{ind}}}</text>\n'.format(ind=ind,xval=xval,yval=yval+5)
+'''
+	
+	legend += '\n<circle class="fill_green" cx="{xval}" cy="{yval}" r="{radius}"/>'.format(
+	    xval   = lowerx+4+offsetx *0,
+	    yval   = lowery,
+	    radius = small_radius-4)
+	legend += '\n<text class="te5 font_size5" transform="translate({tx} {ty})">GOOD</text>'.format(
+	    tx = lowerx - (small_radius-4)/2 +offsetx *0,
+	    ty = lowery+2)
+	legend += '\n<circle class="fill_yellow" cx="{xval}" cy="{yval}" r="{radius}"/>'.format(
+	    xval   = lowerx +3 +offsetx *1,
+	    yval   = lowery ,
+	    radius = small_radius-4)
+	legend += '\n<text class="te5 font_size5" transform="translate({tx} {ty})">PART</text>'.format(
+	    tx = lowerx- (small_radius-4)/2 +offsetx *1,
+	    ty = lowery +2)
+	legend += '\n<circle class="fill_orange" cx="{xval}" cy="{yval}" r="{radius}"/>'.format(
+	    xval   = lowerx +2 +offsetx *2,
+	    yval   = lowery ,
+	    radius = small_radius-4)
+	legend += '\n<text class="te5 font_size5" transform="translate({tx} {ty})">FAIL</text>'.format(
+	    tx = lowerx -(small_radius-4)/2 +offsetx *2,
+	    ty = lowery +2)
+	legend += '\n<circle class="stroke_purple" cx="{xval}" cy="{yval}" r="{radius}"/>'.format(
+	    xval   = lowerx +2 +offsetx *3,
+	    yval   = lowery ,
+	    radius = small_radius-4)
+	legend += '\n<text class="te5 font_size5" transform="translate({tx} {ty})">LAST</text>'.format(
+	    tx = lowerx -(small_radius-2)/2 +offsetx *3,
+	    ty = lowery +2)
+	legend += '\n<circle class="stroke_blue stroke_dash" cx="{xval}" cy="{yval}" r="{radius}"/>'.format(
+	    xval   = lowerx +2 +offsetx *4,
+	    yval   = lowery ,
+	    radius = small_radius-4)
+	legend += '\n<text class="te5 font_size5" transform="translate({tx} {ty})">REDO</text>'.format(
+	    tx = lowerx -(small_radius-2)/2 +offsetx *4,
+	    ty = lowery +2)
+	    
+	
+	return legend
+
 def get_options():
 	parser = argparse.ArgumentParser(usage = __doc__) 
 #	parser.add_argument('infile', type = argparse.FileType('rU'), nargs='?',default = sys.stdin, help="output of vars_retrieve")
@@ -379,11 +441,11 @@ ncells = nrows * ncols
 spcol = 26 # between columns across
 sprow = 26
 
-textoffset = 2
+textoffset = 20
 lowerright = (spcol * ncols, sprow * nrows + textoffset)
 lowerleft  = (spcol, sprow * nrows + textoffset)
 
-stylelist = [999] * (ncells +1)
+stylelist = ["fill_lightergray"] * (ncells +1)
 linestylelist = ["thick_gray"] * (ncells +1)
 style_circle_big = ["stroke_none"] * (ncells +1)
 
@@ -423,6 +485,9 @@ if (not recovered) or DEBUG:
 		else 'thick_green' if i > 95  \
 		else 'thick_orange' if i < 0  \
 		else 'thick_yellow' for i in outlist]
+		
+# 		GENERATE LIST OF PERCENTAGES
+		pctlist = ['' if i > 95 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
 
 		if mostrecent:
 			style_circle_big[mostrecent] = 'stroke_purple'
@@ -434,7 +499,14 @@ for p in range(61):
 ########################	
 # GENERATE SVG HERE
 
-string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label = getstrings()
+string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label,string_pct_label = getstrings()
+
+if DEBUG:
+	print (sys.stderr, "\n#PCTLIST ", pctlist)
+	print (sys.stderr, "\n#OUTLIST ", outlist)
+	print (sys.stderr, "\n#string_pct_label ", string_pct_label)
+	print (sys.stderr, "\n#string_pct_label ", string_pct_label.format(*pctlist))
+	print (sys.stderr, "\n#LEGEND ", printLegend(lowerleft))
 
 if Opt.testout:
 	print(svghead)
@@ -445,13 +517,14 @@ if Opt.testout:
 	print(string_pie.format(*percentlist))
 	print(string_text_label)
 	
-	print('<text class="font_helv font_size9" transform="translate(25 190)">Last Sample: {0}</text>'.format("Last sampled: 21:34"))
+	print('<text class="font_helv font_size7" transform="translate(25 190)">Last Sample: {0}</text>'.format("Last sampled: 21:34"))
 
 	print(svgtail)
 
 if Opt.savefile:
 	if DEBUG:
-		print (sys.stderr, "#Saving file ", OutPath.format(VEHICLE))
+		print (sys.stderr, "#Saving file ", OutPath.format(VEHICLE))		
+		
 	with open(OutPath.format(VEHICLE),'w') as outfile:
 		outfile.write(svghead)
 		outfile.write(string_circle_big.format(*style_circle_big))
@@ -460,11 +533,16 @@ if Opt.savefile:
 		else:	
 			outfile.write(string_circle_small.format(*stylelist))
 			outfile.write(string_text_label)
+			outfile.write(string_pct_label.format(*pctlist))
 			
-		outfile.write('<text class="font_helv font_size9" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample,tx=lowerleft[0],ty=lowerleft[1])) # 25 190
+		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample,tx=lowerleft[0],ty=lowerleft[1])) # 25 190
 		timestring = dates(now) + " - " +hours(now)
-		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0],ty=lowerright[1])) # 175 190
+		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0]-70,ty=lowerright[1]-2)) # 175 190
+
+		outfile.write(printLegend(lowerleft))
+
 		outfile.write(svgtail)
+		
 		
 
 
