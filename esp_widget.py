@@ -355,7 +355,6 @@ def printLegend(lowerleft):
 	    tx = lowerx -(small_radius-2)/2 +offsetx *4,
 	    ty = lowery +2)
 	    
-	
 	return legend
 
 def get_options():
@@ -453,11 +452,12 @@ if Opt.lines:
 	small_radius=1
 
 # PARSE RECORDS and SET FORMAT HERE
-
+GoodCount = 'na'
+LeakCount = 'na'
 if (not recovered) or DEBUG:
 	esprecords = getESP(startTime)
-	if DEBUG:
-		print(esprecords,file=sys.stderr)
+# 	if DEBUG:
+# 		print(esprecords,file=sys.stderr)
 	
 	if esprecords:
 		outlist,mostrecent,lastsample,style_circle_big  = parseESP(esprecords,style_circle_big)
@@ -476,10 +476,11 @@ if (not recovered) or DEBUG:
 		
 # 		GENERATE LIST OF PERCENTAGES
 		pctlist = ['' if i > 95 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
-
 		if mostrecent:
 			style_circle_big[mostrecent] = 'stroke_purple'
 			text_lastsample = elapsed(lastsample - now)
+		GoodCount = sum([1 for x in outlist if 10 < x < 101])
+		LeakCount = sum([1 for x in outlist if x < 10])
 
 for p in range(61):
 	percentlist[p] = getpieval(p,small_radius)
@@ -490,11 +491,11 @@ for p in range(61):
 string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label,string_pct_label = getstrings()
 
 if DEBUG:
-	print (sys.stderr, "\n#PCTLIST ", pctlist)
-	print (sys.stderr, "\n#OUTLIST ", outlist)
-	print (sys.stderr, "\n#string_pct_label ", string_pct_label)
-	print (sys.stderr, "\n#string_pct_label ", string_pct_label.format(*pctlist))
-	print (sys.stderr, "\n#LEGEND ", printLegend(lowerleft))
+	print ("\n#PCTLIST ", pctlist,file=sys.stderr)
+	print ("\n#OUTLIST ", outlist,file=sys.stderr)
+# 	print ("\n#string_pct_label ", string_pct_label,file=sys.stderr)
+# 	print ("\n#string_pct_label ", string_pct_label.format(*pctlist),file=sys.stderr)
+# 	print ("\n#LEGEND ", printLegend(lowerleft),file=sys.stderr)
 
 if Opt.testout:
 	print(svghead)
@@ -526,6 +527,10 @@ if Opt.savefile:
 		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample,tx=lowerleft[0],ty=lowerleft[1]-2)) # 25 190
 		timestring = dates(now) + " - " +hours(now)
 		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0]-70,ty=lowerright[1]-2)) # 175 190
+
+		# SAMPLE SUMMARY
+		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd}</text>'.format(upd=GoodCount,tx=lowerright[0]-70,ty=lowerright[1]+7)) # 175 190
+		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})"> Bad Samples: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-70,ty=lowerright[1]+13)) # 175 190
 
 		outfile.write(printLegend(lowerleft))
 
