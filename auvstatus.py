@@ -253,6 +253,7 @@ def getDataAsc(starttime):
 	volt = 0
 	amp  = 0
 	volttime = 0
+	flowtime = 0
 	flow = 999
 
 	record = runQuery(event="dataProcessed",limit="2",timeafter=starttime)

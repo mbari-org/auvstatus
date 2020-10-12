@@ -111,7 +111,7 @@ svgtext = '''
 <rect desc="amps"    x="336.28" y="261.76" class="{color_amps}" width="25.5" height="10.5"/>
 <rect desc="volts"   x="336.28" y="249.85" class="{color_volts}" width="25.5" height="10.5"/>
 <rect desc="gf_rect" x="480" y="254.0" class="{color_gf}" width="24.43" height="10.5"/>
-<circle desc="HW" class="st3" cx="267" cy="251" r="4" /> 
+<circle desc="HW" class="{color_hw}" cx="267" cy="251" r="4" /> 
 <circle desc="SW" class="{color_sw}" cx="267" cy="264" r="4"/>
 <circle desc="OT" class="st3" cx="267" cy="277" r="4" /> 
 

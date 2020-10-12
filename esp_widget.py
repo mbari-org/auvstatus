@@ -315,22 +315,10 @@ def parseESP(recordlist,big_circle_list):
 
 def printLegend(lowerleft):
 	lowerx=lowerleft[0]
-	lowery=lowerleft[1]+12
+	lowery=lowerleft[1]+10
 	offsetx=24
 	legend=''
-	
-	'''		string_circle_big   += '<circle desc="c_big_{ind:02d}" class="{{{ind}}}" cx="{xval}" cy="{yval}" r="{radius}"/>\n'.format(ind=ind,xval=xval,yval=yval,radius = small_radius+2)
-			string_circle_small += '<circle desc="c_small_{ind:02d}" class="{{{ind}}}" cx="{xval}" cy="{yval}" r="{radius}"/>\n'.format(ind=ind,xval=xval,yval=yval,radius=small_radius)
-			# change colors in function makepiestring()
-			string_pie += makepiestring(index=ind,xp=xval,yp=yval,radius=small_radius)
-			xval = 1 + spcol * (col + 1)
-			yval = sprow * (row +1)
-			string_text_label   += '<text desc="t_label_{ind:02d}" class="st7" transform="translate({xval} {yval})">{ind:02d}</text>\n'.format(ind=ind,st=style_text_label,xval=xval,yval=yval)
-			
-			# Percent labels for incomplete samples
-			string_pct_label   += '<text desc="pct_label_{ind:02d}" class="te5 font_size5 fill_red" transform="translate({xval} {yval})">{{{ind}}}</text>\n'.format(ind=ind,xval=xval,yval=yval+5)
-'''
-	
+		
 	legend += '\n<circle class="fill_green" cx="{xval}" cy="{yval}" r="{radius}"/>'.format(
 	    xval   = lowerx+4+offsetx *0,
 	    yval   = lowery,
@@ -535,7 +523,7 @@ if Opt.savefile:
 			outfile.write(string_text_label)
 			outfile.write(string_pct_label.format(*pctlist))
 			
-		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample,tx=lowerleft[0],ty=lowerleft[1])) # 25 190
+		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample,tx=lowerleft[0],ty=lowerleft[1]-2)) # 25 190
 		timestring = dates(now) + " - " +hours(now)
 		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0]-70,ty=lowerright[1]-2)) # 175 190
 
