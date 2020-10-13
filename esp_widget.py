@@ -498,6 +498,7 @@ if (not recovered) or DEBUG:
 		
 # 		GENERATE LIST OF PERCENTAGES
 		pctlist = ['-X-' if i <1 else '' if i > 90 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
+		
 		if mostrecent:
 			if not "dash" in style_circle_big[mostrecent]:
 				style_circle_big[mostrecent] = 'stroke_purple'

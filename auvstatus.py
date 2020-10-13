@@ -290,7 +290,7 @@ def getDataAsc(starttime):
 					flowfields = nextline.split("=")
 					flow      = int(1000 * float(flowfields[-1].split(" ")[0]))
 					flowtime = int(float(flowfields[0].split(',')[1].split(" ")[0])*1000)
- 			if (volt) and (amp):
+ 			if (volt) and (amp) and (flow < 999):
  				Bailout = True
  				break
  		if Bailout == True:
