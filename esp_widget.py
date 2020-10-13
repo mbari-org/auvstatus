@@ -19,24 +19,44 @@ import urllib2
 
 # Default timeouts for selected missions
 ''' AVAILABLE STYLES
- .fill_gray { fill: #dcddde; }
+ .st1 { fill: #dcddde; }
+ .st2, .st3 { fill: #fff; }
+ .st2 { stroke: #9b509f; }
+ .st10, .st2, .st3 { stroke-miterlimit: 10; }
+ .st10, .st2 { stroke-width: 2px; }
+ .st3 { stroke: #231f20; }
+ .st4 { fill: #ef972c; }
+ .st5 { fill: #727373; }
+ .st6 { fill: #5cba48; }
+ .st7, .st8, .st9 { font-size: 7px; }
+ .st7, .st8 { fill: #231f20; }
+ .te5, .st7, .st9 { font-family: Helvetica; }
+ .st8 { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
+ .st9 { fill: #919396; }
+ .st10 { fill: none; stroke: #fff; }
+
+ .fill_gray { fill: #bbbbbb; }
  .fill_white { fill: #fff; }
- .stroke_purple { stroke: #9b509f; fill:none; stroke-width: 2px; }
+ .stroke_purple { stroke: #ab60af; fill:none; stroke-width: 2px; }
  .stroke_black  { stroke: #000; fill:none; stroke-width: 2px; }
-  .stroke_blue  { stroke: #5eafe2; fill:none; stroke-width: 2px; }
- .stroke_none {stroke: none; fill:none};
+ .stroke_blue  { stroke: #067878; fill:none; stroke-width: 2px; stroke-dasharray:1.5 1;}
+ .stroke_dash  { stroke-dasharray:1.5 1;}
  .stroke_2px { stroke-width: 2px; }
  .stroke_white { fill: none; stroke: #fff; }
+ .stroke_none {stroke: none; fill:none};
  .stroke_darkGray { stroke: #231f20; fill: none; stroke-width: 2px;}
  .fill_orange { fill: #ef972c; }
  .fill_yellow { fill: #efef00; }
- .fill_lightgray { fill: #727373; }
- .fill_green { fill: #5cba48; }
+ .fill_lightgray { fill: #e2e2e2; }
  .thick_orange     { stroke-width:4px; fill:none; stroke: #ef972c; }
- .thick_yellow     { stroke-width:4px; fill:none; stroke: #efef00; } 
- .thick_lightgray  { stroke-width:4px; fill:none; stroke: #727373; } 
- .thick_green      { stroke-width:4px; fill:none; stroke: #5cba48; } 
+ .thick_yellow     { stroke-width:4px; fill:none; stroke: #f7ca0b; }
+ .thick_gray       { stroke-width:4px; fill:none; stroke: #bbbbbb; }
+ .thick_green      { stroke-width:4px; fill:none; stroke: #5cba48; }
+ .fill_green { fill: #5cba48; }
+ .font_size5 { font-size: 5px; }
  .font_size7 { font-size: 7px; }
+ .font_size9 { font-size: 9px; }
+ .fill_red {fill: #e24466; }
  .fill_darkgray { fill: #231f20; }
  .font_helv { font-family: Helvetica; }
  .font_helvBold { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
@@ -308,6 +328,8 @@ def parseESP(recordlist,big_circle_list):
 						ESPL[int(c)]= round(float(v)/10)
 					if not firstnum:
 						firstnum = int(c)
+						if v != "-99":
+							big_circle_list[int(c)] = "stroke_purple stroke_dash"
 						firsttime = Record["unixTime"]
 
 			
@@ -477,7 +499,8 @@ if (not recovered) or DEBUG:
 # 		GENERATE LIST OF PERCENTAGES
 		pctlist = ['' if i > 95 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
 		if mostrecent:
-			style_circle_big[mostrecent] = 'stroke_purple'
+			if not "dash" in style_circle_big[mostrecent]:
+				style_circle_big[mostrecent] = 'stroke_purple'
 			text_lastsample = elapsed(lastsample - now)
 		GoodCount = sum([1 for x in outlist if 10 < x < 101])
 		LeakCount = sum([1 for x in outlist if x < 10])
@@ -530,7 +553,7 @@ if Opt.savefile:
 
 		# SAMPLE SUMMARY
 		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd}</text>'.format(upd=GoodCount,tx=lowerright[0]-70,ty=lowerright[1]+7)) # 175 190
-		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})"> Bad Samples: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-70,ty=lowerright[1]+13)) # 175 190
+		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Fail: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-70,ty=lowerright[1]+13)) # 175 190
 
 		outfile.write(printLegend(lowerleft))
 
