@@ -26,8 +26,8 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
  .fill_white { fill: #fff; }
  .stroke_purple { stroke: #ab60af; fill:none; stroke-width: 2px; }
  .stroke_black  { stroke: #000; fill:none; stroke-width: 2px; }
- .stroke_blue  { stroke: #067878; fill:none; stroke-width: 2px; stroke-dasharray:1.5 1;}
- .stroke_dash  { stroke-dasharray:1.5 1;}
+ .stroke_blue  { stroke: #067878; fill:none; stroke-width: 2px; stroke-dasharray:1.1 1.4;}
+ .stroke_dash  { stroke-dasharray:1.1 1.4;}
  .stroke_2px { stroke-width: 2px; }
  .stroke_white { fill: none; stroke: #fff; }
  .stroke_none {stroke: none; fill:none};

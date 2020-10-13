@@ -486,18 +486,18 @@ if (not recovered) or DEBUG:
 		#['r' if i > 50 else 'y' if i > 2 else 'g' for i in x]
 		stylelist = \
 		['fill_gray' if i > 500 \
-		else 'fill_green' if i > 95  \
+		else 'fill_green' if i > 90  \
 		else 'fill_orange' if i < 0  \
 		else  'fill_yellow' for i in outlist]
 		
 		linestylelist = \
 		['thick_gray' if i > 500 \
-		else 'thick_green' if i > 95  \
+		else 'thick_green' if i > 90  \
 		else 'thick_orange' if i < 0  \
 		else 'thick_yellow' for i in outlist]
 		
 # 		GENERATE LIST OF PERCENTAGES
-		pctlist = ['' if i > 95 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
+		pctlist = ['-X-' if i <1 else '' if i > 90 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
 		if mostrecent:
 			if not "dash" in style_circle_big[mostrecent]:
 				style_circle_big[mostrecent] = 'stroke_purple'
@@ -553,7 +553,7 @@ if Opt.savefile:
 
 		# SAMPLE SUMMARY
 		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd}</text>'.format(upd=GoodCount,tx=lowerright[0]-70,ty=lowerright[1]+7)) # 175 190
-		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Fail: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-70,ty=lowerright[1]+13)) # 175 190
+		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Failed: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-70,ty=lowerright[1]+13)) # 175 190
 
 		outfile.write(printLegend(lowerleft))
 
