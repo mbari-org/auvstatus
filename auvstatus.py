@@ -703,7 +703,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 			"esp samples have 3h timeout"
 
-		if RecordText.startswith('got command schedule clear'):
+		if RecordText.startswith("Started mission") or RecordText.startswith('got command schedule clear'):
 			Cleared = True
 			if DEBUG:
 				print >> sys.stderr, "## Got CLEAR"
