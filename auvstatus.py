@@ -702,10 +702,16 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			TimeoutStart    = Record["unixTime"]
 			
 			"esp samples have 3h timeout"
-		if Scheduled == False and not Cleared and RecordText.startswith('got command schedule "run'):
+
+		if RecordText.startswith('got command schedule clear'):
+			Cleared = True
+			if DEBUG:
+				print >> sys.stderr, "## Got CLEAR"
+
+		if Scheduled == False and not Cleared and (RecordText.startswith('got command schedule "run') or RecordText.startswith('got command schedule "load')) :
 			'''got command schedule "run " 3p78c'''
 			if DEBUG:
-				print >> sys.stderr, "## Schedule Record",RecordText
+				print >> sys.stderr, "## Schedule Record ",RecordText
 
 			if RecordText.startswith('got command schedule "run "'):
 				hashre = re.compile(r'got command schedule "run " (\w+)')
@@ -713,26 +719,26 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				hash_result = hashre.search(RecordText)
 				if hash_result:
 					hash=hash_result.group(1)
+					if DEBUG:
+						print >> sys.stderr, "## Schedule Hash found ",hash
 			else:
 				'''got command schedule "run Science/mbts_sci2.xml"'''
-				Scheduled = Record["text"].split("/")[1].replace('.xml"','')
-
+				'''got command schedule "load Science/circle_acoustic_contact.xml'''
+				#Scheduled = Record["text"].split("/")[1].replace('.xml"','')
+				'''got command schedule "set circle_acoustic_contact'''
+				Scheduled = Record["text"].split("/")[1].split('.')[0]
 				if DEBUG:
-					print >> sys.stderr, "## Found Scheduled",Scheduled
+					print >> sys.stderr, "## Found Scheduled in else",Scheduled
 					
 					'''TODO REPLACE WITH REGEX 
 Scheduled #27 (#1 of 2 with id='3p78c'): "load Science/profile_station.xml;set profile_station.MissionTimeout 14 hour;set profile_station.Lat 36.7970 degree;set profile_station.L'''
 
-		if Scheduled == False and not Cleared and RecordText.startswith('Scheduled #') and "load" in RecordText and hash in RecordText:
+		if Scheduled == False and not Cleared and RecordText.startswith('Scheduled #') and (("load" in RecordText) or ("set" in RecordText)) and hash in RecordText:
 			Scheduled = RecordText.split(': "load ')[1].split('.xml')[0].split("/")[1]
 			''': "load Science/profile_station.xml'''
 			if DEBUG:
 				print >> sys.stderr, "## Found Scheduled hash",Scheduled
 
-		if RecordText.startswith('got command schedule clear'):
-				Cleared = True
-				if DEBUG:
-					print >> sys.stderr, "## Got CLEAR"
 					
 		# SETTING STATION. Will fail on multi-station missions..?
 		# CHECK For Reached Waypoint: 36.821898,-121.885600   
