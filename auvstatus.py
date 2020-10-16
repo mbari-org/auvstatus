@@ -226,7 +226,7 @@ def getComms(starttime):
 #			print rec
 	return retstring
 
-def getDataAsc(starttime):
+def getDataAsc(starttime,mission):
 	''' TODO: cache batteries for when there is a new log file
 	OR if you don't find it, rerun the Query with limit 2 and parse the second file
 
@@ -255,6 +255,9 @@ def getDataAsc(starttime):
 	volttime = 0
 	flowtime = 0
 	flow = 999
+	Tracking = []
+	TrackTime = []
+	NeedTracking = True
 
 	record = runQuery(event="dataProcessed",limit="2",timeafter=starttime)
 	for pathpart in record:
@@ -290,12 +293,31 @@ def getDataAsc(starttime):
 					flowfields = nextline.split("=")
 					flow      = int(1000 * float(flowfields[-1].split(" ")[0]))
 					flowtime = int(float(flowfields[0].split(',')[1].split(" ")[0])*1000)
- 			if (volt) and (amp) and (flow < 999):
+			if "acoustic" in mission and NeedTracking:
+				'''2020-10-10T20:41:20.873Z,1602362480.873 Unknown-->Tracking.range_to_contact=389.093750 m'''
+				if len(Tracking) < 2:
+					if "Tracking.range" in nextline:
+						tfields = nextline.split("=")
+						trange  = int(float(tfields[-1].split(" ")[0]))
+						ttime   = int(float(tfields[0].split(',')[1].split(" ")[0])*1000)
+						if trange:
+							Tracking.append(trange)
+							TrackTime.append(ttime)
+				else:
+					NeedTracking = False
+			else:
+				NeedTracking = False
+						
+
+ 			if (volt) and (amp) and (VEHICLE == 'pontus' and flow < 999) and (NeedTracking == False):
  				Bailout = True
  				break
  		if Bailout == True:
  			break
-	return volt,amp,volttime,flow,flowtime
+ 	if DEBUG:
+		print >> sys.stderr, "#> Complete tracking:",Tracking, TrackTime, elapsed(TrackTime[0] - now)
+
+	return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
 
 def getData(starttime):
 	'''NOT USED? see getDataAsc'''
@@ -825,7 +847,34 @@ def handleURLerror():
 		print svgerrorhead
 		print svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring)
 		sys.exit("URL ACCESS ERROR:"+VEHICLE)
+
+def makeTrackSVG(Tracking,TrackTime):
+	'''<!-- tracking -->
+<polygon class="st27" points="394,300 398,308 390,308 394,300"/>
+<polygon class="st25" points="394,308 398,300 390,300 394,308"/>
+<circle  class="st16" cx="394" cy="304" r="3"/>
+<text desc="text_track" transform="matrix(1 0 0 1 400 303)" class="st12 st9 st13">RANGE: 283m</text>
+<text desc="text_trackago" transform="matrix(1 0 0 1 400 310)" class="st12 st9 st13">18h 48m ago</text>'''
 	
+	BaseText = '''{tr}<text desc="text_track" transform="matrix(1 0 0 1 400 303)" class="st12 st9 st13">RANGE: {ra}m</text>
+<text desc="text_trackago" transform="matrix(1 0 0 1 400 310)" class="st12 st9 st13">{ti}</text>'''
+
+	rangem=Tracking[0]
+	timetext =elapsed(TrackTime[0] - now)
+	if len(Tracking)>1:
+		trend = Tracking[0]-Tracking[1]
+		if abs(trend) < 20:
+			trackshape = '<circle  class="st16" cx="394" cy="304" r="3"/>\n'
+		elif trend < 0:
+			trackshape = '<polygon class="st25" points="394,308 398,300 390,300 394,308"/>\n'  # "green downarrow"
+		else:
+			trackshape = '<polygon class="st27" points="394,300 398,308 390,308 394,300"/>\n'  # orange uparrow
+	else:
+		trackshape = '<circle  class="st16" cx="394" cy="304" r="3"/>\n'
+	
+	tracksvg = BaseText.format(tr=trackshape,ra=rangem,ti=timetext)
+	
+	return tracksvg	
 
 def printhtmlutility():
 	''' Print the html for the auv.html web page'''
@@ -1084,6 +1133,8 @@ VEHICLE = Opt.vehicle
 BadBattery = False
 ThrusterServo = False
 dropWeight = False
+Tracking = []
+TrackTime = []
 
 if Opt.missions:
 	'''utility to show default values for selected missions'''
@@ -1208,7 +1259,7 @@ if (not recovered) or DEBUG:
 		print >> sys.stderr,"#DURATION and timeout start", missionduration,timeoutstart
 	
 	#this is volt, amp, time
-	volt,amphr,batttime,flowdat,flowtime = getDataAsc(startTime)
+	volt,amphr,batttime,flowdat,flowtime,Tracking,TrackTime = getDataAsc(startTime,missionName)
 	satcomms,cellcomms = parseComms(getComms(startTime))
 
 	if not needcomms: 
@@ -1530,7 +1581,7 @@ else:   #not opt report
 				cdd["text_speed"]= "%.2f" % speed + "m/s"
 				
 		if Scheduled:
-			cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
+			cdd["text_scheduled"] = "LAST SCHED.: "+ Scheduled
 			cdd["color_scheduled"] = ['st27','st25'][Scheduled in mission_defaults]   
 
 		# MISSION TIMES
@@ -1726,6 +1777,8 @@ else:   #not opt report
 			
 		cdd["color_dvl"] = DVLcolor
 
+
+
  		if (ThrusterServo>100) and ((now - ThrusterServo)/3600000 < 4):
 			cdd["color_thrust"] = 'st6'
 		else:
@@ -1752,6 +1805,8 @@ else:   #not opt report
 			outfile.write(svgtext.format(**cdd))
 			if BadBattery > 100:
 				outfile.write(svgbadbattery)
+			if len(Tracking)>=1:
+				outfile.write(makeTrackSVG(Tracking,TrackTime))
 			if not recovered:
 				outfile.write(svglabels)
 				if VEHICLE=="pontus":
@@ -1764,6 +1819,8 @@ else:   #not opt report
 		print svgtext.format(**cdd)
 		if BadBattery:
 			print svgbadbattery
+		if len(Tracking)>=1:
+			print makeTrackSVG(Tracking,TrackTime)
 		if not recovered:
 			print svglabels
 			if VEHICLE=="pontus":
