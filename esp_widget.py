@@ -378,6 +378,31 @@ def printLegend(lowerleft):
 	    ty = lowery +2)
 	    
 	return legend
+	
+def writefile(myoutpath):
+	with open(myoutpath.format(VEHICLE),'w') as outfile:
+		outfile.write(svghead)
+		outfile.write(string_circle_big.format(*style_circle_big))
+		if Opt.lines:
+			outfile.write(string_line_small.format(*linestylelist))
+		else:	
+			outfile.write(string_circle_small.format(*stylelist))
+			outfile.write(string_text_label)
+			outfile.write(string_pct_label.format(*pctlist))
+			
+		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample,tx=lowerleft[0],ty=lowerleft[1]-2)) # 25 190
+		timestring = dates(now) + " - " +hours(now)
+		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0]-70,ty=lowerright[1]-2)) # 175 190
+
+		# SAMPLE SUMMARY
+		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd}</text>'.format(upd=GoodCount,tx=lowerright[0]-70,ty=lowerright[1]+7)) # 175 190
+		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Failed: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-70,ty=lowerright[1]+13)) # 175 190
+
+		outfile.write(printLegend(lowerleft))
+
+		outfile.write(svgtail)
+		
+
 
 def get_options():
 	parser = argparse.ArgumentParser(usage = __doc__) 
@@ -506,8 +531,8 @@ if (not recovered) or DEBUG:
 		GoodCount = sum([1 for x in outlist if 10 < x < 101])
 		LeakCount = sum([1 for x in outlist if x < 10])
 
-for p in range(61):
-	percentlist[p] = getpieval(p,small_radius)
+# for p in range(61):
+# 	percentlist[p] = getpieval(p,small_radius)
 
 ########################	
 # GENERATE SVG HERE
@@ -534,31 +559,32 @@ if Opt.testout:
 
 	print(svgtail)
 
-if Opt.savefile:
+if Opt.savefile and (not recovered):
 	if DEBUG:
 		print (sys.stderr, "#Saving file ", OutPath.format(VEHICLE))		
-		
+	
+	writefile(OutPath)
+	writefile(OutPath.replace('.svg','-archive.svg'))
+
+elif Opt.savefile:
+	NoDeployString = '''<svg id="Layer_1" data-name="Layer 1" 
+xmlns="http://www.w3.org/2000/svg"  
+x="0px" y="0px" viewBox="0 0 300 110" xml:space="preserve">
+ <defs>
+ <style>
+ .fill_gray { fill: #bbbbbb; }
+ .font_size9 { font-size: 9px; }
+ .fill_lightgray { fill: #DDD; }
+ .font_helv { font-family: Helvetica; }
+    </style>
+  </defs>
+  <rect class="fill_lightgray" x="3.91" width="290" height="80"/> 
+<text class="font_helv font_size9" transform="translate(100 45)">NO ESP MISSION for '''
+
 	with open(OutPath.format(VEHICLE),'w') as outfile:
-		outfile.write(svghead)
-		outfile.write(string_circle_big.format(*style_circle_big))
-		if Opt.lines:
-			outfile.write(string_line_small.format(*linestylelist))
-		else:	
-			outfile.write(string_circle_small.format(*stylelist))
-			outfile.write(string_text_label)
-			outfile.write(string_pct_label.format(*pctlist))
-			
-		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample,tx=lowerleft[0],ty=lowerleft[1]-2)) # 25 190
-		timestring = dates(now) + " - " +hours(now)
-		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0]-70,ty=lowerright[1]-2)) # 175 190
-
-		# SAMPLE SUMMARY
-		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd}</text>'.format(upd=GoodCount,tx=lowerright[0]-70,ty=lowerright[1]+7)) # 175 190
-		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Failed: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-70,ty=lowerright[1]+13)) # 175 190
-
-		outfile.write(printLegend(lowerleft))
-
-		outfile.write(svgtail)
+		outfile.write(NoDeployString)
+		outfile.write(VEHICLE.upper())
+		outfile.write('''</text></svg>''')
 		
 		
 
