@@ -12,13 +12,18 @@ Usage:
     -r           prints report
     -f           save to SVG file directly
 
+    The ESP widget takes similar arguments:
+        `esp_widget.py -v makai -f`
+
 To see the full "gallery" of vehicles being monitored, see [this page](https://okeanids.mbari.org/widget/)
 
+Two shell scripts `update-active.sh` and `updateauv.sh` are run at 2 and 15 minute intervals to call those scripts above.
+ 
 Scripts and cron jobs are run in the `widget` folder on the server.
 
 ### NOTES
 
-  * This is written in python 2.7 (sorry:lazy) but should only require built-in libraries
+  * This is written in python 2.7 (sorry:lazy) but should only require built-in libraries (The esp widget should work with python 3)
   * `LRAUV_svg.py` contains the template for substitution of style fields
     - It needs to reside in the same folder as auvstatus to be imported
   * Opening the SVG in an illustration program will destructively reformat it 
