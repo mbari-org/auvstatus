@@ -289,10 +289,13 @@ def getDataAsc(starttime,mission):
 				'''WetLabsUBAT.flow_rate=0.333607 l/s'''
 				if (flow == 999) and "WetLabsUBAT.flow_rate" in nextline:
 					if DEBUG:
-						print >> sys.stderr, "# FLOWDATA",nextline
+						print >> sys.stderr, "# FLOWDATA",nextline.rstrip()
 					flowfields = nextline.split("=")
 					flow      = int(1000 * float(flowfields[-1].split(" ")[0]))
 					flowtime = int(float(flowfields[0].split(',')[1].split(" ")[0])*1000)
+					if DEBUG:
+						print >> sys.stderr, "# FLOWNUM",flow
+					
 			if "acoustic" in mission and NeedTracking:
 				'''2020-10-10T20:41:20.873Z,1602362480.873 Unknown-->Tracking.range_to_contact=389.093750 m'''
 				if len(Tracking) < 2:
