@@ -5,6 +5,8 @@
 <!-- to avoid image caching problems, consider using this or date format U... <img src="yourImage.png?v=<?php echo Date("Y.m.d.G.i.s")?>" />-->
 <script>
 function updateimage() {
+	var myImageElement4 = document.getElementById('tethys');
+	myImageElement4.src = 'https://okeanids.mbari.org/widget/auv_tethys.svg';
 	var myImageElement7 = document.getElementById('makai');
 	myImageElement7.src = 'https://okeanids.mbari.org/widget/auv_makai.svg';
 	var myImageElement8 = document.getElementById('esp_makai');
@@ -17,8 +19,6 @@ function updateimage() {
 	myImageElement2.src = 'https://okeanids.mbari.org/widget/auv_daphne.svg';
 	var myImageElement3 = document.getElementById('pontus');
 	myImageElement3.src = 'https://okeanids.mbari.org/widget/auv_pontus.svg';
-	var myImageElement4 = document.getElementById('tethys');
-	myImageElement4.src = 'https://okeanids.mbari.org/widget/auv_tethys.svg';
 	var myImageElement5 = document.getElementById('galene');
 	myImageElement5.src = 'https://okeanids.mbari.org/widget/auv_galene.svg';
 	var myImageElement6 = document.getElementById('triton');
@@ -45,13 +45,13 @@ setInterval(updateimage, 30000);
 <body>
 <br/>
 <div style="padding-left:2em; text-indent:2em;text-align:center; font-family:Helvetica;">[<a href="https://bitbucket.org/beroe/auvstatus/issues?status=new&status=open">Repo Issues</A>] &#x2022; [<a href="https://okeanids.mbari.org/dash4/#/-/*pontus,makai,tethys,daphne">Dash</a>]  &#x2022; [ <a href="#legend">LEGEND</a> ] </div>
+<img src="https://okeanids.mbari.org/widget/auv_daphne.svg" id="daphne" width="100%"/>
 <img src="https://okeanids.mbari.org/widget/auv_pontus.svg" id="pontus" width="100%"/>
+<img src="https://okeanids.mbari.org/widget/auv_tethys.svg" id="tethys" width="100%"/>
 <img src="https://okeanids.mbari.org/widget/auv_makai.svg"  id="makai"  width="100%"/>
 <img src="https://okeanids.mbari.org/widget/esp_makai.svg"  id="esp_makai"  width="70%"/>
 <div style="padding-left:1em; text-indent:0em;text-align:left; font-family:Helvetica;">Archived ESP from last deployment</div>
 <img src="https://okeanids.mbari.org/widget/esp_makai-archive.svg?123"  id="esp_makai_archive"  width="70%"/>
-<img src="https://okeanids.mbari.org/widget/auv_tethys.svg" id="tethys" width="100%"/>
-<img src="https://okeanids.mbari.org/widget/auv_daphne.svg" id="daphne" width="100%"/>
 <img src="https://okeanids.mbari.org/widget/auv_brizo.svg"  id="brizo"  width="100%"/>
 <img src="https://okeanids.mbari.org/widget/auv_galene.svg" id="galene" width="100%"/>
 <img src="https://okeanids.mbari.org/widget/auv_triton.svg" id="triton" width="100%"/>

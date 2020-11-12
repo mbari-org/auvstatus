@@ -265,7 +265,7 @@ def makepiechart(percent,xp,yp,radius):
 def getESP(starttime):
 	'''get critical entries, like drop weight
 	ESPComponent'''
-	qString = runQuery(name="ESPComponent",limit="500",match=".*Selecting.*",timeafter=starttime)
+	qString = runQuery(name="ESPComponent",limit="2000",match=".*Selecting.*",timeafter=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
@@ -302,12 +302,12 @@ def parseESP(recordlist,big_circle_list):
 			CartResult = cartre.findall(RecordText)	
 			if CartResult:
 				if DEBUG:
-					print("C",CartResult,file=sys.stderr)
+					print("C",CartResult,RecordText,file=sys.stderr)
 # 									
 				VolumeResult = mlre.findall(RecordText)				
-				if VolumeResult:
-					if DEBUG:
-						print(VolumeResult,file=sys.stderr)
+# 				if VolumeResult:
+# 					if DEBUG:
+# 						print(VolumeResult,file=sys.stderr)
 					
 				if len(CartResult) == 1:
 					Cartnum = int(CartResult[-1])
@@ -317,21 +317,30 @@ def parseESP(recordlist,big_circle_list):
 					if not firstnum: # MOST RECENT
 						firstnum = Cartnum
 						firsttime = Record["unixTime"]
+						if mls != "999":
+							big_circle_list[Cartnum] = "stroke_purple stroke_dash"
+						if DEBUG:
+							print("FIRST CIRCLE:",Cartnum)
+
+
 				else:
 					# insert errors numbers to the cartridge numbers
 					vols = ["-99"] * (len(CartResult)-len(VolumeResult)) + VolumeResult[:]
-					if DEBUG:
-						print("VOLS:",vols,"\nCARTS:",CartResult,file=sys.stderr)
+					#if DEBUG:
+						#print("VOLS:",vols,"\nCARTS:",CartResult,file=sys.stderr)
 					for c,v in zip(CartResult,vols):
 						if v != "-99":
 							big_circle_list[int(c)] = "stroke_blue"
 						ESPL[int(c)]= round(float(v)/10)
-					if not firstnum:
-						firstnum = int(c)
-						if v != "-99":
-							big_circle_list[int(c)] = "stroke_purple stroke_dash"
-						firsttime = Record["unixTime"]
-
+# 					if not firstnum:
+# 						firstnum = int(c)
+# 						if v != "-99":
+# 							big_circle_list[int(c)] = "stroke_purple stroke_dash"
+# 						firsttime = Record["unixTime"]
+					
+	if DEBUG:
+		print("BigCircleList",big_circle_list)
+	
 			
 	return ESPL,firstnum,firsttime,big_circle_list
 

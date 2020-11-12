@@ -315,7 +315,8 @@ def getDataAsc(starttime,mission):
  		if Bailout == True:
  			break
  	if DEBUG:
-		print >> sys.stderr, "#> Complete tracking:",Tracking, TrackTime, elapsed(TrackTime[0] - now)
+ 		if len(TrackTime) > 1:
+			print >> sys.stderr, "#> Complete tracking:",Tracking, TrackTime, elapsed(TrackTime[0] - now)
 
 	return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
 
@@ -459,7 +460,7 @@ def parseFaults(recordlist):
 		
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 
-		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder"] and "failed" in Record.get("text","NA").lower():
+		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
 		 	DVLError=Record["unixTime"]
 	return BadBattery,DVLError,Software,Overload,Hardware
 
@@ -470,6 +471,7 @@ def parseDVL(recordlist):
 		DVL_micro
 		Rowe_600
 		RDI_Pathfinder
+		configSet AMEcho.loadAtStartup 0 bool
 
 	'''
 	## All boilerplate DON'T USE!!
@@ -608,7 +610,7 @@ def parseImptMisc(recordlist):
 	GetDVLStartup = {
 		'pontus':True,
 		'tethys':True,
-		'daphne':False
+		'daphne':True
 	}
 	DVL_on = GetDVLStartup.get(VEHICLE,False)
 	
@@ -625,6 +627,7 @@ def parseImptMisc(recordlist):
 			DVL_micro
 			Rowe_600
 			RDI_Pathfinder
+			configSet AMEcho.loadAtStartup 0 bool
 '''
 	
 		if not StationLon and not ReachedWaypoint: 
@@ -652,9 +655,13 @@ def parseImptMisc(recordlist):
 			
 		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
+		## configSet AMEcho.loadAtStartup 0 bool
+		## got command configSet AMEcho.enabled 1.000000 bool
+
  		if not GotDVL and (
  		      ("DVL_micro.loadAtStartup"      in Record.get("text","NA")) or 
  		      ("RDI_Pathfinder.loadAtStartup" in Record.get("text","NA")) or 
+ 		      ("AMEcho.loadAtStartup"         in Record.get("text","NA")) or 
  		      ("Rowe_600.loadAtStartup"       in Record.get("text","NA"))
  		      ):
  		    # TO CHECK. this might split icorrectly on the space because sometimes config set?
@@ -667,6 +674,10 @@ def parseImptMisc(recordlist):
 			if DEBUG: 
 				print >> sys.stderr, "#>> FOUND DVL: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"])
 				print >> sys.stderr, "DVL Value: ", DVL_on
+		if not GotDVL and ("configSet AMEcho.enabled" in Record.get("text","NA")):
+			DVL_on = bool(float(Record["text"].split(".enabled ")[1].split(" ")[0]))
+			GotDVL = True
+			
 
 	
 			
@@ -681,9 +692,9 @@ def parseImptMisc(recordlist):
 			ubatStatus = ["st5","st4"][ubatBool]
 			ubatTime   = Record["unixTime"]
 		# THIS IS NOT CURRENTLY REPORTED	
-		if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("WetLabsUBAT.flow_rate"):
-			FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
-			FlowTime   = Record["unixTime"]
+		# if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("WetLabsUBAT.flow_rate"):
+		# 	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
+		# 	FlowTime   = Record["unixTime"]
 
 	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint
 	
@@ -714,6 +725,9 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 # 			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",RecordText, "[{}]".format(Record["unixTime"])
 			
 		## PARSE TIMEOUTS Assumes HOURS
+		## NOTE / TODO: When schedule is stopped or goes to default mission and you do schedule resume, does the timeout start at zero then?
+		## Widget fails to pick up duration that was set long ago in the schedule.
+		
 		if TimeoutDuration == False and \
 		     ".MissionTimeout" in RecordText and RecordText.startswith("got"):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
@@ -1670,7 +1684,7 @@ else:   #not opt report
 		###
 		if VEHICLE == 'pontus':
 			if (flowdat < 999) and (ubatStatus=="st4"):
-				if ((250 < flowdat) and (flowdat < 500)):
+				if ((290 < flowdat) and (flowdat < 500)):
 					cdd["color_flow"]= 'st4'
 				else:
 					cdd["color_flow"]= 'st6'
