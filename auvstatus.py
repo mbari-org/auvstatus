@@ -71,7 +71,7 @@ def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 	URL = BaseQuery.format(v=vehicle,e=event,n=name,l=limit,t=timeafter)
 	
 	if DEBUG:
-		print "### QUERY:",URL
+		print >> sys.stderr, "### QUERY:",URL
 
 	try:
 		connection = urllib2.urlopen(URL,timeout=5)		
@@ -138,7 +138,7 @@ def getMissionDefaults():
 	missions=["Science/mbts_sci2","Science/profile_station"]
 	for mission in missions:
 		URL = "https://okeanids.mbari.org/TethysDash/api/git/mission/{}.xml".format(mission)
-		print "\n#===========================\n",mission, "\n"
+		print >> sys.stderr, "\n#===========================\n",mission, "\n"
 		try:
 			connection = urllib2.urlopen(URL,timeout=5)
 			if connection: # here?
@@ -147,13 +147,13 @@ def getMissionDefaults():
 				connection.close()
 				result = structured['result']
 			
-				print URL
+				print >> sys.stderr, URL
 				try: 
 					splitted = str(result).split("{")
 					for item in splitted:
-						print item
+						print >> sys.stderr,item
 				except KeyError:
-					print "NA"
+					print >> sys.stderr,"NA"
 		except urllib2.HTTPError:
 			print >> sys.stderr, "# FAILED TO FIND MISSION",mission
 			
@@ -281,7 +281,7 @@ def getDataAsc(starttime,mission):
 				fields = nextline.split("=")
 				
  				if (volt==0) and "voltage" in nextline:
-# 				if "voltage" in nextline:
+#				if "voltage" in nextline:
 					volt     = float(fields[3].split(" ")[0])
 					volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  # in seconds not MS
 				if amp == 0 and "charge" in nextline:
@@ -1443,7 +1443,7 @@ else:   #not opt report
 	"color_cartcircle",
 	"color_missiondefault" ]
 	for cname in colornames:
-		cdd[cname]='st3'
+		cdd[cname] = 'st3'
 	
 	cdd["color_arrow"] = "st16"
 	

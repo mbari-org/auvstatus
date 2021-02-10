@@ -1,4 +1,4 @@
-![Widget Preview](./single_auv_display.png)
+![Widget Preview](./auv_pontus-with-range.png)
 
 ## LRAUV monitoring widget
 
@@ -23,9 +23,9 @@ Scripts and cron jobs are run in the `widget` folder on the server.
 
 ### NOTES
 
-  * This is written in python 2.7 (sorry:lazy) but should only require built-in libraries (The esp widget should work with python 3)
+  * This is written in python 2.7 (sorry:lazy) but should only require built-in libraries (The esp widget should work with either python 2.x or 3)
   * `LRAUV_svg.py` contains the template for substitution of style fields
-    - It needs to reside in the same folder as auvstatus to be imported
+    - It needs to reside in the same folder as `auvstatus.py` to be imported
   * Opening the SVG in an illustration program will destructively reformat it 
   * This alpha version is very FRAGILE and can crash with unexpected input
 
@@ -35,6 +35,8 @@ Scripts and cron jobs are run in the `widget` folder on the server.
 ## LEGEND:
 
 ![Widget Legend](./legend.png)
+![ESP Widget Legend](./esp_makai_sample.png)
+
 
 ## UPDATED API
 ```
