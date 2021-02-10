@@ -87,6 +87,7 @@ def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 	except urllib2.HTTPError:
 		print >> sys.stderr, "# FAILURE IN QUERY:",URL
 		handleURLerror()
+		return None
 
 	
 def getDeployment():
@@ -507,17 +508,25 @@ def parseComms(recordlist):
 
 
 def parseMission(recordlist):
-	MissionName=False
+	'''NOTE: this does not search back far enough to find original time when mission parameter were defined'''
+	
+	MissionName=""
 	MissionTime=False
 	## PARSE MISSION NAME
 	for Record in recordlist:
 		# if Record["name"]=="MissionManager":
+# 		if MissionTime: 
+# 			if Record["text"].startswith("Scheduling is paused") or Record["text"].startswith("Resuming mission and schedule"):
+# 				MissionTime = False
+# 			else:
+# 				break
 		if Record["name"]=="MissionManager" and Record["text"].startswith("Started mission"):
 			if DEBUG:
 				print >> sys.stderr,"\n\n## MISSION RECORD",Record
 			MissionName = Record.get("text","mission NA").split("mission ")[1]
 			MissionTime = Record["unixTime"]
 			break
+			# moved break from here. does it break the if or the for??
 	return MissionName,MissionTime
 
 def parseCBIT(recordlist):
@@ -730,10 +739,12 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 		## PARSE TIMEOUTS Assumes HOURS
 		## NOTE / TODO: When schedule is stopped or goes to default mission and you do schedule resume, does the timeout start at zero then?
 		## Widget fails to pick up duration that was set long ago in the schedule.
+		# if goes to default and then resumes: got command resume 
 		
 		if TimeoutDuration == False and \
 		     ".MissionTimeout" in RecordText and RecordText.startswith("got"):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
+			'''got command set sci2.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
 			'''got command set Smear.MissionTimeout 8.000000 hour'''
 			if DEBUG:
@@ -1101,6 +1112,7 @@ def sim():
 	"text_gftime"         : "12:35",
 	"text_gf"             : "0.34",
 	"text_bearing"        : "45°",
+	"text_arrow"		  : "45",
 	"text_thrusttime"     : "2.9km/hr",
 	"text_reckondistance" : "3.2km in 1.2h",
 	"text_commago"        : "1h 2m ago",
@@ -1232,7 +1244,9 @@ if (not recovered) or DEBUG:
 # FULL RANGE OF RECORDS
 	important = getImportant(startTime)
 
+	# mission time is off if schedule paused (default) and resumed. Detect this and go back further?
 	missionName,missionTime = parseMission(important)
+	
 	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint  = parseImptMisc(important)
 	
 	gf,gftime = parseCBIT(gfrecords)
@@ -1467,13 +1481,12 @@ else:   #not opt report
 	"text_gpsago",
 	"text_logago",	
 	"text_dvlstatus",
-	"text_logtime",
-
+	"text_logtime"
  ]
 	
 	for tname in textnames:
 		cdd[tname]='na'
-
+	cdd["text_arrow"]='90'
 	# these should persist after recovery
 	specialnames=[
 	"text_vehicle","text_lastupdate",
@@ -1565,7 +1578,10 @@ else:   #not opt report
 			cdd[cname]='st3'
 		for tname in textnames:
 			cdd[tname]=''
-	
+		cdd["color_cartcircle"] = 'st18'
+		cdd["color_smallcable"] = 'st18'
+		cdd["color_bigcable"]   = 'st18'
+
 		cdd["color_wavecolor"] = 'st18' # invisible
 		cdd["color_arrow"]     = 'st18'
 		cdd["color_dirtbox"] = 'st17'   # brown
@@ -1598,7 +1614,7 @@ else:   #not opt report
 				cdd["text_speed"]= "%.2f" % speed + "m/s"
 				
 		if Scheduled:
-			cdd["text_scheduled"] = "LAST SCHED.: "+ Scheduled
+			cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
 			cdd["color_scheduled"] = ['st27','st25'][Scheduled in mission_defaults]   
 
 		# MISSION TIMES
@@ -1642,6 +1658,7 @@ else:   #not opt report
 	
 		cdd["text_thrusttime"] = "%.1f" % speedmadegood + "km/hr"
 		# cdd["text_# bearing"] = "tbd&#x00B0;"  #
+		cdd["text_arrow"] = "%d" % (int(bearing))
 		cdd["text_bearing"] = "%d" % (int(bearing)) + "&#x00B0;"  # degree sign
 		if (deltadist and deltat) and (deltadist < 100):
 			reckontext="%.1fkm in %.1fh" % (deltadist,deltat)
