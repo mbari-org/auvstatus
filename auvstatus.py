@@ -1204,7 +1204,8 @@ mission_defaults = {
 	"esp_sample_at_depth"        : {"MissionTimeout": 4,   "NeedCommsTime":180,  "Speed":.7 },
 	"calibrate_sparton_compass"  : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"SpartonCompassCal"          : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
-	"spiral_cast"                : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 }
+	"spiral_cast"                : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 },
+	"trackPatchChl_yoyo"         : {"MissionTimeout": 24,  "NeedCommsTime":180, "Speed":1 } 
 }
 
 #########
