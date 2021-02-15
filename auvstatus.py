@@ -1833,7 +1833,7 @@ else:   #not opt report
 		
 	elif not Opt.report:
 		print svghead
-		print svgtext.format(**cdd)
+		print svgtext.format(**cdd)   # insert values from dictionary by name
 		if BadBattery:
 			print svgbadbattery
 		if len(Tracking)>=1:

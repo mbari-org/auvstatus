@@ -481,8 +481,8 @@ nrows = 6
 ncols = 10
 ncells = nrows * ncols
 
-spcol = 26 # between columns across
-sprow = 26
+spcol = 26 # spacing between columns across
+sprow = 26 # spacing between rows vertically
 
 textoffset = 20
 lowerright = (spcol * ncols, sprow * nrows + textoffset)
