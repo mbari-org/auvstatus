@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 1.4 - Bumping version number after misc changes.
 	Version 1.3 - Streamlined code so it doesn't download data for recovered vehicles
 	Version 1.2 - making UBAT pontus-specific (move to svg["pontus"] for more vehicles)
 	Version 1.1 - adding cart
