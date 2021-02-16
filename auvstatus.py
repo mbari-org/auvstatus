@@ -419,13 +419,14 @@ def parseCritical(recordlist):
 			Drop = Record["unixTime"]
 		if (not ThrusterServo) and "ThrusterServo" in RecordText and "Hardware Fault" in RecordText:
 			ThrusterServo = Record["unixTime"]
-		elif (not CriticalError) and not RecordText.startswith("Could not open") and not Record["name"] == "NAL9602" and not "NAL9602" in RecordText and not "Hardware Fault in component" in RecordText:
+		if (not CriticalError) and not RecordText.startswith("Could not open") and not Record["name"] == "NAL9602":
+#		  and not "NAL9602" in RecordText and not "Hardware Fault in component" in RecordText:
 			CriticalError = RecordText[:41]
 			if len(RecordText)> 41:
 				CriticalError += "..."
 			CriticalTime = Record["unixTime"]
 			if DEBUG:
-				print >> sys.stderr, (now-CriticalTime)/3600000
+				print >> sys.stderr, CriticalError, (now-CriticalTime)/3600000
 			if (((now - CriticalTime)/3600000) > 8):
 				CriticalError = ""
 				CriticalTime = False
@@ -1298,7 +1299,7 @@ if (not recovered) or DEBUG:
 	if not needcomms: 
 		needcomms = 60  #default
 	
-	
+	CriticalError=False
 	if (critical):
 		if DEBUG:
 			print >> sys.stderr,"# Starting CRITICAL parse  "
@@ -1601,7 +1602,7 @@ else:   #not opt report
 	# NOT RECOVERED
 	else:   
 		# SWError = False
-		CriticalError = False                                                               # unicode bullet
+		# CriticalError = False                                                               # unicode bullet
 		if missionName and missionTime:
 			cdd["text_mission"]=missionName + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
 		else:
@@ -1808,7 +1809,7 @@ else:   #not opt report
 			cdd["text_dvlstatus"]="OFF"
 		
 		if CriticalError:
-			cdd["text_criticalerror"] = "CRITICAL: "+ CriticalError
+			cdd["text_criticalerror"] = "CRITICAL: "+ CriticalError.replace(" in component","")
 			cdd["text_criticaltime"]  = elapsed(CriticalTime-now)
 			
 		cdd["color_dvl"] = DVLcolor
