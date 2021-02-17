@@ -427,7 +427,7 @@ def parseCritical(recordlist):
 			CriticalTime = Record["unixTime"]
 			if DEBUG:
 				print >> sys.stderr, CriticalError, (now-CriticalTime)/3600000
-			if (((now - CriticalTime)/3600000) > 8):
+			if (((now - CriticalTime)/3600000) > 6):
 				CriticalError = ""
 				CriticalTime = False
 			
@@ -643,7 +643,26 @@ def parseImptMisc(recordlist):
 			RDI_Pathfinder
 			configSet AMEcho.loadAtStartup 0 bool
 '''
-	
+		## RELOCATED (Duplicated) from parseMission
+		RecordText = Record["text"]
+		if not ReachedWaypoint and StationLon == False and RecordText.startswith("got command set") and (".Lon " in RecordText or ".Longitude" in RecordText or ".CenterLongitude" in RecordText):
+			if "itude" in RecordText:
+				StationLon = RecordText.split("itude ")[1]
+			else:
+				StationLon = RecordText.split(".Lon ")[1]
+			StationLon = float(StationLon.split(" ")[0])
+			if DEBUG:
+				print >> sys.stderr, "## Got Lon from ImptMisc", StationLon
+
+		if not ReachedWaypoint and StationLat == False and RecordText.startswith("got command set") and (".Lat " in RecordText or ".Latitude" in RecordText or ".CenterLatitude" in RecordText):
+			if "itude" in RecordText:
+				StationLat = RecordText.split("itude ")[1]
+			else:
+				StationLat = RecordText.split(".Lat ")[1]
+			StationLat = float(StationLat.split(" ")[0])
+			if DEBUG:
+				print >> sys.stderr, "## Got Lat from ImptMisc", StationLat
+
 		if not StationLon and not ReachedWaypoint: 
 			if Record["text"].startswith("Reached Waypoint"):
 			
@@ -795,18 +814,20 @@ Scheduled #27 (#1 of 2 with id='3p78c'): "load Science/profile_station.xml;set p
 		# SETTING STATION. Will fail on multi-station missions..?
 		# CHECK For Reached Waypoint: 36.821898,-121.885600   
 		# MOre parsing challenges: got command set IsothermDepthSampling.Lon1 -121.847000 degree [1595360755976]	
-		
+		# got command set transit.Longitude -121.848999 degree
 		# MIGHT NEED THIS TO GO BEFORE STARTING MISSION?
 		# MOVE TO ParseImptMisc only??? 
 		
-		if StationLon == False and RecordText.startswith("got command set") and (".Lon " in RecordText or ".CenterLongitude" in RecordText):
+		if StationLon == False and RecordText.startswith("got command set") and (".Lon " in RecordText or ".Longitude" in RecordText or ".CenterLongitude" in RecordText):
 			if "itude" in RecordText:
 				StationLon = RecordText.split("itude ")[1]
 			else:
 				StationLon = RecordText.split(".Lon ")[1]
 			StationLon = float(StationLon.split(" ")[0])
+			if DEBUG:
+				print >> sys.stderr, "## Got Lon from mission", StationLon
 
-		if StationLat == False and RecordText.startswith("got command set") and (".Lat " in RecordText or ".CenterLatitude" in RecordText):
+		if StationLat == False and RecordText.startswith("got command set") and (".Lat " in RecordText or ".Latitude" in RecordText or ".CenterLatitude" in RecordText):
 			if "itude" in RecordText:
 				StationLat = RecordText.split("itude ")[1]
 			else:
@@ -1203,6 +1224,7 @@ mission_defaults = {
 	"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45,  "Speed":0.1 },
 	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1 },
+	"transit"      	   : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1 },
 	"esp_sample_at_depth"        : {"MissionTimeout": 4,   "NeedCommsTime":180,  "Speed":.7 },
 	"calibrate_sparton_compass"  : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"SpartonCompassCal"          : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
