@@ -318,7 +318,7 @@ def parseESP(recordlist,big_circle_list):
 						firstnum = Cartnum
 						firsttime = Record["unixTime"]
 						if mls != "999":
-							big_circle_list[Cartnum] = "stroke_purple stroke_dash"
+							big_circle_list[Cartnum] = "stroke_purple"
 						if DEBUG:
 							print("FIRST CIRCLE:",Cartnum)
 
@@ -399,14 +399,15 @@ def writefile(myoutpath):
 			outfile.write(string_text_label)
 			outfile.write(string_pct_label.format(*pctlist))
 			
-		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample,tx=lowerleft[0],ty=lowerleft[1]-2)) # 25 190
+		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample + 
+		     " - " + VEHICLE.upper(),tx=lowerleft[0],ty=lowerleft[1]-2)) # 25 190
 		timestring = dates(now) + " - " +hours(now)
 		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0]-70,ty=lowerright[1]-2)) # 175 190
 
 		# SAMPLE SUMMARY
 		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd}</text>'.format(upd=GoodCount,tx=lowerright[0]-70,ty=lowerright[1]+7)) # 175 190
 		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Failed: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-70,ty=lowerright[1]+13)) # 175 190
-		outfile.write('<text class="te5 st5 font_size5" transform="translate({tx} {ty})">(Sample numbers run high to low)</text>'.format(upd=LeakCount,tx=lowerright[0]-71,ty=lowerright[1]+19.5)) # 175 190
+		outfile.write('<text class="te5 st5 font_size5" transform="translate({tx} {ty})">(Samples count down from high to low)</text>'.format(upd=LeakCount,tx=lowerright[0]-71,ty=lowerright[1]+19.5)) # 175 190
 		outfile.write(printLegend(lowerleft))
 
 		outfile.write(svgtail)
@@ -518,6 +519,8 @@ if (not recovered) or DEBUG:
 	if esprecords:
 		outlist,mostrecent,lastsample,style_circle_big  = parseESP(esprecords,style_circle_big)
 		#['r' if i > 50 else 'y' if i > 2 else 'g' for i in x]
+		if DEBUG:
+			print ("\n#OUTLIST ", outlist,file=sys.stderr)
 		stylelist = \
 		['fill_gray' if i > 500 \
 		else 'fill_green' if i > 90  \
@@ -529,7 +532,8 @@ if (not recovered) or DEBUG:
 		else 'thick_green' if i > 90  \
 		else 'thick_orange' if i < 0  \
 		else 'thick_yellow' for i in outlist]
-		
+
+
 # 		GENERATE LIST OF PERCENTAGES
 		pctlist = ['-X-' if i <1 else '' if i > 90 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
 		
@@ -539,6 +543,8 @@ if (not recovered) or DEBUG:
 			text_lastsample = elapsed(lastsample - now)
 		GoodCount = sum([1 for x in outlist if 10 < x < 101])
 		LeakCount = sum([1 for x in outlist if x < 10])
+	else:
+		pctlist = [''] * 61
 
 # for p in range(61):
 # 	percentlist[p] = getpieval(p,small_radius)
@@ -550,7 +556,6 @@ string_circle_big, string_circle_small, string_line_small, string_pie, string_te
 
 if DEBUG:
 	print ("\n#PCTLIST ", pctlist,file=sys.stderr)
-	print ("\n#OUTLIST ", outlist,file=sys.stderr)
 # 	print ("\n#string_pct_label ", string_pct_label,file=sys.stderr)
 # 	print ("\n#string_pct_label ", string_pct_label.format(*pctlist),file=sys.stderr)
 # 	print ("\n#LEGEND ", printLegend(lowerleft),file=sys.stderr)

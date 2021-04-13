@@ -605,6 +605,7 @@ def parseImptMisc(recordlist):
    #FORMER HOME OF GF SCANS
 	ubatStatus = "st3"
 	ubatTime = False
+	ubatBool = True
 
 	FlowRate = False
 	FlowTime = False
@@ -613,9 +614,9 @@ def parseImptMisc(recordlist):
 	DVL_on = False
 	GotDVL = False
 	
-	StationLat=False
-	StationLon=False
-	myre =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
+	StationLat = False
+	StationLon = False
+	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 
 	ReachedWaypoint=False
@@ -626,6 +627,7 @@ def parseImptMisc(recordlist):
 		'tethys':True,
 		'daphne':True
 	}
+	
 	DVL_on = GetDVLStartup.get(VEHICLE,False)
 	
 	for Record in recordlist:
@@ -715,23 +717,33 @@ def parseImptMisc(recordlist):
 
 	
 			
-		'''Change to got command ubat on'''
+		'''Change to got command ubat on  got command restart application'''
 		#if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
-		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
-			ubatBool = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
-			ubatStatus = ["st5","st4"][ubatBool]
-			ubatTime   = Record["unixTime"]
-		
-		elif VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "abling UBAT" in Record.get("text","NA"):
-			ubatBool = Record["text"].startswith("Enabl")
-			ubatStatus = ["st5","st4"][ubatBool]
-			ubatTime   = Record["unixTime"]
-		elif VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("got command ubat "):
-			ubatBool = "on" in Record["text"]
-			ubatStatus = ["st5","st4"][ubatBool]
-			ubatTime   = Record["unixTime"]
-			if DEBUG:
-				print >>sys.stderr, "## Got UBAT ON", Record["text"]
+		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" :
+			''' Changing this to default to ON unless specifically turned off'''
+			
+			RecordText = Record.get("text","NA")
+			
+			if  "WetLabsUBAT.loadAtStartup" in RecordText:
+				ubatBool = bool(float(RecordText.replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
+				ubatTime   = Record["unixTime"]
+			
+			elif  "abling UBAT" in RecordText:
+				ubatBool = RecordText.startswith("Enabl")
+				ubatTime   = Record["unixTime"]
+	
+			elif RecordText.startswith("got command ubat "):
+				ubatBool = "on" in RecordText
+				ubatTime   = Record["unixTime"]
+				if DEBUG:
+					print >>sys.stderr, "## Got UBAT ON", RecordText
+				
+			elif RecordText.startswith("got command restart application"):
+				ubatBool = True
+				ubatTime   = Record["unixTime"]
+				
+			ubatStatus = ["st6","st4"][ubatBool]
+	
 
 		# THIS IS NOT CURRENTLY REPORTED	
 		# if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("WetLabsUBAT.flow_rate"):

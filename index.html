@@ -3,6 +3,8 @@
 <head><title>AUV Status Summary</title>
 
 <!-- to avoid image caching problems, consider using this or date format U... <img src="yourImage.png?v=<?php echo Date("Y.m.d.G.i.s")?>" />-->
+<!-- https://stackoverflow.com/questions/47688073/how-to-echo-img-src-with-php-variables-as-values-of-the-src-attribute -->
+
 <script>
 function updateimage() {
 	var myImageElement2 = document.getElementById('daphne');
@@ -23,9 +25,12 @@ function updateimage() {
 	var myImageElement10 = document.getElementById('esp_brizo');
 	myImageElement10.src = 'https://okeanids.mbari.org/widget/esp_brizo.svg?234';
 	
-	//var myImageElement9 = document.getElementById('esp_makai_archive');
-	//myImageElement9.src = 'https://okeanids.mbari.org/widget/esp_makai-archive.svg?123';
+	var myImageElement9 = document.getElementById('esp_makai_archive');
+	myImageElement9.src = 'https://okeanids.mbari.org/widget/esp_makai-archive.svg?123';
 	
+	var myImageElement10 = document.getElementById('esp_brizo_archive');
+	myImageElement10.src = 'https://okeanids.mbari.org/widget/esp_brizo-archive.svg?123';
+
 	var myImageElement3 = document.getElementById('pontus');
 	myImageElement3.src = 'https://okeanids.mbari.org/widget/auv_pontus.svg';
 	
@@ -55,10 +60,13 @@ setInterval(updateimage, 30000);
 
 <body>
 <br/>
-<div style="padding-left:2em; text-indent:2em;text-align:center; font-family:Helvetica;">[<a href="https://bitbucket.org/beroe/auvstatus/issues?status=new&status=open">Repo Issues</A>] &#x2022; [<a href="https://okeanids.mbari.org/dash4/#/-/*pontus,makai,tethys,daphne">Dash</a>]  &#x2022; [ <a href="#legend">LEGEND</a> ] </div>
+
+<div style="padding-left:2em; text-indent:2em;text-align:center; font-family:Helvetica;">[<a href="https://bitbucket.org/beroe/auvstatus/issues?status=new&status=open">Repo Issues</A>] &#x2022; [<a href="https://okeanids.mbari.org/dash4/#/-/*pontus,brizo,makai,tethys,daphne">Dash</a>]  &#x2022; [ <a href="#legend">LEGEND</a> ] </div>
 <img src="https://okeanids.mbari.org/widget/auv_pontus.svg" id="pontus" width="100%"/>
 <img src="https://okeanids.mbari.org/widget/auv_brizo.svg"  id="brizo"  width="100%"/>
-<img src="https://okeanids.mbari.org/widget/esp_brizo.svg?345"  id="esp_brizo"  width="70%"/>
+<img src="https://okeanids.mbari.org/widget/esp_brizo.svg"  id="esp_brizo"  width="70%"/>
+<div style="padding-left:1em; text-indent:0em;text-align:left; font-family:Helvetica;">Archived ESP from last deployment</div>
+<img src="https://okeanids.mbari.org/widget/esp_brizo-archive.svg?123"  id="esp_brizo_archive"  width="70%"/>
 <img src="https://okeanids.mbari.org/widget/auv_tethys.svg" id="tethys" width="100%"/>
 <img src="https://okeanids.mbari.org/widget/auv_makai.svg"  id="makai"  width="100%"/>
 <img src="https://okeanids.mbari.org/widget/esp_makai.svg?345"  id="esp_makai"  width="70%"/>
