@@ -406,7 +406,7 @@ def writefile(myoutpath):
 		# SAMPLE SUMMARY
 		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd}</text>'.format(upd=GoodCount,tx=lowerright[0]-70,ty=lowerright[1]+7)) # 175 190
 		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Failed: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-70,ty=lowerright[1]+13)) # 175 190
-
+		outfile.write('<text class="te5 st5 font_size5" transform="translate({tx} {ty})">(Sample numbers run high to low)</text>'.format(upd=LeakCount,tx=lowerright[0]-71,ty=lowerright[1]+19.5)) # 175 190
 		outfile.write(printLegend(lowerleft))
 
 		outfile.write(svgtail)

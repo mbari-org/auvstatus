@@ -691,7 +691,7 @@ def parseImptMisc(recordlist):
 		## configSet AMEcho.loadAtStartup 0 bool
 		## got command configSet AMEcho.enabled 1.000000 bool
 
- 		if not GotDVL and (
+ 		if not GotDVL and (not "(bool)" in Record.get("text","NA")) and (
  		      ("DVL_micro.loadAtStartup"      in Record.get("text","NA")) or 
  		      ("RDI_Pathfinder.loadAtStartup" in Record.get("text","NA")) or 
  		      ("AMEcho.loadAtStartup"         in Record.get("text","NA")) or 
@@ -702,10 +702,11 @@ def parseImptMisc(recordlist):
  		    
  		    ## SHOULD ADD A CHECK FOR restart HERE TO SEE IF DVL WENT BACK TO CONFIG that will override these later events
  		    
+			if DEBUG: 
+				print >> sys.stderr, "#>> FOUND DVL: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"])
 			DVL_on = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
 			GotDVL = True
 			if DEBUG: 
-				print >> sys.stderr, "#>> FOUND DVL: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"])
 				print >> sys.stderr, "DVL Value: ", DVL_on
 		if not GotDVL and ("configSet AMEcho.enabled" in Record.get("text","NA")):
 			DVL_on = bool(float(Record["text"].split(".enabled ")[1].split(" ")[0]))
@@ -715,7 +716,8 @@ def parseImptMisc(recordlist):
 	
 			
 		'''Change to got command ubat on'''
-		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
+		#if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
+		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
 			ubatBool = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
 			ubatStatus = ["st5","st4"][ubatBool]
 			ubatTime   = Record["unixTime"]
@@ -724,6 +726,13 @@ def parseImptMisc(recordlist):
 			ubatBool = Record["text"].startswith("Enabl")
 			ubatStatus = ["st5","st4"][ubatBool]
 			ubatTime   = Record["unixTime"]
+		elif VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("got command ubat "):
+			ubatBool = "on" in Record["text"]
+			ubatStatus = ["st5","st4"][ubatBool]
+			ubatTime   = Record["unixTime"]
+			if DEBUG:
+				print >>sys.stderr, "## Got UBAT ON", Record["text"]
+
 		# THIS IS NOT CURRENTLY REPORTED	
 		# if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("WetLabsUBAT.flow_rate"):
 		# 	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
@@ -1226,6 +1235,7 @@ mission_defaults = {
 	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1 },
 	"transit"      	   : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1 },
 	"esp_sample_at_depth"        : {"MissionTimeout": 4,   "NeedCommsTime":180,  "Speed":.7 },
+	"esp_sample_station"         : {"MissionTimeout": 24,   "NeedCommsTime":45,  "Speed":1 },
 	"calibrate_sparton_compass"  : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"SpartonCompassCal"          : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"spiral_cast"                : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 },
@@ -1300,6 +1310,7 @@ if (not recovered) or DEBUG:
 		waypointtime,waypointdist = parseDistance(site,StationLat,StationLon,speedmadegood,bearing,gpstime)
 	else:
 		waypointtime = -2
+		waypointdist = None
 	if ReachedWaypoint:
 		waypointtime = ReachedWaypoint
 		waypointdist = 0.01
@@ -1701,8 +1712,11 @@ else:   #not opt report
 			arrivetext = "Arrived at WP"
 			cdd["text_stationdist"]   = elapsed(waypointtime - now)
 
-		elif waypointtime == -1:
-			arrivetext = "On Station %.1f km" % waypointdist
+		elif waypointtime == -1 or waypointdist < 0.4:
+			if waypointdist:
+				arrivetext = "On Station %.1f km" % waypointdist
+			else:
+				arrivetext = "On Station" 
 		elif waypointtime == -2:
 			arrivetext = "Nav missing"
 		# Cheating by storing heading in waypointtime if mismatch in function
