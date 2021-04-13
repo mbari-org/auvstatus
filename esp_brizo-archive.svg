@@ -291,7 +291,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="pct_label_58" class="te5 font_size5 fill_red" transform="translate(209 161)"></text>
 <text desc="pct_label_59" class="te5 font_size5 fill_red" transform="translate(235 161)"></text>
 <text desc="pct_label_60" class="te5 font_size5 fill_red" transform="translate(261 161)"></text>
-<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: na - BRIZO</text><text class="font_helv font_size7" transform="translate(190 174)">UPDATED: 13Apr21 - 16:08</text><text class="te5 font_size5" transform="translate(190 183)">Good Samples: na</text><text class="te5 font_size5" transform="translate(190 189)">Sample Failed: na</text><text class="te5 st5 font_size5" transform="translate(189 195.5)">(Samples count down from high to low)</text>
+<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: na - BRIZO</text><text class="font_helv font_size7" transform="translate(190 174)">UPDATED: 13Apr21 - 16:56</text><text class="te5 font_size5" transform="translate(190 183)">Good Samples: na</text><text class="te5 font_size5" transform="translate(190 189)">Sample Failed: na</text><text class="te5 st5 font_size5" transform="translate(189 195.5)">(Samples count down from high to low)</text>
 <circle class="fill_green" cx="30" cy="186" r="6"/>
 <text class="te5 font_size5" transform="translate(23 188)">GOOD</text>
 <circle class="fill_yellow" cx="53" cy="186" r="6"/>
