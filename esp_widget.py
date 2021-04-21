@@ -342,20 +342,31 @@ def parseESP(recordlist,big_circle_list):
 				
 					# ON a redo:
 					# insert errors numbers to the cartridge numbers
-					Cartnum = int(CartResult[-2])
+					Cartnum = int(CartResult[0])
 					vols = ["-99"] * (len(CartResult)-len(VolumeResult)) + VolumeResult[:]
-
+					if DEBUG:
+						print("\n## Cartridges in redo:",CartResult,file=sys.stderr)
+						
 					if ESPL[Cartnum] != 999:
 						RedoList.append(Cartnum)
 						big_circle_list[Cartnum] = "stroke_green"
 						if DEBUG:
-							print("\n## Found REUSE:",Cartnum,RecordText,mls,file=sys.stderr)
+							print("\n## Found REUSE:",Cartnum,mls,file=sys.stderr)
 
 					#if DEBUG:
 						#print("VOLS:",vols,"\nCARTS:",CartResult,file=sys.stderr)
-					for c,v in zip(CartResult,vols):
-						if v != "-99":
+					for c,v in list(zip(CartResult,vols))[::-1]:
+						if not firstnum: # MOST RECENT
+							firstnum = int(CartResult[-1])
+							firsttime = Record["unixTime"]
+							big_circle_list[firstnum] = "stroke_purple stroke_dash"
+							if DEBUG:
+								print("FIRST CIRCLE in REDO:",firstnum,file=sys.stderr)
+						elif v != "-99":
 							big_circle_list[int(c)] = "stroke_blue"
+							if DEBUG:
+								print("SETTING RESAMPLE BLUE: ",c,file=sys.stderr)
+							
 						ESPL[int(c)]= round(float(v)/10)
 						TimeList[int(c)] = Record["unixTime"]					
 # 					if not firstnum:
@@ -440,12 +451,12 @@ def writefile(myoutpath,RedoList):
 		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample + 
 		     " - " + VEHICLE.upper(),tx=lowerleft[0],ty=lowerleft[1]-2)) # 25 190
 		timestring = dates(now) + " - " +hours(now) + " ({})".format(decimalday(now))
-		outfile.write('<text class="font_helv font_size6" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0]-70,ty=lowerright[1]-2)) # 175 190
+		outfile.write('<text class="font_helv font_size6" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0]-80,ty=lowerright[1]-1)) # 175 190
 
 		# SAMPLE SUMMARY
-		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd} {extra}</text>'.format(upd=GoodCount,tx=lowerright[0]-70,ty=lowerright[1]+7,extra=extratext)) # 175 190
-		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Failed: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-70,ty=lowerright[1]+13)) # 175 190
-		outfile.write('<text class="te5 st5 font_size5" transform="translate({tx} {ty})">(Samples count down from high to low)</text>'.format(upd=LeakCount,tx=lowerright[0]-71,ty=lowerright[1]+19.5)) # 175 190
+		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd} {extra}</text>'.format(upd=GoodCount,tx=lowerright[0]-80,ty=lowerright[1]+7,extra=extratext)) # 175 190
+		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Failed: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-80,ty=lowerright[1]+13)) # 175 190
+		outfile.write('<text class="te5 st5 font_size5" transform="translate({tx} {ty})">(Samples count down from high to low)</text>'.format(upd=LeakCount,tx=lowerright[0]-81,ty=lowerright[1]+19.5)) # 175 190
 		outfile.write(printLegend(lowerleft))
 
 		outfile.write(svgtail)
@@ -592,6 +603,8 @@ if (not recovered) or DEBUG:
 			pctlist[ri] = 'reuse'
 		
 		if mostrecent:
+			if DEBUG:
+				print ("\n#MOSTRECENT OVERRIDE ", mostrecent,style_circle_big[mostrecent],file=sys.stderr)
 			if not "dash" in style_circle_big[mostrecent]:
 				style_circle_big[mostrecent] = 'stroke_purple'
 			text_lastsample = elapsed(lastsample - now)

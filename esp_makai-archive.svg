@@ -99,7 +99,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_big_42" class="stroke_none" cx="57" cy="128" r="12"/>
 <circle desc="c_big_43" class="stroke_none" cx="83" cy="128" r="12"/>
 <circle desc="c_big_44" class="stroke_none" cx="109" cy="128" r="12"/>
-<circle desc="c_big_45" class="stroke_none" cx="135" cy="128" r="12"/>
+<circle desc="c_big_45" class="stroke_purple stroke_dash" cx="135" cy="128" r="12"/>
 <circle desc="c_big_46" class="stroke_none" cx="161" cy="128" r="12"/>
 <circle desc="c_big_47" class="stroke_none" cx="187" cy="128" r="12"/>
 <circle desc="c_big_48" class="stroke_none" cx="213" cy="128" r="12"/>
@@ -107,7 +107,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_big_50" class="stroke_none" cx="265" cy="128" r="12"/>
 <circle desc="c_big_51" class="stroke_none" cx="31" cy="154" r="12"/>
 <circle desc="c_big_52" class="stroke_none" cx="57" cy="154" r="12"/>
-<circle desc="c_big_53" class="stroke_purple" cx="83" cy="154" r="12"/>
+<circle desc="c_big_53" class="stroke_none" cx="83" cy="154" r="12"/>
 <circle desc="c_big_54" class="stroke_none" cx="109" cy="154" r="12"/>
 <circle desc="c_big_55" class="stroke_none" cx="135" cy="154" r="12"/>
 <circle desc="c_big_56" class="stroke_none" cx="161" cy="154" r="12"/>
@@ -159,14 +159,14 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_small_42" class="fill_gray" cx="57" cy="128" r="10"/>
 <circle desc="c_small_43" class="fill_gray" cx="83" cy="128" r="10"/>
 <circle desc="c_small_44" class="fill_gray" cx="109" cy="128" r="10"/>
-<circle desc="c_small_45" class="fill_gray" cx="135" cy="128" r="10"/>
+<circle desc="c_small_45" class="fill_yellow" cx="135" cy="128" r="10"/>
 <circle desc="c_small_46" class="fill_gray" cx="161" cy="128" r="10"/>
-<circle desc="c_small_47" class="fill_gray" cx="187" cy="128" r="10"/>
-<circle desc="c_small_48" class="fill_gray" cx="213" cy="128" r="10"/>
-<circle desc="c_small_49" class="fill_gray" cx="239" cy="128" r="10"/>
-<circle desc="c_small_50" class="fill_gray" cx="265" cy="128" r="10"/>
-<circle desc="c_small_51" class="fill_gray" cx="31" cy="154" r="10"/>
-<circle desc="c_small_52" class="fill_gray" cx="57" cy="154" r="10"/>
+<circle desc="c_small_47" class="fill_orange" cx="187" cy="128" r="10"/>
+<circle desc="c_small_48" class="fill_yellow" cx="213" cy="128" r="10"/>
+<circle desc="c_small_49" class="fill_yellow" cx="239" cy="128" r="10"/>
+<circle desc="c_small_50" class="fill_yellow" cx="265" cy="128" r="10"/>
+<circle desc="c_small_51" class="fill_yellow" cx="31" cy="154" r="10"/>
+<circle desc="c_small_52" class="fill_yellow" cx="57" cy="154" r="10"/>
 <circle desc="c_small_53" class="fill_yellow" cx="83" cy="154" r="10"/>
 <circle desc="c_small_54" class="fill_yellow" cx="109" cy="154" r="10"/>
 <circle desc="c_small_55" class="fill_gray" cx="135" cy="154" r="10"/>
@@ -279,14 +279,14 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="pct_label_42" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 124)"></text>
 <text desc="pct_label_43" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 124)"></text>
 <text desc="pct_label_44" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 124)"></text>
-<text desc="pct_label_45" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 124)"></text>
+<text desc="pct_label_45" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 124)">72%</text>
 <text desc="pct_label_46" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 124)"></text>
-<text desc="pct_label_47" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 124)"></text>
-<text desc="pct_label_48" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 124)"></text>
-<text desc="pct_label_49" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 124)"></text>
-<text desc="pct_label_50" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 124)"></text>
-<text desc="pct_label_51" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 150)"></text>
-<text desc="pct_label_52" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 150)"></text>
+<text desc="pct_label_47" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 124)">--X--</text>
+<text desc="pct_label_48" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 124)">48%</text>
+<text desc="pct_label_49" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 124)">68%</text>
+<text desc="pct_label_50" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 124)">62%</text>
+<text desc="pct_label_51" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 150)">70%</text>
+<text desc="pct_label_52" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 150)">69%</text>
 <text desc="pct_label_53" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 150)">45%</text>
 <text desc="pct_label_54" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 150)">57%</text>
 <text desc="pct_label_55" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 150)"></text>
@@ -339,14 +339,14 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_42" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 135)"></text>
 <text desc="time_label_43" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 135)"></text>
 <text desc="time_label_44" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 135)"></text>
-<text desc="time_label_45" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 135)"></text>
+<text desc="time_label_45" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 135)">111.45</text>
 <text desc="time_label_46" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 135)"></text>
-<text desc="time_label_47" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 135)"></text>
-<text desc="time_label_48" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 135)"></text>
-<text desc="time_label_49" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 135)"></text>
-<text desc="time_label_50" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 135)"></text>
-<text desc="time_label_51" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 161)"></text>
-<text desc="time_label_52" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 161)"></text>
+<text desc="time_label_47" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 135)">111.45</text>
+<text desc="time_label_48" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 135)">111.36</text>
+<text desc="time_label_49" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 135)">111.23</text>
+<text desc="time_label_50" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 135)">111.15</text>
+<text desc="time_label_51" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 161)">111.02</text>
+<text desc="time_label_52" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 161)">110.94</text>
 <text desc="time_label_53" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 161)">110.70</text>
 <text desc="time_label_54" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 161)">110.63</text>
 <text desc="time_label_55" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 161)"></text>
@@ -355,7 +355,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_58" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 161)"></text>
 <text desc="time_label_59" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 161)"></text>
 <text desc="time_label_60" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 161)"></text>
-<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 18h 25m ago - MAKAI</text><text class="font_helv font_size6" transform="translate(190 174)">UPDATED: 21Apr21 - 11:12 (111.47)</text><text class="te5 font_size5" transform="translate(190 183)">Good Samples: 2 </text><text class="te5 font_size5" transform="translate(190 189)">Sample Failed: 0</text><text class="te5 st5 font_size5" transform="translate(189 195.5)">(Samples count down from high to low)</text>
+<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 5h 36m ago - MAKAI</text><text class="font_helv font_size6" transform="translate(180 175)">UPDATED: 21Apr21 - 16:18 (111.68)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 8 </text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 1</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
 <circle class="fill_green" cx="30" cy="186" r="6"/>
 <text class="te5 font_size5" transform="translate(23 188)">GOOD</text>
 <circle class="fill_yellow" cx="53" cy="186" r="6"/>
