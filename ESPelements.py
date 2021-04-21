@@ -27,6 +27,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
  .stroke_purple { stroke: #ab60af; fill:none; stroke-width: 2px; }
  .stroke_black  { stroke: #000; fill:none; stroke-width: 2px; }
  .stroke_blue  { stroke: #067878; fill:none; stroke-width: 2px; stroke-dasharray:1.1 1.4;}
+ .stroke_green  { stroke: #5cba48; fill:none; stroke-width: 3px;}
  .stroke_dash  { stroke-dasharray:1.1 1.4;}
  .stroke_2px { stroke-width: 2px; }
  .stroke_white { fill: none; stroke: #fff; }
@@ -40,11 +41,14 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
  .thick_gray       { stroke-width:4px; fill:none; stroke: #bbbbbb; }
  .thick_green      { stroke-width:4px; fill:none; stroke: #5cba48; }
  .fill_green { fill: #5cba48; }
+ .font_size4 { font-size: 4px; }
  .font_size5 { font-size: 5px; }
+ .font_size6 { font-size: 6px; }
  .font_size7 { font-size: 7px; }
  .font_size9 { font-size: 9px; }
  .fill_red {fill: #e24466; }
- .fill_darkgray { fill: #231f20; }
+ .fill_purple {fill:#ab60af;}
+ .fill_darkgray { fill: #555555; }
  .font_helv { font-family: Helvetica; }
  .font_helvBold { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
  .fill_lightergray { fill: #919396; }

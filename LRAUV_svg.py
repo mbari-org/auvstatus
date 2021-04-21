@@ -35,6 +35,8 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st28{fill:#333333; } <!-- DarkGray Fill-->
 	.st30{font-size:8px;} 
 	.st31{fill:#B4372D;} <!-- Maroon text-->
+	.stleak2{fill:#7DA6D8;} <!-- critical water leak-->
+	.stleak1{fill:#92c19b;} <!--aux water leak-->
 
 	</style>
 '''
@@ -208,7 +210,7 @@ svglabels='''
 <text transform="matrix(1 0 0 1 291.6499 221.6039)" class="st9 st10">Cell comms</text>
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
-<text desc="arrive_label" transform="matrix(1 0 0 1 580 222)" class="st12 st9 st24">Arrive Station (beta)</text>
+<text desc="arrive_label" transform="matrix(1 0 0 1 580 222)" class="st12 st9 st24">Arrive Station</text>
 '''
 
 svgbadbattery='''<g><title>Bad battery cell detected</title>
@@ -225,7 +227,20 @@ svgbadbattery='''<g><title>Bad battery cell detected</title>
 svgpontus='''
 <!-- vehicle-specific shapes -->
 <text desc="" transform="matrix(1 0 0 1 551.3628 250.3636)" class="st9 st10">UBAT</text>
-<text desc="" transform="matrix(1 0 0 1 551.3628 263.259)" class="st9 st10">FLOW</text>
+<text desc="" transform="matrix(1 0 0 1 551.3628 263.259)" class="st9 st10">Flow</text>
+'''
+
+svgwaterleak='''<!--water leak-->
+<g transform="translate(119.3 -107.2)">
+<path class="{color_leak}" d="M422,396.5v2.2H190.4v-3.1l2.4,0.3c4.8-0.3,7.1-2.8,7.1-2.8l0.1,0.1c0,0,1.4,3.7,6.6,3.6
+	c5.1-0.1,8.3-3.8,8.3-3.8s1.4,3.3,7.6,3.1s6.8-2.8,6.8-2.8s1.8,3.3,7.2,3.1c5.5-0.2,7.4-3.2,7.4-3.2s1.8,2.9,6.5,2.6
+	c4.8-0.3,7.1-2.8,7.1-2.8s1.4,3.1,5.2,3.1c3.8,0,7.2-2.9,7.2-2.9s1.4,3.7,6.6,3.6c5.1-0.1,8.3-3.8,8.3-3.8s1.4,3.3,7.6,3.1
+	s6.8-2.8,6.8-2.8s1.8,3.3,7.2,3.1c5.5-0.2,7.4-3.2,7.4-3.2s1.8,2.9,6.5,2.6c4.8-0.3,7.1-2.8,7.1-2.8l0.1,0.1c0,0,1.4,3.7,6.6,3.6
+	c5.1-0.1,8.3-3.8,8.3-3.8s1.4,3.3,7.6,3.1c6.1-0.2,6.8-2.8,6.8-2.8s1.8,3.3,7.2,3.1c5.5-0.2,7.4-3.2,7.4-3.2s1.8,2.9,6.5,2.6
+	c4.8-0.3,7.1-2,7.1-2s2.3,3.1,7.4,2.9s8.3-3.8,8.3-3.8s1.4,3.3,7.6,3.1c6.1-0.2,6.8-2.8,6.8-2.8s1.8,3.3,7.3,3.1"/>
+</g>
+<text transform="matrix(1 0 0 1 420 300.0)" class="st12 st9 st13">{text_leak}{text_leakago}</text>
+
 '''
 
 svgtail = '''

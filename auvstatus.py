@@ -31,7 +31,7 @@ import json
 import math
 import re
 from collections import deque
-from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak   # define the svg text?
 
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -48,6 +48,7 @@ def get_options():
 	parser.add_argument("--printhtml",action="store_true"  , help="print auv.html web links")
 	parser.add_argument("-m", "--missions",action="store_true"  , help="spit out mission defaults")
 	parser.add_argument("-s", "--sim",action="store_true"  , help="create a fake example SVG")
+	parser.add_argument("-a", "--anyway",action="store_true"  , help="process even after recovery")
 	parser.add_argument("Args", nargs='*')
 	options = parser.parse_args()
 	return options
@@ -400,6 +401,7 @@ def parseCritical(recordlist):
 	ThrusterServo = False
 	CriticalError = ""
 	CriticalTime  = False
+	Water         = False
 	
 	# if DEBUG:
 	# 	print "### Start Recordlist"
@@ -415,6 +417,9 @@ def parseCritical(recordlist):
 		# 	print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
+		if RecordText.startswith("WATER DETECTED"):
+			Water = Record["unixtime"]
+			
 		if "burnwire activated" in RecordText.lower():
 			Drop = Record["unixTime"]
 		if (not ThrusterServo) and "ThrusterServo" in RecordText and "Hardware Fault" in RecordText:
@@ -432,7 +437,7 @@ def parseCritical(recordlist):
 				CriticalTime = False
 			
 		# if Record["name"]=="CBIT" and Record.get("text","NA").startswith("LAST"):
-	return Drop, ThrusterServo, CriticalError, CriticalTime
+	return Drop, ThrusterServo, CriticalError, CriticalTime, Water
 
 def parseFaults(recordlist):
 	'''https://okeanids.mbari.org/TethysDash/api/events?vehicles=brizo&eventTypes=logFault&from=1591731032512
@@ -443,6 +448,7 @@ def parseFaults(recordlist):
 	Software = False
 	Hardware = False
 	Overload = False
+	Water    = False
 	# if DEBUG:
 	# 	print "### Start Recordlist"
 	# 	print recordlist
@@ -463,12 +469,15 @@ def parseFaults(recordlist):
 		
 		if (not Hardware) and "thruster uart error" in Record["text"].lower():
 			Hardware = Record["unixTime"]
+			
+		if Record["text"].upper().startswith("WATER ALARM AUX"):
+			Water = Record["unixTime"]
 		
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
 		 	DVLError=Record["unixTime"]
-	return BadBattery,DVLError,Software,Overload,Hardware
+	return BadBattery,DVLError,Software,Overload,Hardware,Water
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -738,7 +747,7 @@ def parseImptMisc(recordlist):
 				if DEBUG:
 					print >>sys.stderr, "## Got UBAT ON", RecordText
 				
-			elif RecordText.startswith("got command restart application"):
+			elif RecordText.startswith("got command restart app") or RecordText.startswith("got command restart system") or RecordText.startswith("got command restart hardware"):
 				ubatBool = True
 				ubatTime   = Record["unixTime"]
 				
@@ -800,13 +809,13 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			if DEBUG:
 				print >> sys.stderr, "## Got CLEAR"
 
-		if Scheduled == False and not Cleared and (RecordText.startswith('got command schedule "run') or RecordText.startswith('got command schedule "load')) :
+		if Scheduled == False and not Cleared and (RecordText.startswith('got command schedule "run') or RecordText.startswith('got command schedule "load') or RecordText.startswith('got command schedule asap "set')) :
 			'''got command schedule "run " 3p78c'''
 			if DEBUG:
 				print >> sys.stderr, "## Schedule Record ",RecordText
 
-			if RecordText.startswith('got command schedule "run "'):
-				hashre = re.compile(r'got command schedule "run " (\w+)')
+			if RecordText.startswith('got command schedule "run"') or RecordText.startswith('got command schedule "run "'):
+				hashre = re.compile(r'got command schedule "run ?" (\w+)')
 				'''got command schedule "run " 3p78c '''
 				hash_result = hashre.search(RecordText)
 				if hash_result:
@@ -814,16 +823,22 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					if DEBUG:
 						print >> sys.stderr, "## Schedule Hash found ",hash
 			else:
-				'''got command schedule "run Science/mbts_sci2.xml"'''
-				'''got command schedule "load Science/circle_acoustic_contact.xml'''
+			#'''got command schedule "run Science/mbts_sci2.xml"'''
+			#	'''got command schedule "load Science/circle_acoustic_contact.xml'''
 				#Scheduled = Record["text"].split("/")[1].replace('.xml"','')
-				'''got command schedule "set circle_acoustic_contact'''
-				Scheduled = Record["text"].split("/")[1].split('.')[0]
+				if "/" in RecordText[:30]:
+					Scheduled = Record["text"].split("/")[1].split('.')[0]
+				else:
+					'''got command schedule "set circle_acoustic_contact'''
+					Scheduled = RecordText.split('"')[1].split(' ')[1].split('.')[0]
 				if DEBUG:
 					print >> sys.stderr, "## Found Scheduled in else",Scheduled
 					
-					'''TODO REPLACE WITH REGEX 
-Scheduled #27 (#1 of 2 with id='3p78c'): "load Science/profile_station.xml;set profile_station.MissionTimeout 14 hour;set profile_station.Lat 36.7970 degree;set profile_station.L'''
+#				TODO REPLACE WITH REGEX 
+#Scheduled #27 (#1 of 2 with id='3p78c'): "load Science/profile_station.xml;set profile_station.MissionTimeout 14 hour;set profile_station.Lat 36.7970 degree;set profile_station.L'''
+
+
+#'''Scheduled = Record["text"].split("/")[1].split('.')[0]'''
 
 		if Scheduled == False and not Cleared and RecordText.startswith('Scheduled #') and (("load" in RecordText) or ("set" in RecordText)) and hash in RecordText:
 			Scheduled = RecordText.split(': "load ')[1].split('.xml')[0].split("/")[1]
@@ -861,13 +876,19 @@ Scheduled #27 (#1 of 2 with id='3p78c'): "load Science/profile_station.xml;set p
 		if NeedComms == False and Record["name"]=="CommandLine" and RecordText.startswith("got command") and ".NeedCommsTime" in RecordText:
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
+			'''got command set trackPatchChl_yoyo.NeedCommsTimeInTransit 45.000000'''
 			try:
 				NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
 			except IndexError:
-				NeedComms = int(float(Record["text"].split("NeedCommsTimeInTransect ")[1].split(" ")[0]))
-				
+				try:
+					NeedComms = int(float(Record["text"].split("NeedCommsTimeInTransect ")[1].split(" ")[0]))
+				except IndexError:
+					try:
+						NeedComms = int(float(Record["text"].split("NeedCommsTimeInTransit ")[1].split(" ")[0]))
+					except IndexError:
+						print >> sys.stderr, "#NeedComms but no split",Record["text"], VEHICLE
 			if DEBUG:
-				print >> sys.stderr, "#FOUND NEEDCOMMS",NeedComms
+				print >> sys.stderr, "#FOUND NEEDCOMMS",NeedComms, VEHICLE
 			## ADD FLOW RATE FOR UBAT...
 			
 			### For the moment this will just go from the start of the mission, but once we get SatComms, use that time
@@ -1237,7 +1258,7 @@ else:
 	
 # TIMEOUTS are in hours? or days?
 mission_defaults = {
-	"profile_station"  : {"MissionTimeout": 4,   "NeedCommsTime":60,  "Speed":1 },
+	"profile_station"  	: {"MissionTimeout": 4,   "NeedCommsTime":60,  "Speed":1 },
 	"portuguese_ledge" : {"MissionTimeout": 4,   "NeedCommsTime":120, "Speed":1 },
 	"sci2"             : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1 },
 	"mbts_sci2"        : {"MissionTimeout": 48,  "NeedCommsTime":60,  "Speed":1 },
@@ -1246,8 +1267,11 @@ mission_defaults = {
 	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1 },
 	"transit"      	   : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1 },
-	"esp_sample_at_depth"        : {"MissionTimeout": 4,   "NeedCommsTime":180,  "Speed":.7 },
-	"esp_sample_station"         : {"MissionTimeout": 24,   "NeedCommsTime":45,  "Speed":1 },
+	"CorkAndScrew"     : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
+	"IsothermDepthSampling"      : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
+	"isotherm_depth_dampling"    : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
+	"esp_sample_at_depth"        : {"MissionTimeout": 4,   "NeedCommsTime":180, "Speed":.7 },
+	"esp_sample_station"         : {"MissionTimeout": 24,  "NeedCommsTime":45,  "Speed":1 },
 	"calibrate_sparton_compass"  : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"SpartonCompassCal"          : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"spiral_cast"                : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 },
@@ -1277,7 +1301,7 @@ note,noteTime = parseNotes(getNotes(startTime))
 bearing = 999
 
 # vehicle not recovered
-if (not recovered) or DEBUG:
+if (not recovered) or Opt.anyway or DEBUG:
 	critical  = getCritical(startTime)
 	faults = getFaults(startTime)
 	gfrecords = getCBIT(startTime)
@@ -1348,15 +1372,18 @@ if (not recovered) or DEBUG:
 	if (critical):
 		if DEBUG:
 			print >> sys.stderr,"# Starting CRITICAL parse  "
-		dropWeight,ThrusterServo,CriticalError,CriticalTime = parseCritical(critical)
+		dropWeight,ThrusterServo,CriticalError,CriticalTime,WaterCritical = parseCritical(critical)
 
 	DVLError=False
 	BadBattery=False
 	SWError = False
 	HWError = False
 	OverloadError = False
+	WaterCritical = False
+	WaterFault = False
+	
 	if faults:
-		BadBattery,DVLError,SWError,OverloadError,HWError = parseFaults(faults)
+		BadBattery,DVLError,SWError,OverloadError,HWError,WaterFault = parseFaults(faults)
 
 	
 # vehicle has been recovered
@@ -1402,7 +1429,7 @@ if Opt.report:
 	print "CellComms:",cellcomms
 	ago_log = logtime - now
 	print "LogRestart",hours(logtime), elapsed(ago_log), logtime
-	if VEHICLE=="pontus" and not recovered:
+	if VEHICLE=="pontus" and (not recovered):
 		print "UBAT: ", ubatStatus, hours(ubatTime)
 		print "FLOW: ",flowdat, hours(flowtime)
 	print "SPEED: ",speed  
@@ -1418,7 +1445,7 @@ if Opt.report:
 	print "Thruster:  ",ThrusterServo
 	print "Mission: ",missionName,hours(missionTime)
 	print "Deployed:  ", hours(startTime), dates(startTime),elapsed(startTime - now)
-	if recovered:
+	if recovered and not Opt.anyway:
 		print "Recovered: ",hours(recovered), elapsed(recovered - now), recovered
 		if plugged:
 			print "Plugged in: ",hours(plugged)
@@ -1457,8 +1484,12 @@ else:   #not opt report
 	.st25{fill:#5AC1A4;stroke:none; } <!--Green No Stroke -->
 	.st26{fill:#FFE850;stroke:none; } <!--Yellow No Stroke -->
 	.st27{fill:#EF9D30;stroke:none; } <!--Orange No Stroke -->	
+	.stleak2{fill:#7DA6D8;} <!-- critical water leak-->
+	.stleak1{fill:#92c19b;} <!--aux water leak-->
+
 	'''
 	cdd={}
+	# 	these are made white with black stroke
 	colornames=[
 	"color_drop",
 	"color_thrust",
@@ -1495,13 +1526,15 @@ else:   #not opt report
 	
 	cdd["color_arrow"] = "st16"
 	
+	# These are made invisible
 	cartcolors=["color_bigcable",
 	"color_smallcable",
 	"color_cart",
 	"color_cartcircle",
 	"color_scheduled",
 	"color_commago",
-	"color_missionago"]
+	"color_missionago",
+	"color_leak"]
 
 	for cname in cartcolors:
 		cdd[cname]='st18'
@@ -1525,7 +1558,6 @@ else:   #not opt report
 	"text_commago",
 	"text_ampago",
 	"text_cellago",
-	"text_flowago",
 	"text_gpsago",
 	"text_logago",	
 	"text_dvlstatus",
@@ -1537,9 +1569,10 @@ else:   #not opt report
 	cdd["text_arrow"]='90'
 	# these should persist after recovery
 	specialnames=[
-	"text_vehicle","text_lastupdate",
+	"text_vehicle","text_lastupdate","text_flowago",
 	"text_note", "text_notetime","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime",
+	"text_leak","text_leakago",
 	"text_criticalerror"
 
 
@@ -1827,7 +1860,7 @@ else:   #not opt report
 		if volt > 0:
 			cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range
 			cdd["color_volts"] = "st{}".format(voltnum)
-			cdd["color_bat1"] = ['st4',LowBattColor][volt <= 13.6]
+			cdd["color_bat1"] = ['st4',LowBattColor][volt < 13.7]
 			cdd["color_bat2"] = ['st4',LowBattColor][volt < 14.1]
 			cdd["color_bat3"] = ['st4',LowBattColor][volt < 14.5]
 			cdd["color_bat4"] = ['st4',LowBattColor][volt < 14.9]
@@ -1861,8 +1894,17 @@ else:   #not opt report
 			cdd["text_criticaltime"]  = elapsed(CriticalTime-now)
 			
 		cdd["color_dvl"] = DVLcolor
+		
+		if (WaterCritical):
+			cdd["color_leak"] = "stleak2"
+			cdd["text_leak"] = "CRITICAL LEAK: "
+			cdd["text_leakago"] = elapsed(WaterCritical-now)
 
-
+		elif (WaterFault):
+			cdd["color_leak"] = "stleak1"
+			cdd["text_leak"] = "AUX LEAK: "
+			cdd["text_leakago"] = elapsed(WaterFault-now)
+		
 
  		if (ThrusterServo>100) and ((now - ThrusterServo)/3600000 < 4):
 			cdd["color_thrust"] = 'st6'
