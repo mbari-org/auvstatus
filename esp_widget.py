@@ -433,7 +433,7 @@ def printLegend(lowerleft):
 	    
 	return legend
 	
-def writefile(myoutpath,RedoList):
+def writefile(myoutpath,RedoList,ArchiveStr="UPDATED"):
 	with open(myoutpath.format(VEHICLE),'w') as outfile:
 		outfile.write(svghead)
 		outfile.write(string_circle_big.format(*style_circle_big))
@@ -451,7 +451,7 @@ def writefile(myoutpath,RedoList):
 		outfile.write('<text class="font_helv font_size7" transform="translate({tx} {ty})">Last Sample: {upd}</text>'.format(upd=text_lastsample + 
 		     " - " + VEHICLE.upper(),tx=lowerleft[0],ty=lowerleft[1]-2)) # 25 190
 		timestring = dates(now) + " - " +hours(now) + " ({})".format(decimalday(now))
-		outfile.write('<text class="font_helv font_size6" transform="translate({tx} {ty})">UPDATED: {upd}</text>'.format(upd=timestring,tx=lowerright[0]-80,ty=lowerright[1]-1)) # 175 190
+		outfile.write('<text class="font_helv font_size6" transform="translate({tx} {ty})">{arch}: {upd}</text>'.format(arch=ArchiveStr,upd=timestring,tx=lowerright[0]-80,ty=lowerright[1]-1)) # 175 190
 
 		# SAMPLE SUMMARY
 		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd} {extra}</text>'.format(upd=GoodCount,tx=lowerright[0]-80,ty=lowerright[1]+7,extra=extratext)) # 175 190
@@ -649,7 +649,7 @@ if Opt.savefile and (not recovered):
 		print (sys.stderr, "#Saving file ", OutPath.format(VEHICLE))		
 	
 	writefile(OutPath,RedoList)
-	writefile(OutPath.replace('.svg','-archive.svg'),RedoList)
+	writefile(OutPath.replace('.svg','-archive.svg'),RedoList,ArchiveStr="ARCHIVED")
 
 elif Opt.savefile:
 	NoDeployString = '''<svg id="Layer_1" data-name="Layer 1" 
