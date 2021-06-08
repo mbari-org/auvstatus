@@ -1,0 +1,372 @@
+<svg id="Layer_1" data-name="Layer 1" 
+xmlns="http://www.w3.org/2000/svg"  
+x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
+
+
+
+ <defs>
+ <style>
+ .st1 { fill: #dcddde; }
+ .st2, .st3 { fill: #fff; }
+ .st2 { stroke: #9b509f; }
+ .st10, .st2, .st3 { stroke-miterlimit: 10; }
+ .st10, .st2 { stroke-width: 2px; }
+ .st3 { stroke: #231f20; }
+ .st4 { fill: #ef972c; }
+ .st5 { fill: #727373; }
+ .st6 { fill: #5cba48; }
+ .st7, .st8, .st9 { font-size: 7px; }
+ .st7, .st8 { fill: #231f20; }
+ .te5, .st7, .st9 { font-family: Helvetica; }
+ .st8 { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
+ .st9 { fill: #919396; }
+ .st10 { fill: none; stroke: #fff; }
+
+ .fill_gray { fill: #bbbbbb; }
+ .fill_white { fill: #fff; }
+ .stroke_purple { stroke: #ab60af; fill:none; stroke-width: 2px; }
+ .stroke_black  { stroke: #000; fill:none; stroke-width: 2px; }
+ .stroke_blue  { stroke: #067878; fill:none; stroke-width: 2px; stroke-dasharray:1.1 1.4;}
+ .stroke_green  { stroke: #5cba48; fill:none; stroke-width: 3px;}
+ .stroke_dash  { stroke-dasharray:1.1 1.4;}
+ .stroke_2px { stroke-width: 2px; }
+ .stroke_white { fill: none; stroke: #fff; }
+ .stroke_none {stroke: none; fill:none};
+ .stroke_darkGray { stroke: #231f20; fill: none; stroke-width: 2px;}
+ .fill_orange { fill: #ef972c; }
+ .fill_yellow { fill: #efef00; }
+ .fill_lightgray { fill: #e2e2e2; }
+ .thick_orange     { stroke-width:4px; fill:none; stroke: #ef972c; }
+ .thick_yellow     { stroke-width:4px; fill:none; stroke: #f7ca0b; }
+ .thick_gray       { stroke-width:4px; fill:none; stroke: #bbbbbb; }
+ .thick_green      { stroke-width:4px; fill:none; stroke: #5cba48; }
+ .fill_green { fill: #5cba48; }
+ .font_size4 { font-size: 4px; }
+ .font_size5 { font-size: 5px; }
+ .font_size6 { font-size: 6px; }
+ .font_size7 { font-size: 7px; }
+ .font_size9 { font-size: 9px; }
+ .fill_red {fill: #e24466; }
+ .fill_purple {fill:#ab60af;}
+ .fill_darkgray { fill: #555555; }
+ .font_helv { font-family: Helvetica; }
+ .font_helvBold { font-family: Helvetica-Bold, Helvetica; font-weight: 700; }
+ .fill_lightergray { fill: #919396; }
+    </style>
+  </defs>
+  <rect class="fill_lightgray" x="3.91" width="290" height="200"/> 
+  <circle desc="c_big_01" class="stroke_purple" cx="31" cy="24" r="12"/>
+<circle desc="c_big_02" class="stroke_none" cx="57" cy="24" r="12"/>
+<circle desc="c_big_03" class="stroke_none" cx="83" cy="24" r="12"/>
+<circle desc="c_big_04" class="stroke_none" cx="109" cy="24" r="12"/>
+<circle desc="c_big_05" class="stroke_none" cx="135" cy="24" r="12"/>
+<circle desc="c_big_06" class="stroke_none" cx="161" cy="24" r="12"/>
+<circle desc="c_big_07" class="stroke_none" cx="187" cy="24" r="12"/>
+<circle desc="c_big_08" class="stroke_none" cx="213" cy="24" r="12"/>
+<circle desc="c_big_09" class="stroke_none" cx="239" cy="24" r="12"/>
+<circle desc="c_big_10" class="stroke_none" cx="265" cy="24" r="12"/>
+<circle desc="c_big_11" class="stroke_none" cx="31" cy="50" r="12"/>
+<circle desc="c_big_12" class="stroke_none" cx="57" cy="50" r="12"/>
+<circle desc="c_big_13" class="stroke_none" cx="83" cy="50" r="12"/>
+<circle desc="c_big_14" class="stroke_none" cx="109" cy="50" r="12"/>
+<circle desc="c_big_15" class="stroke_none" cx="135" cy="50" r="12"/>
+<circle desc="c_big_16" class="stroke_none" cx="161" cy="50" r="12"/>
+<circle desc="c_big_17" class="stroke_none" cx="187" cy="50" r="12"/>
+<circle desc="c_big_18" class="stroke_none" cx="213" cy="50" r="12"/>
+<circle desc="c_big_19" class="stroke_none" cx="239" cy="50" r="12"/>
+<circle desc="c_big_20" class="stroke_none" cx="265" cy="50" r="12"/>
+<circle desc="c_big_21" class="stroke_none" cx="31" cy="76" r="12"/>
+<circle desc="c_big_22" class="stroke_none" cx="57" cy="76" r="12"/>
+<circle desc="c_big_23" class="stroke_none" cx="83" cy="76" r="12"/>
+<circle desc="c_big_24" class="stroke_none" cx="109" cy="76" r="12"/>
+<circle desc="c_big_25" class="stroke_none" cx="135" cy="76" r="12"/>
+<circle desc="c_big_26" class="stroke_none" cx="161" cy="76" r="12"/>
+<circle desc="c_big_27" class="stroke_none" cx="187" cy="76" r="12"/>
+<circle desc="c_big_28" class="stroke_none" cx="213" cy="76" r="12"/>
+<circle desc="c_big_29" class="stroke_none" cx="239" cy="76" r="12"/>
+<circle desc="c_big_30" class="stroke_none" cx="265" cy="76" r="12"/>
+<circle desc="c_big_31" class="stroke_none" cx="31" cy="102" r="12"/>
+<circle desc="c_big_32" class="stroke_none" cx="57" cy="102" r="12"/>
+<circle desc="c_big_33" class="stroke_none" cx="83" cy="102" r="12"/>
+<circle desc="c_big_34" class="stroke_none" cx="109" cy="102" r="12"/>
+<circle desc="c_big_35" class="stroke_none" cx="135" cy="102" r="12"/>
+<circle desc="c_big_36" class="stroke_none" cx="161" cy="102" r="12"/>
+<circle desc="c_big_37" class="stroke_none" cx="187" cy="102" r="12"/>
+<circle desc="c_big_38" class="stroke_none" cx="213" cy="102" r="12"/>
+<circle desc="c_big_39" class="stroke_none" cx="239" cy="102" r="12"/>
+<circle desc="c_big_40" class="stroke_none" cx="265" cy="102" r="12"/>
+<circle desc="c_big_41" class="stroke_none" cx="31" cy="128" r="12"/>
+<circle desc="c_big_42" class="stroke_none" cx="57" cy="128" r="12"/>
+<circle desc="c_big_43" class="stroke_none" cx="83" cy="128" r="12"/>
+<circle desc="c_big_44" class="stroke_none" cx="109" cy="128" r="12"/>
+<circle desc="c_big_45" class="stroke_none" cx="135" cy="128" r="12"/>
+<circle desc="c_big_46" class="stroke_none" cx="161" cy="128" r="12"/>
+<circle desc="c_big_47" class="stroke_none" cx="187" cy="128" r="12"/>
+<circle desc="c_big_48" class="stroke_none" cx="213" cy="128" r="12"/>
+<circle desc="c_big_49" class="stroke_none" cx="239" cy="128" r="12"/>
+<circle desc="c_big_50" class="stroke_none" cx="265" cy="128" r="12"/>
+<circle desc="c_big_51" class="stroke_none" cx="31" cy="154" r="12"/>
+<circle desc="c_big_52" class="stroke_none" cx="57" cy="154" r="12"/>
+<circle desc="c_big_53" class="stroke_none" cx="83" cy="154" r="12"/>
+<circle desc="c_big_54" class="stroke_none" cx="109" cy="154" r="12"/>
+<circle desc="c_big_55" class="stroke_none" cx="135" cy="154" r="12"/>
+<circle desc="c_big_56" class="stroke_none" cx="161" cy="154" r="12"/>
+<circle desc="c_big_57" class="stroke_none" cx="187" cy="154" r="12"/>
+<circle desc="c_big_58" class="stroke_none" cx="213" cy="154" r="12"/>
+<circle desc="c_big_59" class="stroke_none" cx="239" cy="154" r="12"/>
+<circle desc="c_big_60" class="stroke_none" cx="265" cy="154" r="12"/>
+<circle desc="c_small_01" class="fill_green" cx="31" cy="24" r="10"/>
+<circle desc="c_small_02" class="fill_green" cx="57" cy="24" r="10"/>
+<circle desc="c_small_03" class="fill_yellow" cx="83" cy="24" r="10"/>
+<circle desc="c_small_04" class="fill_green" cx="109" cy="24" r="10"/>
+<circle desc="c_small_05" class="fill_yellow" cx="135" cy="24" r="10"/>
+<circle desc="c_small_06" class="fill_green" cx="161" cy="24" r="10"/>
+<circle desc="c_small_07" class="fill_green" cx="187" cy="24" r="10"/>
+<circle desc="c_small_08" class="fill_green" cx="213" cy="24" r="10"/>
+<circle desc="c_small_09" class="fill_yellow" cx="239" cy="24" r="10"/>
+<circle desc="c_small_10" class="fill_green" cx="265" cy="24" r="10"/>
+<circle desc="c_small_11" class="fill_green" cx="31" cy="50" r="10"/>
+<circle desc="c_small_12" class="fill_yellow" cx="57" cy="50" r="10"/>
+<circle desc="c_small_13" class="fill_gray" cx="83" cy="50" r="10"/>
+<circle desc="c_small_14" class="fill_gray" cx="109" cy="50" r="10"/>
+<circle desc="c_small_15" class="fill_gray" cx="135" cy="50" r="10"/>
+<circle desc="c_small_16" class="fill_gray" cx="161" cy="50" r="10"/>
+<circle desc="c_small_17" class="fill_gray" cx="187" cy="50" r="10"/>
+<circle desc="c_small_18" class="fill_gray" cx="213" cy="50" r="10"/>
+<circle desc="c_small_19" class="fill_gray" cx="239" cy="50" r="10"/>
+<circle desc="c_small_20" class="fill_gray" cx="265" cy="50" r="10"/>
+<circle desc="c_small_21" class="fill_gray" cx="31" cy="76" r="10"/>
+<circle desc="c_small_22" class="fill_gray" cx="57" cy="76" r="10"/>
+<circle desc="c_small_23" class="fill_gray" cx="83" cy="76" r="10"/>
+<circle desc="c_small_24" class="fill_gray" cx="109" cy="76" r="10"/>
+<circle desc="c_small_25" class="fill_gray" cx="135" cy="76" r="10"/>
+<circle desc="c_small_26" class="fill_gray" cx="161" cy="76" r="10"/>
+<circle desc="c_small_27" class="fill_gray" cx="187" cy="76" r="10"/>
+<circle desc="c_small_28" class="fill_gray" cx="213" cy="76" r="10"/>
+<circle desc="c_small_29" class="fill_gray" cx="239" cy="76" r="10"/>
+<circle desc="c_small_30" class="fill_gray" cx="265" cy="76" r="10"/>
+<circle desc="c_small_31" class="fill_gray" cx="31" cy="102" r="10"/>
+<circle desc="c_small_32" class="fill_gray" cx="57" cy="102" r="10"/>
+<circle desc="c_small_33" class="fill_gray" cx="83" cy="102" r="10"/>
+<circle desc="c_small_34" class="fill_gray" cx="109" cy="102" r="10"/>
+<circle desc="c_small_35" class="fill_gray" cx="135" cy="102" r="10"/>
+<circle desc="c_small_36" class="fill_gray" cx="161" cy="102" r="10"/>
+<circle desc="c_small_37" class="fill_gray" cx="187" cy="102" r="10"/>
+<circle desc="c_small_38" class="fill_gray" cx="213" cy="102" r="10"/>
+<circle desc="c_small_39" class="fill_gray" cx="239" cy="102" r="10"/>
+<circle desc="c_small_40" class="fill_gray" cx="265" cy="102" r="10"/>
+<circle desc="c_small_41" class="fill_gray" cx="31" cy="128" r="10"/>
+<circle desc="c_small_42" class="fill_gray" cx="57" cy="128" r="10"/>
+<circle desc="c_small_43" class="fill_gray" cx="83" cy="128" r="10"/>
+<circle desc="c_small_44" class="fill_gray" cx="109" cy="128" r="10"/>
+<circle desc="c_small_45" class="fill_gray" cx="135" cy="128" r="10"/>
+<circle desc="c_small_46" class="fill_gray" cx="161" cy="128" r="10"/>
+<circle desc="c_small_47" class="fill_gray" cx="187" cy="128" r="10"/>
+<circle desc="c_small_48" class="fill_gray" cx="213" cy="128" r="10"/>
+<circle desc="c_small_49" class="fill_gray" cx="239" cy="128" r="10"/>
+<circle desc="c_small_50" class="fill_gray" cx="265" cy="128" r="10"/>
+<circle desc="c_small_51" class="fill_gray" cx="31" cy="154" r="10"/>
+<circle desc="c_small_52" class="fill_gray" cx="57" cy="154" r="10"/>
+<circle desc="c_small_53" class="fill_gray" cx="83" cy="154" r="10"/>
+<circle desc="c_small_54" class="fill_gray" cx="109" cy="154" r="10"/>
+<circle desc="c_small_55" class="fill_gray" cx="135" cy="154" r="10"/>
+<circle desc="c_small_56" class="fill_gray" cx="161" cy="154" r="10"/>
+<circle desc="c_small_57" class="fill_gray" cx="187" cy="154" r="10"/>
+<circle desc="c_small_58" class="fill_gray" cx="213" cy="154" r="10"/>
+<circle desc="c_small_59" class="fill_gray" cx="239" cy="154" r="10"/>
+<circle desc="c_small_60" class="fill_gray" cx="265" cy="154" r="10"/>
+<text desc="t_label_01" class="st7" text-anchor="middle" transform="translate(31 26)">01</text>
+<text desc="t_label_02" class="st7" text-anchor="middle" transform="translate(57 26)">02</text>
+<text desc="t_label_03" class="st7" text-anchor="middle" transform="translate(83 26)">03</text>
+<text desc="t_label_04" class="st7" text-anchor="middle" transform="translate(109 26)">04</text>
+<text desc="t_label_05" class="st7" text-anchor="middle" transform="translate(135 26)">05</text>
+<text desc="t_label_06" class="st7" text-anchor="middle" transform="translate(161 26)">06</text>
+<text desc="t_label_07" class="st7" text-anchor="middle" transform="translate(187 26)">07</text>
+<text desc="t_label_08" class="st7" text-anchor="middle" transform="translate(213 26)">08</text>
+<text desc="t_label_09" class="st7" text-anchor="middle" transform="translate(239 26)">09</text>
+<text desc="t_label_10" class="st7" text-anchor="middle" transform="translate(265 26)">10</text>
+<text desc="t_label_11" class="st7" text-anchor="middle" transform="translate(31 52)">11</text>
+<text desc="t_label_12" class="st7" text-anchor="middle" transform="translate(57 52)">12</text>
+<text desc="t_label_13" class="st7" text-anchor="middle" transform="translate(83 52)">13</text>
+<text desc="t_label_14" class="st7" text-anchor="middle" transform="translate(109 52)">14</text>
+<text desc="t_label_15" class="st7" text-anchor="middle" transform="translate(135 52)">15</text>
+<text desc="t_label_16" class="st7" text-anchor="middle" transform="translate(161 52)">16</text>
+<text desc="t_label_17" class="st7" text-anchor="middle" transform="translate(187 52)">17</text>
+<text desc="t_label_18" class="st7" text-anchor="middle" transform="translate(213 52)">18</text>
+<text desc="t_label_19" class="st7" text-anchor="middle" transform="translate(239 52)">19</text>
+<text desc="t_label_20" class="st7" text-anchor="middle" transform="translate(265 52)">20</text>
+<text desc="t_label_21" class="st7" text-anchor="middle" transform="translate(31 78)">21</text>
+<text desc="t_label_22" class="st7" text-anchor="middle" transform="translate(57 78)">22</text>
+<text desc="t_label_23" class="st7" text-anchor="middle" transform="translate(83 78)">23</text>
+<text desc="t_label_24" class="st7" text-anchor="middle" transform="translate(109 78)">24</text>
+<text desc="t_label_25" class="st7" text-anchor="middle" transform="translate(135 78)">25</text>
+<text desc="t_label_26" class="st7" text-anchor="middle" transform="translate(161 78)">26</text>
+<text desc="t_label_27" class="st7" text-anchor="middle" transform="translate(187 78)">27</text>
+<text desc="t_label_28" class="st7" text-anchor="middle" transform="translate(213 78)">28</text>
+<text desc="t_label_29" class="st7" text-anchor="middle" transform="translate(239 78)">29</text>
+<text desc="t_label_30" class="st7" text-anchor="middle" transform="translate(265 78)">30</text>
+<text desc="t_label_31" class="st7" text-anchor="middle" transform="translate(31 104)">31</text>
+<text desc="t_label_32" class="st7" text-anchor="middle" transform="translate(57 104)">32</text>
+<text desc="t_label_33" class="st7" text-anchor="middle" transform="translate(83 104)">33</text>
+<text desc="t_label_34" class="st7" text-anchor="middle" transform="translate(109 104)">34</text>
+<text desc="t_label_35" class="st7" text-anchor="middle" transform="translate(135 104)">35</text>
+<text desc="t_label_36" class="st7" text-anchor="middle" transform="translate(161 104)">36</text>
+<text desc="t_label_37" class="st7" text-anchor="middle" transform="translate(187 104)">37</text>
+<text desc="t_label_38" class="st7" text-anchor="middle" transform="translate(213 104)">38</text>
+<text desc="t_label_39" class="st7" text-anchor="middle" transform="translate(239 104)">39</text>
+<text desc="t_label_40" class="st7" text-anchor="middle" transform="translate(265 104)">40</text>
+<text desc="t_label_41" class="st7" text-anchor="middle" transform="translate(31 130)">41</text>
+<text desc="t_label_42" class="st7" text-anchor="middle" transform="translate(57 130)">42</text>
+<text desc="t_label_43" class="st7" text-anchor="middle" transform="translate(83 130)">43</text>
+<text desc="t_label_44" class="st7" text-anchor="middle" transform="translate(109 130)">44</text>
+<text desc="t_label_45" class="st7" text-anchor="middle" transform="translate(135 130)">45</text>
+<text desc="t_label_46" class="st7" text-anchor="middle" transform="translate(161 130)">46</text>
+<text desc="t_label_47" class="st7" text-anchor="middle" transform="translate(187 130)">47</text>
+<text desc="t_label_48" class="st7" text-anchor="middle" transform="translate(213 130)">48</text>
+<text desc="t_label_49" class="st7" text-anchor="middle" transform="translate(239 130)">49</text>
+<text desc="t_label_50" class="st7" text-anchor="middle" transform="translate(265 130)">50</text>
+<text desc="t_label_51" class="st7" text-anchor="middle" transform="translate(31 156)">51</text>
+<text desc="t_label_52" class="st7" text-anchor="middle" transform="translate(57 156)">52</text>
+<text desc="t_label_53" class="st7" text-anchor="middle" transform="translate(83 156)">53</text>
+<text desc="t_label_54" class="st7" text-anchor="middle" transform="translate(109 156)">54</text>
+<text desc="t_label_55" class="st7" text-anchor="middle" transform="translate(135 156)">55</text>
+<text desc="t_label_56" class="st7" text-anchor="middle" transform="translate(161 156)">56</text>
+<text desc="t_label_57" class="st7" text-anchor="middle" transform="translate(187 156)">57</text>
+<text desc="t_label_58" class="st7" text-anchor="middle" transform="translate(213 156)">58</text>
+<text desc="t_label_59" class="st7" text-anchor="middle" transform="translate(239 156)">59</text>
+<text desc="t_label_60" class="st7" text-anchor="middle" transform="translate(265 156)">60</text>
+<text desc="pct_label_01" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 20)"></text>
+<text desc="pct_label_02" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 20)"></text>
+<text desc="pct_label_03" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 20)">48%</text>
+<text desc="pct_label_04" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 20)"></text>
+<text desc="pct_label_05" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 20)">73%</text>
+<text desc="pct_label_06" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 20)"></text>
+<text desc="pct_label_07" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 20)"></text>
+<text desc="pct_label_08" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 20)"></text>
+<text desc="pct_label_09" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 20)">80%</text>
+<text desc="pct_label_10" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 20)"></text>
+<text desc="pct_label_11" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 46)"></text>
+<text desc="pct_label_12" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 46)">50%</text>
+<text desc="pct_label_13" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 46)"></text>
+<text desc="pct_label_14" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 46)"></text>
+<text desc="pct_label_15" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 46)"></text>
+<text desc="pct_label_16" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 46)"></text>
+<text desc="pct_label_17" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 46)"></text>
+<text desc="pct_label_18" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 46)"></text>
+<text desc="pct_label_19" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 46)"></text>
+<text desc="pct_label_20" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 46)"></text>
+<text desc="pct_label_21" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 72)"></text>
+<text desc="pct_label_22" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 72)"></text>
+<text desc="pct_label_23" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 72)"></text>
+<text desc="pct_label_24" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 72)"></text>
+<text desc="pct_label_25" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 72)"></text>
+<text desc="pct_label_26" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 72)"></text>
+<text desc="pct_label_27" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 72)"></text>
+<text desc="pct_label_28" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 72)"></text>
+<text desc="pct_label_29" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 72)"></text>
+<text desc="pct_label_30" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 72)"></text>
+<text desc="pct_label_31" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 98)"></text>
+<text desc="pct_label_32" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 98)"></text>
+<text desc="pct_label_33" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 98)"></text>
+<text desc="pct_label_34" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 98)"></text>
+<text desc="pct_label_35" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 98)"></text>
+<text desc="pct_label_36" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 98)"></text>
+<text desc="pct_label_37" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 98)"></text>
+<text desc="pct_label_38" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 98)"></text>
+<text desc="pct_label_39" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 98)"></text>
+<text desc="pct_label_40" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 98)"></text>
+<text desc="pct_label_41" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 124)"></text>
+<text desc="pct_label_42" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 124)"></text>
+<text desc="pct_label_43" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 124)"></text>
+<text desc="pct_label_44" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 124)"></text>
+<text desc="pct_label_45" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 124)"></text>
+<text desc="pct_label_46" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 124)"></text>
+<text desc="pct_label_47" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 124)"></text>
+<text desc="pct_label_48" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 124)"></text>
+<text desc="pct_label_49" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 124)"></text>
+<text desc="pct_label_50" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 124)"></text>
+<text desc="pct_label_51" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 150)"></text>
+<text desc="pct_label_52" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 150)"></text>
+<text desc="pct_label_53" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 150)"></text>
+<text desc="pct_label_54" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 150)"></text>
+<text desc="pct_label_55" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 150)"></text>
+<text desc="pct_label_56" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 150)"></text>
+<text desc="pct_label_57" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 150)"></text>
+<text desc="pct_label_58" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 150)"></text>
+<text desc="pct_label_59" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 150)"></text>
+<text desc="pct_label_60" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 150)"></text>
+<text desc="time_label_01" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 31)">112.06</text>
+<text desc="time_label_02" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 31)">111.90</text>
+<text desc="time_label_03" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 31)">111.77</text>
+<text desc="time_label_04" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 31)">111.68</text>
+<text desc="time_label_05" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 31)">111.49</text>
+<text desc="time_label_06" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 31)">111.38</text>
+<text desc="time_label_07" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 31)">111.27</text>
+<text desc="time_label_08" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 31)">111.09</text>
+<text desc="time_label_09" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 31)">110.97</text>
+<text desc="time_label_10" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 31)">110.85</text>
+<text desc="time_label_11" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 57)">110.69</text>
+<text desc="time_label_12" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 57)">110.56</text>
+<text desc="time_label_13" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 57)"></text>
+<text desc="time_label_14" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 57)"></text>
+<text desc="time_label_15" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 57)"></text>
+<text desc="time_label_16" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 57)"></text>
+<text desc="time_label_17" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 57)"></text>
+<text desc="time_label_18" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 57)"></text>
+<text desc="time_label_19" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 57)"></text>
+<text desc="time_label_20" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 57)"></text>
+<text desc="time_label_21" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 83)"></text>
+<text desc="time_label_22" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 83)"></text>
+<text desc="time_label_23" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 83)"></text>
+<text desc="time_label_24" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 83)"></text>
+<text desc="time_label_25" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 83)"></text>
+<text desc="time_label_26" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 83)"></text>
+<text desc="time_label_27" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 83)"></text>
+<text desc="time_label_28" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 83)"></text>
+<text desc="time_label_29" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 83)"></text>
+<text desc="time_label_30" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 83)"></text>
+<text desc="time_label_31" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 109)"></text>
+<text desc="time_label_32" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 109)"></text>
+<text desc="time_label_33" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 109)"></text>
+<text desc="time_label_34" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 109)"></text>
+<text desc="time_label_35" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 109)"></text>
+<text desc="time_label_36" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 109)"></text>
+<text desc="time_label_37" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 109)"></text>
+<text desc="time_label_38" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 109)"></text>
+<text desc="time_label_39" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 109)"></text>
+<text desc="time_label_40" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 109)"></text>
+<text desc="time_label_41" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 135)"></text>
+<text desc="time_label_42" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 135)"></text>
+<text desc="time_label_43" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 135)"></text>
+<text desc="time_label_44" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 135)"></text>
+<text desc="time_label_45" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 135)"></text>
+<text desc="time_label_46" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 135)"></text>
+<text desc="time_label_47" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 135)"></text>
+<text desc="time_label_48" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 135)"></text>
+<text desc="time_label_49" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 135)"></text>
+<text desc="time_label_50" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 135)"></text>
+<text desc="time_label_51" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 161)"></text>
+<text desc="time_label_52" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 161)"></text>
+<text desc="time_label_53" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 161)"></text>
+<text desc="time_label_54" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 161)"></text>
+<text desc="time_label_55" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 161)"></text>
+<text desc="time_label_56" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 161)"></text>
+<text desc="time_label_57" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 161)"></text>
+<text desc="time_label_58" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 161)"></text>
+<text desc="time_label_59" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 161)"></text>
+<text desc="time_label_60" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 161)"></text>
+<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 7h 31m ago - BRIZO</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 22Apr21 - 09:00 (112.38)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 12 </text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 0</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
+<circle class="fill_green" cx="30" cy="186" r="6"/>
+<text class="te5 font_size5" transform="translate(23 188)">GOOD</text>
+<circle class="fill_yellow" cx="53" cy="186" r="6"/>
+<text class="te5 font_size5" transform="translate(47 188)">PART</text>
+<circle class="fill_orange" cx="76" cy="186" r="6"/>
+<text class="te5 font_size5" transform="translate(71 188)">FAIL</text>
+<circle class="stroke_purple" cx="100" cy="186" r="6"/>
+<text class="te5 font_size5" transform="translate(94 188)">LAST</text>
+<circle class="stroke_blue stroke_dash" cx="124" cy="186" r="6"/>
+<text class="te5 font_size5" transform="translate(117 188)">REDO</text>
+<circle class="stroke_green" cx="148" cy="186" r="6"/>
+<text class="te5 font_size5" transform="translate(138 188)">REUSED</text> 
+
+</svg>
