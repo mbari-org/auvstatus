@@ -1919,7 +1919,7 @@ else:   #not opt report
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
 		if dropWeight > 100:
-			cdd["text_droptime"] = hours(dropWeight)
+			cdd["text_droptime"] = elapsed(dropWeight-now)
 		else:
 			cdd["text_droptime"] =""
 			
