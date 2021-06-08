@@ -418,7 +418,7 @@ def parseCritical(recordlist):
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
 		if RecordText.startswith("WATER DETECTED"):
-			Water = Record["unixtime"]
+			Water = Record["unixTime"]
 			
 		if "burnwire activated" in RecordText.lower():
 			Drop = Record["unixTime"]
@@ -448,7 +448,7 @@ def parseFaults(recordlist):
 	Software = False
 	Hardware = False
 	Overload = False
-	Water    = False
+	WaterFault    = False
 	# if DEBUG:
 	# 	print "### Start Recordlist"
 	# 	print recordlist
@@ -471,13 +471,13 @@ def parseFaults(recordlist):
 			Hardware = Record["unixTime"]
 			
 		if Record["text"].upper().startswith("WATER ALARM AUX"):
-			Water = Record["unixTime"]
+			WaterFault = Record["unixTime"]
 		
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
 		 	DVLError=Record["unixTime"]
-	return BadBattery,DVLError,Software,Overload,Hardware,Water
+	return BadBattery,DVLError,Software,Overload,Hardware,WaterFault
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -840,9 +840,12 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 
 #'''Scheduled = Record["text"].split("/")[1].split('.')[0]'''
 
-		if Scheduled == False and not Cleared and RecordText.startswith('Scheduled #') and (("load" in RecordText) or ("set" in RecordText)) and hash in RecordText:
-			Scheduled = RecordText.split(': "load ')[1].split('.xml')[0].split("/")[1]
+		if Scheduled == False and not Cleared and RecordText.startswith('Scheduled #') and ("load" in RecordText) and hash in RecordText:
 			''': "load Science/profile_station.xml'''
+			try:
+				Scheduled = RecordText.split(': "load ')[1].split('.xml')[0].split("/")[1]
+			except IndexError:
+				sys.exit("## Can't parse scheduled mission name: \n\t" + RecordText)
 			if DEBUG:
 				print >> sys.stderr, "## Found Scheduled hash",Scheduled
 
@@ -1300,6 +1303,8 @@ plugged = getPlugged(recovered)
 note,noteTime = parseNotes(getNotes(startTime))
 
 bearing = 999
+WaterCritical = False
+WaterFault = False
 
 # vehicle not recovered
 if (not recovered) or Opt.anyway or DEBUG:
@@ -1380,8 +1385,6 @@ if (not recovered) or Opt.anyway or DEBUG:
 	SWError = False
 	HWError = False
 	OverloadError = False
-	WaterCritical = False
-	WaterFault = False
 	
 	if faults:
 		BadBattery,DVLError,SWError,OverloadError,HWError,WaterFault = parseFaults(faults)
@@ -1679,7 +1682,8 @@ else:   #not opt report
 			cdd["text_mission"] = "RECOVERED " + hours(recovered)+ " &#x2022; " + dates(recovered)
 			
 	# NOT RECOVERED
-	else:   
+	else: 
+	  
 		# SWError = False
 		# CriticalError = False                                                               # unicode bullet
 		if missionName and missionTime:
@@ -1933,6 +1937,12 @@ else:   #not opt report
 			outfile.write(svgtext.format(**cdd))
 			if BadBattery > 100:
 				outfile.write(svgbadbattery)
+			if WaterCritical or WaterFault:
+				outfile.write(svgwaterleak.format(
+					color_leak = cdd["color_leak"],
+					text_leak = cdd["text_leak"],
+					text_leakago = cdd["text_leakago"] )
+				)
 			if len(Tracking)>=1:
 				outfile.write(makeTrackSVG(Tracking,TrackTime))
 			if not recovered:
