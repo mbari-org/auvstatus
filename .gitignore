@@ -2,3 +2,4 @@
 *.svg
 !*archive.svg
 !legend.svg
+.nova
