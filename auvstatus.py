@@ -793,7 +793,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 		# if goes to default and then resumes: got command resume 
 		
 		if TimeoutDuration == False and \
-		     ".MissionTimeout" in RecordText and RecordText.startswith("got") and "chedule" not in RecordText:
+		     ".MissionTimeout" in RecordText and RecordText.startswith("got") and not ("chedule" in RecordText):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			'''got command set sci2.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
@@ -876,7 +876,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				print >> sys.stderr, "## Got Lat from mission", StationLat
 		
 		## PARSE NEED COMMS Assumes MINUTES
-		if NeedComms == False and Record["name"]=="CommandLine" and RecordText.startswith("got command") and ".NeedCommsTime" in RecordText:
+		if NeedComms == False and Record["name"]=="CommandLine" and RecordText.startswith("got command") and not "chedule" in RecordText and ".NeedCommsTime" in RecordText:
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			'''got command set trackPatchChl_yoyo.NeedCommsTimeInTransit 45.000000'''
