@@ -793,7 +793,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 		# if goes to default and then resumes: got command resume 
 		
 		if TimeoutDuration == False and \
-		     ".MissionTimeout" in RecordText and RecordText.startswith("got"):
+		     ".MissionTimeout" in RecordText and RecordText.startswith("got") and "chedule" not in RecordText:
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			'''got command set sci2.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
@@ -1701,6 +1701,8 @@ else:   #not opt report
 				
 		if Scheduled:
 			cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
+			if "/" in Scheduled:
+				Scheduled=Scheduled.split("/")[-1]
 			cdd["color_scheduled"] = ['st27','st25'][Scheduled in mission_defaults]   
 
 		# MISSION TIMES
