@@ -702,7 +702,7 @@ def parseImptMisc(recordlist):
 		## configSet AMEcho.loadAtStartup 0 bool
 		## got command configSet AMEcho.enabled 1.000000 bool
 
- 		if not GotDVL and (not "(bool)" in Record.get("text","NA")) and (
+ 		if not GotDVL and (not "(bool)" in Record.get("text","NA")) and (not "requires" in Record.get("text","NA")) and (
  		      ("DVL_micro.loadAtStartup"      in Record.get("text","NA")) or 
  		      ("RDI_Pathfinder.loadAtStartup" in Record.get("text","NA")) or 
  		      ("AMEcho.loadAtStartup"         in Record.get("text","NA")) or 

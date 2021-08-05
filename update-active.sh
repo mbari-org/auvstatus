@@ -1,6 +1,6 @@
 #! /bin/bash
 #VEH='daphne pontus galene triton tethys makai brizo sim'
-VEH='daphne'
+VEH='triton sim sim1'
 
 for v in $VEH; do rm -f /var/www/html/widget/auv_$v.svg; python2.7 /var/www/html/widget/auvstatus.py -v $v -f; done
 #for v in $VEH; do python2.7 /var/www/html/widget/auvstatus.py -v $v -f; done

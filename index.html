@@ -29,7 +29,13 @@ function updateimage() {
 	var myImageElement7 = document.getElementById('makai');
 	myImageElement7.src = 'https://okeanids.mbari.org/widget/auv_makai.svg?'+ timetag;
 	
-	var myImageElement8 = document.getElementById('esp_makai');
+	var myImageElement12 = document.getElementById('sim');
+	myImageElement12.src = 'https://okeanids.mbari.org/widget/auv_sim.svg?'+ timetag;
+	
+	var myImageElement13 = document.getElementById('sim1');
+	myImageElement13.src = 'https://okeanids.mbari.org/widget/auv_sim1.svg?'+ timetag;
+
+ 	var myImageElement8 = document.getElementById('esp_makai');
 	myImageElement8.src = 'https://okeanids.mbari.org/widget/esp_makai.svg?'+ timetag;
 	
 	var myImageElement9 = document.getElementById('esp_makai_archive');
@@ -78,6 +84,8 @@ setInterval(updateimage, 30000);
 <img src="https://okeanids.mbari.org/widget/auv_tethys.svg" id="tethys" width="100%"/>
 <img src="https://okeanids.mbari.org/widget/auv_galene.svg" id="galene" width="100%"/>
 <img src="https://okeanids.mbari.org/widget/auv_triton.svg" id="triton" width="100%"/>
+<img src="https://okeanids.mbari.org/widget/auv_sim.svg" id="sim" width="100%"/>
+<img src="https://okeanids.mbari.org/widget/auv_sim1.svg" id="sim1" width="100%"/>
 <hr/>
 <img src="https://okeanids.mbari.org/widget/legend.svg" id="legend" width="100%"/>
 
