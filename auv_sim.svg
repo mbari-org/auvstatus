@@ -103,11 +103,11 @@
 
 <circle desc="missiondefault"   class="st27" cx="415" cy="183" r="2"/>
 <circle desc="scheduleddefault" class="st18"      cx="415" cy="193.5" r="1.6"/>
-<circle desc="commoverdue"     class="st4"        cx="138.5" cy="295.5" r="2"/>
+<circle desc="commoverdue"     class="st6"        cx="138.5" cy="295.5" r="2"/>
 <circle desc="missionoverdue"     class="st6"     cx="138.5" cy="306" r="2"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="st6" width="24.43" height="11.5"/>
-<rect desc="cell"    x="260.15" y="212.24" class="st4" width="26.43" height="11.31"/>
-<rect desc="gps"     x="407.76" y="221.71" class="st4" width="26.93" height="10.17"/>
+<rect desc="cell"    x="260.15" y="212.24" class="st6" width="26.43" height="11.31"/>
+<rect desc="gps"     x="407.76" y="221.71" class="st5" width="26.93" height="10.17"/>
 <rect desc="amps"    x="336.28" y="261.76" class="st3" width="25.5" height="10.5"/>
 <rect desc="volts"   x="336.28" y="249.85" class="st3" width="25.5" height="10.5"/>
 <rect desc="gf_rect" x="480" y="254.0" class="st3" width="24.43" height="10.5"/>
@@ -150,31 +150,31 @@
 </g>
 
 <!-- Dynamic values -->
-<text desc="mission" transform="matrix(1 0 0 1 462.0 186)" class="st9 st10 st12">Default - 13:20 &#x2022; 04Aug21</text>
+<text desc="mission" transform="matrix(1 0 0 1 462.0 186)" class="st9 st10 st12">Default - 15:57 &#x2022; 05Aug21</text>
 <text desc="missionsched" transform="matrix(1 0 0 1 419.5 196)" class="st12 st9 st13"></text>
-<text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">08:06</text>
+<text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">12:11</text>
 <text desc="test_note" transform="matrix(1 0 0 1 133 174)" class="st12 st9 st13"></text>
 <text desc="test_notetime" transform="matrix(1 0 0 1 134 180)" class="st12 st9 st24"></text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">99:99</text>
-<text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">08:06</text>
+<text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">12:11</text>
 <text desc="text_bearing" transform="matrix(1 0 0 1 596 262.3)" class="st9 st13">90&#x00B0;</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">0.0km/hr</text>
-<text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">09:06 - in 56m</text>
-<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">13:20 - 18h 49m ago</text>
+<text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">13:11 - 6h 18m ago</text>
+<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">15:57 - 1d 3h 32m ago</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">long time ago</text>
-<text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">13:20</text>
-<text desc="text_logago" transform="matrix(1 0 0 1 185.0 231.2224)" class="st12 st9 st13">18h 49m ago</text>
-<text desc="text_cellago" transform="matrix(1 0 0 1 342.0 221.2224)" class="st12 st9 st13">3m ago</text>
+<text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">15:57</text>
+<text desc="text_logago" transform="matrix(1 0 0 1 185.0 231.2224)" class="st12 st9 st13">1d 3h 32m ago</text>
+<text desc="text_cellago" transform="matrix(1 0 0 1 342.0 221.2224)" class="st12 st9 st13">7h 18m ago</text>
 <text desc="text_volts" transform="matrix(1 0 0 1 338.0 257.9931)" class="st9 st10">0.0</text>
 <text desc="text_amps" transform="matrix(1 0 0 1 338.0 270.4917)" class="st9 st10">0.0</text>
 <text desc="text_ampago" transform="matrix(1 0 0 1 330.0 280.0)" class="st12 st9 st13">na</text>
 <text desc="text_droptime" transform="matrix(1 0 0 1 338 300)" class="st12 st9 st13"></text>
 <text desc="text_gftime" transform="matrix(1 0 0 1 479.3629 250)" class="st12 st9 st13">no scan</text>
-<text desc="text_gpsago" transform="matrix(1 0 0 1 481 226.5)" class="st12 st9 st13">3m ago</text>
+<text desc="text_gpsago" transform="matrix(1 0 0 1 481 226.5)" class="st12 st9 st13">7h 18m ago</text>
 <text desc="text_gf" transform="matrix(1 0 0 1 482 262.4973)" class="st9 st10">NA</text>
 <text desc="text_speed" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">na<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">SIM</text>
-<text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">08:10</text>
+<text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">19:30</text>
 <text desc="reckoned_detail" transform="matrix(1 0 0 1 592 294)" class="st12 st9 st24">na</text>
 <text desc="text_arrivestation" transform="matrix(1 0 0 1 581 230)" class="st9 st13">On Station</text>
 <text desc="text_stationdist" transform="matrix(1 0 0 1 582 238)" class="st12 st9 st24"></text>

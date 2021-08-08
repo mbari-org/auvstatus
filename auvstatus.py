@@ -880,6 +880,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			'''got command set trackPatchChl_yoyo.NeedCommsTimeInTransit 45.000000'''
+			'''got command set trackPatch_yoyo.NeedCommsTimePatchTracking 120.000000 minute '''
 			try:
 				NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
 			except IndexError:
@@ -889,7 +890,10 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					try:
 						NeedComms = int(float(Record["text"].split("NeedCommsTimeInTransit ")[1].split(" ")[0]))
 					except IndexError:
-						print >> sys.stderr, "#NeedComms but no split",Record["text"], VEHICLE
+						try: 
+							NeedComms = int(float(Record["text"].split("NeedCommsTimePatchTracking ")[1].split(" ")[0]))
+						except IndexError:	
+							print >> sys.stderr, "#NeedComms but no split",Record["text"], VEHICLE
 			if DEBUG:
 				print >> sys.stderr, "#FOUND NEEDCOMMS",NeedComms, VEHICLE
 			## ADD FLOW RATE FOR UBAT...
