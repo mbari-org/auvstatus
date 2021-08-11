@@ -893,7 +893,14 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 						try: 
 							NeedComms = int(float(Record["text"].split("NeedCommsTimePatchTracking ")[1].split(" ")[0]))
 						except IndexError:	
-							print >> sys.stderr, "#NeedComms but no split",Record["text"], VEHICLE
+							try:  #This one assumes hours instead of minutes. SHOULD Code to check
+								NeedComms = int(float(Record["text"].split("Smear.NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
+								if DEBUG:
+									print >> sys.stderr, "#Long NeedComms",Record["text"], VEHICLE, NeedComms
+							except IndexError:	
+								print >> sys.stderr, "#NeedComms but no split",Record["text"], VEHICLE
+			if NeedComms and "hour" in Record["text"]:
+				NeedComms = NeedComms * 60
 			if DEBUG:
 				print >> sys.stderr, "#FOUND NEEDCOMMS",NeedComms, VEHICLE
 			## ADD FLOW RATE FOR UBAT...
