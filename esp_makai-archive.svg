@@ -165,12 +165,12 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_small_48" class="fill_gray" cx="213" cy="128" r="10"/>
 <circle desc="c_small_49" class="fill_gray" cx="239" cy="128" r="10"/>
 <circle desc="c_small_50" class="fill_gray" cx="265" cy="128" r="10"/>
-<circle desc="c_small_51" class="fill_green" cx="31" cy="154" r="10"/>
-<circle desc="c_small_52" class="fill_yellow" cx="57" cy="154" r="10"/>
-<circle desc="c_small_53" class="fill_yellow" cx="83" cy="154" r="10"/>
-<circle desc="c_small_54" class="fill_yellow" cx="109" cy="154" r="10"/>
-<circle desc="c_small_55" class="fill_yellow" cx="135" cy="154" r="10"/>
-<circle desc="c_small_56" class="fill_green" cx="161" cy="154" r="10"/>
+<circle desc="c_small_51" class="fill_gray" cx="31" cy="154" r="10"/>
+<circle desc="c_small_52" class="fill_gray" cx="57" cy="154" r="10"/>
+<circle desc="c_small_53" class="fill_green" cx="83" cy="154" r="10"/>
+<circle desc="c_small_54" class="fill_gray" cx="109" cy="154" r="10"/>
+<circle desc="c_small_55" class="fill_gray" cx="135" cy="154" r="10"/>
+<circle desc="c_small_56" class="fill_gray" cx="161" cy="154" r="10"/>
 <circle desc="c_small_57" class="fill_gray" cx="187" cy="154" r="10"/>
 <circle desc="c_small_58" class="fill_gray" cx="213" cy="154" r="10"/>
 <circle desc="c_small_59" class="fill_gray" cx="239" cy="154" r="10"/>
@@ -286,10 +286,10 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="pct_label_49" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 124)"></text>
 <text desc="pct_label_50" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 124)"></text>
 <text desc="pct_label_51" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 150)"></text>
-<text desc="pct_label_52" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 150)">45%</text>
-<text desc="pct_label_53" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 150)">--X--</text>
-<text desc="pct_label_54" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 150)">67%</text>
-<text desc="pct_label_55" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 150)">62%</text>
+<text desc="pct_label_52" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 150)"></text>
+<text desc="pct_label_53" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 150)"></text>
+<text desc="pct_label_54" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 150)"></text>
+<text desc="pct_label_55" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 150)"></text>
 <text desc="pct_label_56" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 150)"></text>
 <text desc="pct_label_57" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 150)"></text>
 <text desc="pct_label_58" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 150)"></text>
@@ -355,7 +355,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_58" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 161)"></text>
 <text desc="time_label_59" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 161)"></text>
 <text desc="time_label_60" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 161)"></text>
-<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 15m ago - MAKAI</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 11Aug21 - 22:36 (223.94)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 3 </text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 1</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
+<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 27m ago - MAKAI</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 11Aug21 - 22:48 (223.95)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 0 </text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 0</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
 <circle class="fill_green" cx="30" cy="186" r="6"/>
 <text class="te5 font_size5" transform="translate(23 188)">GOOD</text>
 <circle class="fill_yellow" cx="53" cy="186" r="6"/>

@@ -302,7 +302,11 @@ def parseESP(recordlist,big_circle_list):
 	ESPL = [999] * 61 # Initialize percent list
 	TimeList = [''] * 61 #
 	cartre = re.compile(r"Selecting Cartridge (\d+)")
+	# editing VolumeResult regex for entries like
+	# "@21:27:49.79 Cmd::Paused in FILTERING --  during Sample Pump (SP) move after sampling 1161.4ml
 	mlre   = re.compile(r"Sampled +([\d\.]+)ml")
+
+
 	firstnum = False
 	firsttime = False
 	RedoList = []
@@ -330,6 +334,7 @@ def parseESP(recordlist,big_circle_list):
 					else:
 						mls = .123
 					ESPL[Cartnum] = round(float(mls)/10)
+
 					TimeList[Cartnum] = Record["unixTime"]					
 					
 					if not firstnum: # MOST RECENT
