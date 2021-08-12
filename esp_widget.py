@@ -319,13 +319,16 @@ def parseESP(recordlist,big_circle_list):
 					
 
 				VolumeResult = mlre.findall(RecordText)				
-# 				if VolumeResult:
-# 					if DEBUG:
-# 						print(VolumeResult,file=sys.stderr)
+				if VolumeResult:
+					if DEBUG:
+						print("## VOLUMERESULT",VolumeResult,file=sys.stderr)
 					
 				if len(CartResult) == 1:
 					Cartnum = int(CartResult[-1])
-					mls = VolumeResult[-1]
+					if VolumeResult:
+						mls = VolumeResult[-1]
+					else:
+						mls = .123
 					ESPL[Cartnum] = round(float(mls)/10)
 					TimeList[Cartnum] = Record["unixTime"]					
 					
