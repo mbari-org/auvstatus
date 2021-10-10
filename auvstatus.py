@@ -289,6 +289,7 @@ def getDataAsc(starttime,mission):
 				if amp == 0 and "charge" in nextline:
 					amp      = float(fields[3].split(" ")[0])
 			if VEHICLE == 'pontus':
+				''' Fault  UBAT flow rate is below the specified threshold of 0.05 l/s.   WetLabsUBAT'''
 				'''WetLabsUBAT.flow_rate=0.333607 l/s'''
 				if (flow == 999) and "WetLabsUBAT.flow_rate" in nextline:
 					if DEBUG:
@@ -644,7 +645,7 @@ def parseImptMisc(recordlist):
 			if "dvl" in Record["text"].lower():
 				print >> sys.stderr, "** ImptMisc:",Record["name"],"<-->",Record.get("text","NO TEXT FIELD")
 				
-		if not LogTime and Record["name"] =='CommandLine' and 'got command restart logs' in Record.get("text","NA"):
+		if not LogTime and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec') and 'got command restart logs' in Record.get("text","NA"):
 			LogTime = Record["unixTime"]
 		
 		''' DVL PARSING
@@ -728,7 +729,7 @@ def parseImptMisc(recordlist):
 			
 		'''Change to got command ubat on  got command restart application'''
 		#if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
-		if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" :
+		if VEHICLE == "pontus" and ubatTime == False and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec') :
 			''' Changing this to default to ON unless specifically turned off'''
 			
 			RecordText = Record.get("text","NA")
@@ -876,11 +877,13 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				print >> sys.stderr, "## Got Lat from mission", StationLat
 		
 		## PARSE NEED COMMS Assumes MINUTES
-		if NeedComms == False and Record["name"]=="CommandLine" and RecordText.startswith("got command") and not "chedule" in RecordText and ".NeedCommsTime" in RecordText:
+		if NeedComms == False and (Record["name"]=="CommandLine" or Record["name"]=="CommandExec") and RecordText.startswith("got command") and not "chedule" in RecordText and ".NeedCommsTime" in RecordText:
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			'''got command set trackPatchChl_yoyo.NeedCommsTimeInTransit 45.000000'''
 			'''got command set trackPatch_yoyo.NeedCommsTimePatchTracking 120.000000 minute '''
+			if DEBUG:
+				print >> sys.stderr, "#Entering NeedComms",Record["text"], VEHICLE, NeedComms
 			try:
 				NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
 			except IndexError:
@@ -909,7 +912,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 		## PARSE UBAT (make vehicle-specific
 		## PARSE SPEED # THis used to be ".Speed"
-		if Speed == 0 and Record["name"]=="CommandLine" and ("set" in RecordText) and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText or "ApproachSpeed" in RecordText or ".Speed " in RecordText) and RecordText.startswith("got"):
+		if Speed == 0 and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec')  and ("set" in RecordText) and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText or "ApproachSpeed" in RecordText or ".Speed " in RecordText) and RecordText.startswith("got"):
 			if (".SpeedTransit" in RecordText):
 				Speed = "%.2f" % (float(Record["text"].split(".SpeedTransit")[1].strip().split(" ")[0]))
 			elif (".ApproachSpeed" in RecordText):
@@ -1345,7 +1348,8 @@ if (not recovered) or Opt.anyway or DEBUG:
 	if missionTime > 60000: 
 		querytime = missionTime-60000
 		# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
-		postmission = getImportant(querytime,inputname="CommandLine")
+		# CHANGING FROM CommandLine to CommandExec
+		postmission = getImportant(querytime,inputname="CommandExec")
 	else:
 		postmission = ''
 	
