@@ -252,6 +252,7 @@ def getDataAsc(starttime,mission):
 '''
 
 	Bailout=False
+	
 	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
 	volt = 0
 	amp  = 0
@@ -260,15 +261,26 @@ def getDataAsc(starttime,mission):
 	flow = 999
 	Tracking = []
 	TrackTime = []
+	allpaths =[]
 	NeedTracking = True
 
-	record = runQuery(event="dataProcessed",limit="2",timeafter=starttime)
-	for pathpart in record:
+	record = runQuery(event="dataProcessed",limit="3",timeafter=starttime)
+	
+	for checkpath in record:
+		allpaths.append(checkpath['path'])
+		
+	if (len(allpaths) ==3):   # get three most recent
+		if allpaths[0]==allpaths[1]:   # if first two are the same, drop second
+			z=allpaths.pop(1)
+		else:            # otherwise drop last one
+			z=allpaths.pop(2)
+			
+	for pathpart in allpaths:
 		volt=0
 		amp =0
 		volttime=0
 		
-		extrapath = pathpart['path']
+		extrapath = pathpart
 		NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
 		if DEBUG:
 			print >> sys.stderr, "# DATA NewURL",NewURL
