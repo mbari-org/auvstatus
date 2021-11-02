@@ -128,7 +128,9 @@ def getOldGPS(gpstime,missionstart):
 	'''using the date of the most recent entry [mission start], go back 30 minutes and get GPS fix'''
 	
 	previoustime = gpstime - 30*60*1000
-	qString = runQuery(event="gpsFix",limit="1&to={}".format(previoustime),timeafter=missionstart)
+	qString=""
+	if (previoustime > 100):
+		qString = runQuery(event="gpsFix",limit="1&to={}".format(previoustime),timeafter=missionstart)
 	retstring=""
 	if qString:
 		retstring = qString
