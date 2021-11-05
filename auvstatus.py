@@ -32,8 +32,8 @@ import math
 import re
 from collections import deque
 from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak   # define the svg text?
-
 import ssl
+
 ssl._create_default_https_context = ssl._create_unverified_context
 
 # Default timeouts for selected missions
@@ -86,8 +86,11 @@ def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 			print >> sys.stderr, "# Query timeout",URL
 			result = ''
 		return result
-	except urllib2.HTTPError:
-		print >> sys.stderr, "# FAILURE IN QUERY:",URL
+	except urllib2.HTTPError or ssl.SSLError:
+		if ssl.SSLError:
+			print >> sys.stderr, "# QUERY TIMEOUT:",URL
+		else:
+			print >> sys.stderr, "# FAILURE IN QUERY:",URL
 		handleURLerror()
 		return None
 
@@ -95,9 +98,12 @@ def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 def getDeployment():
 	'''return start time for deployment'''
 	startTime = 0
-	launchString = runQuery(event="launch",limit="1")
-	if launchString:
-		startTime = launchString[0]['unixTime']
+	try:
+		launchString = runQuery(event="launch",limit="1")
+		if launchString:
+			startTime = launchString[0]['unixTime']
+	except ssl.SSLError:
+		print >> sys.stderr, "# DEPLOYMENT TIMEOUT",VEHICLE
 	return startTime
 	
 def getRecovery(starttime):
