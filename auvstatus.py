@@ -819,8 +819,12 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			'''got command set sci2.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
 			'''got command set Smear.MissionTimeout 8.000000 hour'''
+			if "minute" in Record["text"]:
+				TimeoutDuration = TimeoutDuration/60.0
+				if DEBUG:
+					print >> sys.stderr, "# NOTE: Timeout given in minutes "
 			if DEBUG:
-				print >> sys.stderr, "# Found TimeOut of ",TimeoutDuration
+				print >> sys.stderr, "# Found TimeOut of ",TimeoutDuration, Record["text"]
 			TimeoutStart    = Record["unixTime"]
 			
 			"esp samples have 3h timeout"
