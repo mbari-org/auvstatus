@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 1.5 - Updated default mission list
 	Version 1.4 - Bumping version number after misc changes.
 	Version 1.3 - Streamlined code so it doesn't download data for recovered vehicles
 	Version 1.2 - making UBAT pontus-specific (move to svg["pontus"] for more vehicles)
@@ -906,11 +907,13 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			'''got command set trackPatchChl_yoyo.NeedCommsTimeInTransit 45.000000'''
 			'''got command set trackPatch_yoyo.NeedCommsTimePatchTracking 120.000000 minute '''
+			'''NeedCommsTimeMarginPatchTracking'''
 			if DEBUG:
 				print >> sys.stderr, "#Entering NeedComms",Record["text"], VEHICLE, NeedComms
 			try:
 				NeedComms = int(float(Record["text"].split("NeedCommsTime ")[1].split(" ")[0]))
 			except IndexError:
+				'''really should replace this with reges'''
 				try:
 					NeedComms = int(float(Record["text"].split("NeedCommsTimeInTransect ")[1].split(" ")[0]))
 				except IndexError:
@@ -918,14 +921,17 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 						NeedComms = int(float(Record["text"].split("NeedCommsTimeInTransit ")[1].split(" ")[0]))
 					except IndexError:
 						try: 
-							NeedComms = int(float(Record["text"].split("NeedCommsTimePatchTracking ")[1].split(" ")[0]))
-						except IndexError:	
-							try:  #This one assumes hours instead of minutes. SHOULD Code to check
-								NeedComms = int(float(Record["text"].split("Smear.NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
-								if DEBUG:
-									print >> sys.stderr, "#Long NeedComms",Record["text"], VEHICLE, NeedComms
+							NeedComms = int(float(Record["text"].split("NeedCommsTimeMarginPatchTracking ")[1].split(" ")[0]))
+						except IndexError:
+							try: 
+								NeedComms = int(float(Record["text"].split("NeedCommsTimePatchTracking ")[1].split(" ")[0]))
 							except IndexError:	
-								print >> sys.stderr, "#NeedComms but no split",Record["text"], VEHICLE
+								try:  #This one assumes hours instead of minutes. SHOULD Code to check
+									NeedComms = int(float(Record["text"].split("Smear.NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
+									if DEBUG:
+										print >> sys.stderr, "#Long NeedComms",Record["text"], VEHICLE, NeedComms
+								except IndexError:	
+									print >> sys.stderr, "#NeedComms but no split",Record["text"], VEHICLE
 			if NeedComms and "hour" in Record["text"]:
 				NeedComms = NeedComms * 60
 			if DEBUG:
@@ -1299,9 +1305,10 @@ else:
 	
 # TIMEOUTS are in hours? or days?
 mission_defaults = {
-	"profile_station"  	: {"MissionTimeout": 4,   "NeedCommsTime":60,  "Speed":1.0 },
+	"profile_station"  : {"MissionTimeout": 4,   "NeedCommsTime":60,  "Speed":1.0 },
 	"portuguese_ledge" : {"MissionTimeout": 4,   "NeedCommsTime":120, "Speed":1.0 },
 	"sci2"             : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1.0 },
+	"sci2_backend"     : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1.0 },
 	"mbts_sci2"        : {"MissionTimeout": 48,  "NeedCommsTime":60,  "Speed":1.0 },
 	"keepstation"      : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45,  "Speed":0.1 },
