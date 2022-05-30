@@ -440,6 +440,9 @@ def parseCritical(recordlist):
 		# 	print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
+		if RecordText.startswith("Dropped weight"):
+			Drop=Record["unixTime"]
+			
 		if RecordText.startswith("WATER DETECTED"):
 			Water = Record["unixTime"]
 			
@@ -655,6 +658,7 @@ def parseImptMisc(recordlist):
 	
 	# CONFIGURE DVL config defaults
 	GetDVLStartup = {
+		'makai':True,
 		'pontus':True,
 		'tethys':True,
 		'daphne':True,
