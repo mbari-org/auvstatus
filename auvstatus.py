@@ -1046,7 +1046,7 @@ def elapsed(rawdur):
 			DayString = str(hours//24) + "d " 
 		DurationString = DurationBase.format(DayString,HourString,MinuteString)
 		if days > 4:
-			DurationString = "long time"
+			DurationString = "over 4 days"
 		if rawdur < 1:
 			DurationString += " ago"
 		else:
