@@ -1992,6 +1992,10 @@ else:   #not opt report
 				if VEHICLE=="pontus":
 					outfile.write(svgpontus)
 			outfile.write(svgtail)
+			
+		#adding JSON version of cdd state dictionary
+		with open(OutPath.format(VEHICLE).replace(".svg",".json"),'w') as jsonfile:
+			jsonfile.write(json.dumps(cdd))
 		
 		
 	elif not Opt.report:
