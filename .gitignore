@@ -1,4 +1,5 @@
 *.pyc
+*.json
 *.svg
 !*archive.svg
 !legend.svg
