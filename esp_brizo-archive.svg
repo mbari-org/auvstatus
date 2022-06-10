@@ -68,7 +68,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_big_11" class="stroke_none" cx="31" cy="50" r="12"/>
 <circle desc="c_big_12" class="stroke_none" cx="57" cy="50" r="12"/>
 <circle desc="c_big_13" class="stroke_none" cx="83" cy="50" r="12"/>
-<circle desc="c_big_14" class="stroke_none" cx="109" cy="50" r="12"/>
+<circle desc="c_big_14" class="stroke_purple" cx="109" cy="50" r="12"/>
 <circle desc="c_big_15" class="stroke_none" cx="135" cy="50" r="12"/>
 <circle desc="c_big_16" class="stroke_none" cx="161" cy="50" r="12"/>
 <circle desc="c_big_17" class="stroke_none" cx="187" cy="50" r="12"/>
@@ -88,7 +88,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_big_31" class="stroke_none" cx="31" cy="102" r="12"/>
 <circle desc="c_big_32" class="stroke_none" cx="57" cy="102" r="12"/>
 <circle desc="c_big_33" class="stroke_none" cx="83" cy="102" r="12"/>
-<circle desc="c_big_34" class="stroke_purple" cx="109" cy="102" r="12"/>
+<circle desc="c_big_34" class="stroke_none" cx="109" cy="102" r="12"/>
 <circle desc="c_big_35" class="stroke_none" cx="135" cy="102" r="12"/>
 <circle desc="c_big_36" class="stroke_none" cx="161" cy="102" r="12"/>
 <circle desc="c_big_37" class="stroke_none" cx="187" cy="102" r="12"/>
@@ -128,26 +128,26 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_small_11" class="fill_gray" cx="31" cy="50" r="10"/>
 <circle desc="c_small_12" class="fill_gray" cx="57" cy="50" r="10"/>
 <circle desc="c_small_13" class="fill_gray" cx="83" cy="50" r="10"/>
-<circle desc="c_small_14" class="fill_gray" cx="109" cy="50" r="10"/>
-<circle desc="c_small_15" class="fill_gray" cx="135" cy="50" r="10"/>
-<circle desc="c_small_16" class="fill_gray" cx="161" cy="50" r="10"/>
-<circle desc="c_small_17" class="fill_gray" cx="187" cy="50" r="10"/>
-<circle desc="c_small_18" class="fill_gray" cx="213" cy="50" r="10"/>
-<circle desc="c_small_19" class="fill_gray" cx="239" cy="50" r="10"/>
-<circle desc="c_small_20" class="fill_gray" cx="265" cy="50" r="10"/>
-<circle desc="c_small_21" class="fill_gray" cx="31" cy="76" r="10"/>
-<circle desc="c_small_22" class="fill_gray" cx="57" cy="76" r="10"/>
-<circle desc="c_small_23" class="fill_gray" cx="83" cy="76" r="10"/>
-<circle desc="c_small_24" class="fill_gray" cx="109" cy="76" r="10"/>
-<circle desc="c_small_25" class="fill_gray" cx="135" cy="76" r="10"/>
-<circle desc="c_small_26" class="fill_gray" cx="161" cy="76" r="10"/>
-<circle desc="c_small_27" class="fill_gray" cx="187" cy="76" r="10"/>
-<circle desc="c_small_28" class="fill_gray" cx="213" cy="76" r="10"/>
-<circle desc="c_small_29" class="fill_gray" cx="239" cy="76" r="10"/>
-<circle desc="c_small_30" class="fill_gray" cx="265" cy="76" r="10"/>
-<circle desc="c_small_31" class="fill_gray" cx="31" cy="102" r="10"/>
-<circle desc="c_small_32" class="fill_gray" cx="57" cy="102" r="10"/>
-<circle desc="c_small_33" class="fill_gray" cx="83" cy="102" r="10"/>
+<circle desc="c_small_14" class="fill_green" cx="109" cy="50" r="10"/>
+<circle desc="c_small_15" class="fill_green" cx="135" cy="50" r="10"/>
+<circle desc="c_small_16" class="fill_green" cx="161" cy="50" r="10"/>
+<circle desc="c_small_17" class="fill_green" cx="187" cy="50" r="10"/>
+<circle desc="c_small_18" class="fill_yellow" cx="213" cy="50" r="10"/>
+<circle desc="c_small_19" class="fill_yellow" cx="239" cy="50" r="10"/>
+<circle desc="c_small_20" class="fill_yellow" cx="265" cy="50" r="10"/>
+<circle desc="c_small_21" class="fill_yellow" cx="31" cy="76" r="10"/>
+<circle desc="c_small_22" class="fill_yellow" cx="57" cy="76" r="10"/>
+<circle desc="c_small_23" class="fill_green" cx="83" cy="76" r="10"/>
+<circle desc="c_small_24" class="fill_yellow" cx="109" cy="76" r="10"/>
+<circle desc="c_small_25" class="fill_green" cx="135" cy="76" r="10"/>
+<circle desc="c_small_26" class="fill_yellow" cx="161" cy="76" r="10"/>
+<circle desc="c_small_27" class="fill_yellow" cx="187" cy="76" r="10"/>
+<circle desc="c_small_28" class="fill_yellow" cx="213" cy="76" r="10"/>
+<circle desc="c_small_29" class="fill_yellow" cx="239" cy="76" r="10"/>
+<circle desc="c_small_30" class="fill_yellow" cx="265" cy="76" r="10"/>
+<circle desc="c_small_31" class="fill_yellow" cx="31" cy="102" r="10"/>
+<circle desc="c_small_32" class="fill_yellow" cx="57" cy="102" r="10"/>
+<circle desc="c_small_33" class="fill_yellow" cx="83" cy="102" r="10"/>
 <circle desc="c_small_34" class="fill_yellow" cx="109" cy="102" r="10"/>
 <circle desc="c_small_35" class="fill_yellow" cx="135" cy="102" r="10"/>
 <circle desc="c_small_36" class="fill_yellow" cx="161" cy="102" r="10"/>
@@ -252,22 +252,22 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="pct_label_15" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 46)"></text>
 <text desc="pct_label_16" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 46)"></text>
 <text desc="pct_label_17" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 46)"></text>
-<text desc="pct_label_18" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 46)"></text>
-<text desc="pct_label_19" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 46)"></text>
-<text desc="pct_label_20" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 46)"></text>
-<text desc="pct_label_21" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 72)"></text>
-<text desc="pct_label_22" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 72)"></text>
+<text desc="pct_label_18" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 46)">58%</text>
+<text desc="pct_label_19" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 46)">35%</text>
+<text desc="pct_label_20" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 46)">47%</text>
+<text desc="pct_label_21" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 72)">70%</text>
+<text desc="pct_label_22" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 72)">68%</text>
 <text desc="pct_label_23" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 72)"></text>
-<text desc="pct_label_24" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 72)"></text>
+<text desc="pct_label_24" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 72)">73%</text>
 <text desc="pct_label_25" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 72)"></text>
-<text desc="pct_label_26" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 72)"></text>
-<text desc="pct_label_27" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 72)"></text>
-<text desc="pct_label_28" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 72)"></text>
-<text desc="pct_label_29" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 72)"></text>
-<text desc="pct_label_30" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 72)"></text>
-<text desc="pct_label_31" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 98)"></text>
-<text desc="pct_label_32" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 98)"></text>
-<text desc="pct_label_33" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 98)"></text>
+<text desc="pct_label_26" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 72)">28%</text>
+<text desc="pct_label_27" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(187 72)">31%</text>
+<text desc="pct_label_28" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(213 72)">46%</text>
+<text desc="pct_label_29" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 72)">35%</text>
+<text desc="pct_label_30" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 72)">41%</text>
+<text desc="pct_label_31" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 98)">45%</text>
+<text desc="pct_label_32" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 98)">53%</text>
+<text desc="pct_label_33" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 98)">47%</text>
 <text desc="pct_label_34" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 98)">34%</text>
 <text desc="pct_label_35" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 98)">40%</text>
 <text desc="pct_label_36" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 98)">67%</text>
@@ -308,26 +308,26 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_11" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 57)"></text>
 <text desc="time_label_12" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 57)"></text>
 <text desc="time_label_13" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 57)"></text>
-<text desc="time_label_14" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 57)"></text>
-<text desc="time_label_15" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 57)"></text>
-<text desc="time_label_16" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 57)"></text>
-<text desc="time_label_17" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 57)"></text>
-<text desc="time_label_18" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 57)"></text>
-<text desc="time_label_19" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 57)"></text>
-<text desc="time_label_20" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 57)"></text>
-<text desc="time_label_21" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 83)"></text>
-<text desc="time_label_22" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 83)"></text>
-<text desc="time_label_23" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 83)"></text>
-<text desc="time_label_24" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 83)"></text>
-<text desc="time_label_25" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 83)"></text>
-<text desc="time_label_26" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 83)"></text>
-<text desc="time_label_27" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 83)"></text>
-<text desc="time_label_28" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 83)"></text>
-<text desc="time_label_29" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 83)"></text>
-<text desc="time_label_30" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 83)"></text>
-<text desc="time_label_31" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 109)"></text>
-<text desc="time_label_32" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 109)"></text>
-<text desc="time_label_33" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 109)"></text>
+<text desc="time_label_14" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 57)">160.84</text>
+<text desc="time_label_15" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 57)">160.79</text>
+<text desc="time_label_16" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 57)">160.57</text>
+<text desc="time_label_17" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 57)">160.52</text>
+<text desc="time_label_18" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 57)">160.18</text>
+<text desc="time_label_19" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 57)">160.12</text>
+<text desc="time_label_20" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 57)">159.85</text>
+<text desc="time_label_21" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 83)">159.81</text>
+<text desc="time_label_22" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 83)">159.53</text>
+<text desc="time_label_23" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 83)">159.48</text>
+<text desc="time_label_24" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 83)">159.24</text>
+<text desc="time_label_25" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 83)">159.19</text>
+<text desc="time_label_26" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 83)">158.96</text>
+<text desc="time_label_27" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 83)">158.93</text>
+<text desc="time_label_28" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 83)">158.73</text>
+<text desc="time_label_29" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 83)">158.70</text>
+<text desc="time_label_30" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 83)">158.67</text>
+<text desc="time_label_31" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 109)">158.35</text>
+<text desc="time_label_32" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 109)">158.31</text>
+<text desc="time_label_33" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 109)">158.27</text>
 <text desc="time_label_34" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 109)">157.49</text>
 <text desc="time_label_35" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 109)">157.40</text>
 <text desc="time_label_36" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 109)">157.33</text>
@@ -355,7 +355,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_58" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 161)">137.87</text>
 <text desc="time_label_59" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 161)"></text>
 <text desc="time_label_60" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 161)"></text>
-<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 5h 56m ago - BRIZO</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 06Jun22 - 17:40 (157.74)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 25 </text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 0</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
+<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 5h 42m ago - BRIZO</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 10Jun22 - 01:58 (161.08)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 45 </text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 0</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
 <circle class="fill_green" cx="30" cy="186" r="6"/>
 <text class="te5 font_size5" transform="translate(23 188)">GOOD</text>
 <circle class="fill_yellow" cx="53" cy="186" r="6"/>

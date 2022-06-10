@@ -467,7 +467,7 @@ def parseCritical(recordlist):
 
 def parseFaults(recordlist):
 	'''https://okeanids.mbari.org/TethysDash/api/events?vehicles=brizo&eventTypes=logFault&from=1591731032512
-	
+	Fault Lock Detect. Motor stopped spinning or could not start spinning.
 	Also includes RudderServo and DVL_Micro, RDI_Pathfinder'''
 	BadBattery    = False
 	DVLError = False
@@ -493,7 +493,7 @@ def parseFaults(recordlist):
 		if (not Overload) and "overload error" in Record["text"].lower():
 			Overload = Record["unixTime"]
 		
-		if (not Hardware) and "thruster uart error" in Record["text"].lower():
+		if (not Hardware) and ("thruster uart error" in Record["text"].lower() or "Motor stopped spinning" in Record["text"]):
 			Hardware = Record["unixTime"]
 			
 		if Record["text"].upper().startswith("WATER ALARM AUX"):
@@ -1738,6 +1738,8 @@ else:   #not opt report
 				cdd["text_speed"]= speed + "m/s"
 			except TypeError:
 				cdd["text_speed"]= "%.2f" % speed + "m/s"
+		else:
+			cdd["color_thrust"] = 'st5'
 				
 		if Scheduled:
 			cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
@@ -1952,11 +1954,15 @@ else:   #not opt report
 			cdd["text_leak"] = "AUX LEAK: "
 			cdd["text_leakago"] = elapsed(WaterFault-now)
 		
-
+		if DEBUG:
+			print >> sys.stderr, "#Speed and textspeed ", speed, cdd["text_speed"]
  		if (ThrusterServo>100) and ((now - ThrusterServo)/3600000 < 4):
 			cdd["color_thrust"] = 'st6'
 		else:
 			cdd["color_thrust"] = 'st4'
+			
+		if speed == 'na':
+			cdd["color_thrust"] = 'st5'
 
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
