@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 1.7 - Minor enhancements
 	Version 1.6 - Updated needcomms parsing
 	Version 1.5 - Updated default mission list
 	Version 1.4 - Bumping version number after misc changes.
@@ -1318,7 +1319,9 @@ mission_defaults = {
 	"calibrate_sparton_compass"  : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"SpartonCompassCal"          : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"spiral_cast"                : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 },
-	"trackPatchChl_yoyo"         : {"MissionTimeout": 24,  "NeedCommsTime":180, "Speed":1 } 
+	"trackPatchChl_yoyo"         : {"MissionTimeout": 24,  "NeedCommsTime":180, "Speed":1 },
+	"trackPatch_yoyo"            : {"MissionTimeout": 12,  "NeedCommsTime":300, "Speed":1 } 
+ 
 }
 
 #########
@@ -1634,7 +1637,7 @@ else:   #not opt report
 	 \__\___/ \__,_|\___/ 
 
 	 transparent for vehicle-specific features
-	 TODO: Check thruster color to make sure it detects a fault
+	 TODO: Warning: Battery Data not active. Expected only when running primaries
 	 Change GPS calculation to look over a longer time scale
 	 add more time ago fields
 	 GO TO SLEEP
