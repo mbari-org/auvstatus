@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 1.8 - Added Motor Lock parsing
 	Version 1.7 - Minor enhancements
 	Version 1.6 - Updated needcomms parsing
 	Version 1.5 - Updated default mission list
@@ -449,7 +450,7 @@ def parseCritical(recordlist):
 			
 		if "burnwire activated" in RecordText.lower():
 			Drop = Record["unixTime"]
-		if (not ThrusterServo) and "ThrusterServo" in RecordText and "Hardware Fault" in RecordText:
+		if (not ThrusterServo) and ("ThrusterServo" in RecordText and "Hardware Fault" in RecordText):
 			ThrusterServo = Record["unixTime"]
 		if (not CriticalError) and not RecordText.startswith("Could not open") and not Record["name"] == "NAL9602":
 #		  and not "NAL9602" in RecordText and not "Hardware Fault in component" in RecordText:
@@ -475,6 +476,7 @@ def parseFaults(recordlist):
 	Software = False
 	Hardware = False
 	Overload = False
+	MotorLock = False
 	WaterFault    = False
 	# if DEBUG:
 	# 	print "### Start Recordlist"
@@ -494,9 +496,12 @@ def parseFaults(recordlist):
 		if (not Overload) and "overload error" in Record["text"].lower():
 			Overload = Record["unixTime"]
 		
-		if (not Hardware) and ("thruster uart error" in Record["text"].lower() or "Motor stopped spinning" in Record["text"]):
+		if (not Hardware) and ("thruster uart error" in Record["text"].lower()):
 			Hardware = Record["unixTime"]
-			
+		
+		if (not MotorLock) and ("motor stopped spinning" in Record["text"].lower()):
+			MotorLock = Record["unixTime"]
+				
 		if Record["text"].upper().startswith("WATER ALARM AUX"):
 			WaterFault = Record["unixTime"]
 		
@@ -504,7 +509,7 @@ def parseFaults(recordlist):
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
 		 	DVLError=Record["unixTime"]
-	return BadBattery,DVLError,Software,Overload,Hardware,WaterFault
+	return BadBattery,DVLError,Software,Overload,Hardware,WaterFault,MotorLock
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -655,7 +660,8 @@ def parseImptMisc(recordlist):
 	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 
-	ReachedWaypoint=False
+	ReachedWaypoint = False
+	NavigatingTo    = False
 	
 	# CONFIGURE DVL config defaults
 	GetDVLStartup = {
@@ -685,27 +691,37 @@ def parseImptMisc(recordlist):
 '''
 		## RELOCATED (Duplicated) from parseMission
 		RecordText = Record["text"]
-		if not ReachedWaypoint and StationLon == False and RecordText.startswith("got command set") and (".Lon " in RecordText or ".Longitude" in RecordText or ".CenterLongitude" in RecordText):
-			if "itude" in RecordText:
-				StationLon = RecordText.split("itude ")[1]
-			else:
-				StationLon = RecordText.split(".Lon ")[1]
-			StationLon = float(StationLon.split(" ")[0])
-			if DEBUG:
-				print >> sys.stderr, "## Got Lon from ImptMisc", StationLon
+		# if not ReachedWaypoint and StationLon == False and RecordText.startswith("got command set") and (".Lon " in RecordText or ".Longitude" in RecordText or ".CenterLongitude" in RecordText):
+		# 	if "itude" in RecordText:
+		# 		StationLon = RecordText.split("itude ")[1]
+		# 	else:
+		# 		StationLon = RecordText.split(".Lon ")[1]
+		# 	StationLon = float(StationLon.split(" ")[0])
+		# 	if DEBUG:
+		# 		print >> sys.stderr, "## Got Lon from ImptMisc", StationLon
 
-		if not ReachedWaypoint and StationLat == False and RecordText.startswith("got command set") and (".Lat " in RecordText or ".Latitude" in RecordText or ".CenterLatitude" in RecordText):
-			if "itude" in RecordText:
-				StationLat = RecordText.split("itude ")[1]
-			else:
-				StationLat = RecordText.split(".Lat ")[1]
-			StationLat = float(StationLat.split(" ")[0])
-			if DEBUG:
-				print >> sys.stderr, "## Got Lat from ImptMisc", StationLat
-
-		if not StationLon and not ReachedWaypoint: 
+		# if not ReachedWaypoint and StationLat == False and RecordText.startswith("got command set") and (".Lat " in RecordText or ".Latitude" in RecordText or ".CenterLatitude" in RecordText):
+		# 	if "itude" in RecordText:
+		# 		StationLat = RecordText.split("itude ")[1]
+		# 	else:
+		# 		StationLat = RecordText.split(".Lat ")[1]
+		# 	StationLat = float(StationLat.split(" ")[0])
+		# 	if DEBUG:
+		# 		print >> sys.stderr, "## Got Lat from ImptMisc", StationLat
+		
+		# This will only parse the most recent event in the queue between Reached or Nav
+		if not NavigatingTo and not ReachedWaypoint: 
+			if Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
+				NavRes = myre.search(Record["text"].replace("arcdeg",""))
+				if NavRes:
+					textlat,textlon = NavRes.groups()
+					if textlat:
+						StationLat = float(textlat)
+						StationLon = float(textlon)
+					if DEBUG:
+						print >> sys.stderr, "## Got LatLon from Navigating To", StationLat,StationLon
+					NavigatingTo = Record["unixTime"]
 			if Record["text"].startswith("Reached Waypoint"):
-			
 				waresult = wayre.search(Record["text"])
 				if waresult:
 					textlat,textlon=waresult.groups()
@@ -715,16 +731,7 @@ def parseImptMisc(recordlist):
 				if DEBUG:
 					print >> sys.stderr, "## Got ReachedWaypoint", StationLat,StationLon
 				ReachedWaypoint = Record["unixTime"]
-				
-			elif Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
-				NavRes = myre.search(Record["text"].replace("arcdeg",""))
-				if NavRes:
-					textlat,textlon = NavRes.groups()
-					if textlat:
-						StationLat = float(textlat)
-						StationLon = float(textlon)
-					if DEBUG:
-						print >> sys.stderr, "## Got LatLon from Navigating To", StationLat,StationLon
+					
 			
 		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
@@ -1428,9 +1435,10 @@ if (not recovered) or Opt.anyway or DEBUG:
 	SWError = False
 	HWError = False
 	OverloadError = False
+	MotorLock = False
 	
 	if faults:
-		BadBattery,DVLError,SWError,OverloadError,HWError,WaterFault = parseFaults(faults)
+		BadBattery,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock = parseFaults(faults)
 
 	
 # vehicle has been recovered
@@ -1966,6 +1974,9 @@ else:   #not opt report
 			
 		if speed == 'na':
 			cdd["color_thrust"] = 'st5'
+		
+		if MotorLock and ((now - MotorLock)/3600000 < 1):
+			cdd["color_thrust"] = 'st6'
 
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
