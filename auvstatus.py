@@ -1,7 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
-	Version 1.8 - Added Motor Lock parsing
+	Version 1.8 - Added Motor Lock Fault parsing
 	Version 1.7 - Minor enhancements
 	Version 1.6 - Updated needcomms parsing
 	Version 1.5 - Updated default mission list
@@ -1476,6 +1476,10 @@ else:
 if Opt.report:
 	print "###############\nVehicle: " ,VEHICLE.upper()
 	print "Now: " ,hours(now)
+	print "Epoch: ", int(now)
+	# roundtime = int(now) // 100000
+	# Archivename = "auv_brizo"+ "-" + str(roundtime)+".json"
+	# print "Archivename: ",Archivename
 	print "GroundFault: ",gf,hours(gftime)
 	print "MissionDuration:    ",missionduration
 	print "TimeoutStart:",hours(timeoutstart)
@@ -2016,6 +2020,18 @@ else:   #not opt report
 		#adding JSON version of cdd state dictionary
 		with open(OutPath.format(VEHICLE).replace(".svg",".json"),'w') as jsonfile:
 			jsonfile.write(json.dumps(cdd))
+
+		if not recovered:
+			''' Save file with time stamp of epoch seconds truncated by //100
+				e.g., auv_daphne-16560980.json
+			    1656098268.236587   
+				16560980
+				To retrieve, take unixtime //100'''
+			roundtime = int(now) // 100000
+			Archivename = "./archive/auv_{}".format(VEHICLE) +  "-"  +  str(roundtime) + ".json"	
+			with open(Archivename) as archivefile:
+				archivefile.write(json.dumps(cdd))
+
 		
 		
 	elif not Opt.report:
