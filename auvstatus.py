@@ -2028,8 +2028,8 @@ else:   #not opt report
 				16560980
 				To retrieve, take unixtime //100'''
 			roundtime = int(now) // 100000
-			Archivename = "./archive/auv_{}".format(VEHICLE) +  "-"  +  str(roundtime) + ".json"	
-			with open(Archivename) as archivefile:
+			Archivename = "/var/www/html/widget/archive/auv_{}".format(VEHICLE) +  "-"  +  str(roundtime) + ".json"	
+			with open(Archivename,'w') as archivefile:
 				archivefile.write(json.dumps(cdd))
 
 		
