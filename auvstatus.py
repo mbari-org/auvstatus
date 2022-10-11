@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 1.9 - In progress. Adding new Data parsing function
 	Version 1.8 - Added Motor Lock Fault parsing
 	Version 1.7 - Minor enhancements
 	Version 1.6 - Updated needcomms parsing
@@ -39,8 +40,6 @@ from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,
 import ssl
 
 ssl._create_default_https_context = ssl._create_unverified_context
-
-# Default timeouts for selected missions
 
 def get_options():
 	parser = argparse.ArgumentParser(usage = __doc__) 
@@ -98,7 +97,47 @@ def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 		handleURLerror()
 		return None
 
+def runNewStyleQuery(api="",limit="",name="",timeafter="1234567890123"):
+	apistring=""
+	extrastring=""
+	# example /events? or /data?  
+	# https://okeanids.mbari.org/TethysDash/api/vconfig?vehicle=makai&gitTag=2020-07-18a&since=2020-07-21
+	# https://okeanids.mbari.org/TethysDash/api/deployments/last?vehicle=pontus
+	# https://okeanids.mbari.org/TethysDash/api/data?vehicle=pontus
+
+	if api:
+		apistring = "{a}?vehicle={v}".format(a=api,v=VEHICLE)
+		
+	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
+
+	if not timeafter:
+		timeafter="1234567890123"
+
+	NewBaseQuery = "https://okeanids.mbari.org/TethysDash/api/{apistring}{e}"
+	URL = NewBaseQuery.format(apistring=apistring,e=extrastring)
 	
+	if DEBUG:
+		print >> sys.stderr, "### QUERY:",URL
+
+	try:
+		connection = urllib2.urlopen(URL,timeout=5)		
+		if connection:
+			raw = connection.read()
+			structured = json.loads(raw)
+			connection.close()
+			result = structured['result']
+		else:
+			print >> sys.stderr, "# Query timeout",URL
+			result = ''
+		return result
+	except urllib2.HTTPError or ssl.SSLError:
+		if ssl.SSLError:
+			print >> sys.stderr, "# QUERY TIMEOUT:",URL
+		else:
+			print >> sys.stderr, "# FAILURE IN QUERY:",URL
+		handleURLerror()
+		return None	
+
 def getDeployment():
 	'''return start time for deployment'''
 	startTime = 0
@@ -241,6 +280,29 @@ def getComms(starttime):
 #			print rec
 	return retstring
 
+def makePlot():
+	'''<div class='body'>
+<!--viewBox="minx miny width height"--> 
+<svg viewBox="0 0 500 100" class="chart">
+  <polyline
+     fill="#b3d1ff"
+     stroke="#0074d9"
+     stroke-width="1"
+     points="
+       00,500
+       00,100
+       30,60
+       60,80
+       90,50
+       90,500"
+   />
+  <circle cx='30' cy='60' stroke='#0074d9' fill='#0074d9' r='2px' />
+  <circle cx='60' cy='80' stroke='#0074d9' fill='#0074d9' r='2px' />
+  <circle cx='90' cy='50' stroke='#0074d9' fill='#0074d9' r='2px' />
+</svg>
+</div>'''
+	return 0
+
 def getDataAsc(starttime,mission):
 	''' TODO: cache batteries for when there is a new log file
 	OR if you don't find it, rerun the Query with limit 2 and parse the second file
@@ -288,8 +350,8 @@ def getDataAsc(starttime,mission):
 			z=allpaths.pop(2)
 			
 	for pathpart in allpaths:
-		volt=0
-		amp =0
+		volt = 0
+		amp  = 0
 		volttime=0
 		
 		extrapath = pathpart
@@ -306,7 +368,7 @@ def getDataAsc(starttime,mission):
 			if "platform_battery_" in nextline:
 				fields = nextline.split("=")
 				
- 				if (volt==0) and "voltage" in nextline:
+				if (volt==0) and "voltage" in nextline:
 #				if "voltage" in nextline:
 					volt     = float(fields[3].split(" ")[0])
 					volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  # in seconds not MS
@@ -340,55 +402,54 @@ def getDataAsc(starttime,mission):
 				NeedTracking = False
 						
 
- 			if (volt) and (amp) and (VEHICLE == 'pontus' and flow < 999) and (NeedTracking == False):
- 				Bailout = True
- 				break
- 		if Bailout == True:
- 			break
- 	if DEBUG:
- 		if len(TrackTime) > 1:
+			if (volt) and (amp) and (VEHICLE == 'pontus' and flow < 999) and (NeedTracking == False):
+				Bailout = True
+				break
+		if Bailout == True:
+			break
+	if DEBUG:
+		if len(TrackTime) > 1:
 			print >> sys.stderr, "#> Complete tracking:",Tracking, TrackTime, elapsed(TrackTime[0] - now)
 
 	return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
 
-def getData(starttime):
-	'''NOT USED? see getDataAsc'''
+
+
+def getBatteryNew(starttime):
 	'''Walk through the file backwards'''
 	''' IBIT will show battery thresholds that could be used to determine warning colors'''
 	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
+	 Make battery meter function of amph instead of volts (360 = 100%)
+	 https://okeanids.mbari.org/TethysDash/api/data?vehicle=pontus&from={extrapath}  REPLACE WITH THIS! starttime?
+	 Fields available: average_current, battery_voltage, battery_charge
+	Change this to be more like the getDataAsc function. 
+	Sometimes the battery_charge field can be empty, so use .get instead of 
 	'''
 	volt="0"
 	amp ="0"
 	volttime="0"
-	saveline="na,na,na"
-	'''https://okeanids.mbari.org/TethysDash/data/pontus/realtime/sbdlogs/2020/202003/20200303T074113/shore.csv
-	2020/202003/20200303T074113'''
-	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.csv'
-	
-	record = runQuery(event="dataProcessed",limit="1",timeafter=starttime)
-	extrapath = record[0]['path']
-	NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
-	datacon = urllib2.urlopen(NewURL,timeout=5)
-	if DEBUG:
-		print >> sys.stderr, "# Data URL",NewURL
-	lastlines = deque(datacon, 10)
+	flowtime = 0
+	flow = 999
+	Tracking = []
+	TrackTime = []
+	NeedTracking = True
 
-	for nextline in lastlines:
-		if "V," in nextline:
-			try:
-				fields = nextline.split(",")
-				volt     = float(fields[8].split(" ")[0])
-				amp      = float(fields[7].split(" ")[0])
-				volttime = int(float(fields[1])*1000)  # in seconds not MS
-			except IndexError:
-				print >> sys.stderr, "VOLT parsing error"
-				volt=False
-				amp=False
-				volttime=False
-			break
-
-	return volt,amp,volttime
+	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
 	
+
+	BattFields = runNewStyleQuery(api="data")
+	if BattFields:
+		volt       = float(BattFields['battery_voltage'].get('values',[0])[-1])
+		amp        = float(BattFields['battery_charge'][-1])
+		avgcurrent = float(BattFields['average_current'])
+		volttime   = int(float(BattFields['timestamp'])*1000)  # in seconds not MS
+		if DEBUG:
+			print >> sys.stderr, "# BATTNEW",BattFields
+
+	# TODO: Plot sparkline or report current consumption rate
+
+	return volt,amp,avgcurrent,volttime
+
 def parseGPS(recordlist):
 	# print "GPS record", recordlist
 	site=False
@@ -1922,7 +1983,7 @@ else:   #not opt report
 			LowBattColor='st11'
 
 		if volt > 0:
-			cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range
+			cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range 360-170
 			cdd["color_volts"] = "st{}".format(voltnum)
 			cdd["color_bat1"] = ['st4',LowBattColor][volt < 13.7]
 			cdd["color_bat2"] = ['st4',LowBattColor][volt < 14.1]
