@@ -1389,6 +1389,7 @@ mission_defaults = {
 	"transit"      	   : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1.0 },
 	"CorkAndScrew"     : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
 	"IsothermDepthSampling"      : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
+	"location_depth_sampling"    : {"MissionTimeout": 168,  "NeedCommsTime":60,  "Speed":1 },
 	"isotherm_depth_dampling"    : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
 	"esp_sample_at_depth"        : {"MissionTimeout": 4,   "NeedCommsTime":180, "Speed":.7 },
 	"esp_sample_station"         : {"MissionTimeout": 24,  "NeedCommsTime":45,  "Speed":1 },

@@ -355,7 +355,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_58" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 161)">281.64</text>
 <text desc="time_label_59" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 161)"></text>
 <text desc="time_label_60" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 161)"></text>
-<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 43m ago - MAKAI</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 11Oct22 - 06:16 (284.26)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 6 </text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 3</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
+<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 53m ago - MAKAI</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 11Oct22 - 06:26 (284.27)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 6 </text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 3</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
 <circle class="fill_green" cx="30" cy="186" r="6"/>
 <text class="te5 font_size5" transform="translate(23 188)">GOOD</text>
 <circle class="fill_yellow" cx="53" cy="186" r="6"/>
