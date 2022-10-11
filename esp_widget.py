@@ -114,6 +114,7 @@ def getDeployment():
 	launchString = runQuery(event="launch",limit="1")
 	if launchString:
 		startTime = launchString[0]['unixTime']
+	# get deployment ID from this
 	return startTime
 	
 def getRecovery(starttime):
@@ -658,6 +659,12 @@ if Opt.savefile and (not recovered):
 	
 	writefile(OutPath,RedoList)
 	writefile(OutPath.replace('.svg','-archive.svg'),RedoList,ArchiveStr="ARCHIVED")
+	# roundtime = int(now) // 100000
+	# Archivename = "/var/www/html/widget/archive/auv_{}".format(VEHICLE) +  "-"  +  DeploymentID + ".json"	
+	# with open(Archivename,'w') as archivefile:
+	# archivefile.write(json.dumps(cdd))
+
+	writefile(OutPath.replace('-archive.svg','.json'),RedoList,ArchiveStr="ARCHIVED")
 
 elif Opt.savefile:
 	NoDeployString = '''<svg id="Layer_1" data-name="Layer 1" 
