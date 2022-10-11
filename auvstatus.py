@@ -225,7 +225,7 @@ def getCBIT(starttime):
 	return retstring
 
 def getDrop(starttime):
-	qString = runQuery(name="DropWeight",timeafter=starttime)
+	qString = runQuery(name="DropWeight",limit="2000",timeafter=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
@@ -233,13 +233,14 @@ def getDrop(starttime):
 
 	
 def getComms(starttime):
-	qString = runQuery(event="sbdReceive",timeafter=starttime)
+	qString = runQuery(event="sbdReceive",limit="2000",timeafter=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
-#	if DEBUG:
-#		for rec in retstring:
-#			print rec
+	if DEBUG:
+		print >> sys.stderr, "# GETCOMMS\n#\nPrinting Comms SBD", len(retstring)
+		# for rec in retstring:
+		# 	print >> sys.stderr,  rec
 	return retstring
 
 def getDataAsc(starttime,mission):
