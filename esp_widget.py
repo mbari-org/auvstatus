@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+'''
+v 1.1.1 : Fixed some parsing of re-pumped samplers. Need to confirm with true redo.
+v 1.1   : Starting version numbers!
+'''
 from __future__ import print_function
 
 from ESPelements import svghead,svgtail
@@ -305,12 +309,14 @@ def parseESP(recordlist,big_circle_list):
 	cartre = re.compile(r"Selecting Cartridge (\d+)")
 	# editing VolumeResult regex for entries like
 	# "@21:27:49.79 Cmd::Paused in FILTERING --  during Sample Pump (SP) move after sampling 1161.4ml
-	mlre   = re.compile(r"Sampled +([\d\.]+)ml")
+	mlre    = re.compile(r"Sampled +([\d\.]+)ml")
+	pausere = re.compile(r"after sampling +([\d\.]+)ml")
 
 
 	firstnum = False
 	firsttime = False
 	RedoList = []
+	DoneList = []
 	
 	for Record in recordlist:
 		RecordText = Record.get("text","NA")
@@ -319,25 +325,34 @@ def parseESP(recordlist,big_circle_list):
 		if "Cartridge" in RecordText:
 			CartResult = cartre.findall(RecordText)	
 			if CartResult:
+				Cartnum = int(CartResult[-1])
 				if DEBUG:
 					print("C",CartResult,RecordText,file=sys.stderr)
 					
 
-				VolumeResult = mlre.findall(RecordText)				
+				VolumeResult = mlre.findall(RecordText)
 				if VolumeResult:
 					if DEBUG:
 						print("## VOLUMERESULT",VolumeResult,file=sys.stderr)
+				else:
+					VolumeResult = 	pausere.findall(RecordText)
+					if DEBUG: 
+						if VolumeResult:
+							print("## FOUND PARTIAL RESULT",VolumeResult,file=sys.stderr)
+						else:
+							print("## NO VOLUME RESULT FOUND",RecordText,file=sys.stderr)
 					
 				if len(CartResult) == 1:
 					Cartnum = int(CartResult[-1])
 					if VolumeResult:
 						mls = VolumeResult[-1]
+						if Cartnum not in DoneList:
+							DoneList.append(Cartnum)
+							ESPL[Cartnum] = round(float(mls)/10)
+							TimeList[Cartnum] = Record["unixTime"]					
 					else:
 						mls = .123
-					ESPL[Cartnum] = round(float(mls)/10)
-
-					TimeList[Cartnum] = Record["unixTime"]					
-					
+											
 					if not firstnum: # MOST RECENT
 						firstnum = Cartnum
 						firsttime = Record["unixTime"]
@@ -345,8 +360,6 @@ def parseESP(recordlist,big_circle_list):
 							big_circle_list[Cartnum] = "stroke_purple"
 						if DEBUG:
 							print("FIRST CIRCLE:",Cartnum)
-
-
 				else:  # handling error with a redo, more than one cartridge
 				
 					# ON a redo:
@@ -607,7 +620,7 @@ if (not recovered) or DEBUG:
 
 
 # 		GENERATE LIST OF PERCENTAGES
-		pctlist = ['--X--' if i <1 else '' if i > 90 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
+		pctlist = ['--X--' if i <10 else '' if i > 90 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
 		for ri in RedoList:
 			pctlist[ri] = 'reuse'
 		
@@ -617,6 +630,7 @@ if (not recovered) or DEBUG:
 			if not "dash" in style_circle_big[mostrecent]:
 				style_circle_big[mostrecent] = 'stroke_purple'
 			text_lastsample = elapsed(lastsample - now)
+		# Changing from 10 to 1 on the min sample
 		GoodCount = sum([1 for x in outlist if 10 < x < 101])
 		LeakCount = sum([1 for x in outlist if x < 10])
 		
