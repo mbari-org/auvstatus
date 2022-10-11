@@ -1,7 +1,8 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
-	Version 1.9 - In progress. Adding new Data parsing function
+	Version 1.91- In progress, Adding new Data parsing
+	Version 1.9 - Fixed Navigating to Parsing
 	Version 1.8 - Added Motor Lock Fault parsing
 	Version 1.7 - Minor enhancements
 	Version 1.6 - Updated needcomms parsing
@@ -729,11 +730,12 @@ def parseImptMisc(recordlist):
 		'makai':True,
 		'pontus':True,
 		'tethys':True,
-		'daphne':True,
+		'daphne':False,
 		'brizo':True
 	}
 	
 	DVL_on = GetDVLStartup.get(VEHICLE,False)
+	# NEW get DVL from grepping (or other) out of https://okeanids.mbari.org/TethysDash/api/vconfig?vehicle=daphne
 	
 	for Record in recordlist:
 		if DEBUG:
@@ -773,7 +775,10 @@ def parseImptMisc(recordlist):
 		# This will only parse the most recent event in the queue between Reached or Nav
 		if not NavigatingTo and not ReachedWaypoint: 
 			if Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
-				NavRes = myre.search(Record["text"].replace("arcdeg",""))
+				if DEBUG:
+					print >> sys.stderr, "## Found Navigating To Event", Record["text"]
+					'''Navigating to waypoint: 36.750000,-122.022003'''
+				NavRes = wayre.search(Record["text"].replace("arcdeg",""))
 				if NavRes:
 					textlat,textlon = NavRes.groups()
 					if textlat:
@@ -782,7 +787,9 @@ def parseImptMisc(recordlist):
 					if DEBUG:
 						print >> sys.stderr, "## Got LatLon from Navigating To", StationLat,StationLon
 					NavigatingTo = Record["unixTime"]
-			if Record["text"].startswith("Reached Waypoint"):
+			if Record["text"].lower().startswith("reached waypoint"):
+				if DEBUG:
+					print >> sys.stderr, "## Found Reached Event", Record["text"]
 				waresult = wayre.search(Record["text"])
 				if waresult:
 					textlat,textlon=waresult.groups()
@@ -805,7 +812,7 @@ def parseImptMisc(recordlist):
  		      ("AMEcho.loadAtStartup"         in Record.get("text","NA")) or 
  		      ("Rowe_600.loadAtStartup"       in Record.get("text","NA"))
  		      ):
- 		    # TO CHECK. this might split icorrectly on the space because sometimes config set?
+ 		    # TO CHECK. this might split incorrectly on the space because sometimes config set?
  		    # configSet
  		    
  		    ## SHOULD ADD A CHECK FOR restart HERE TO SEE IF DVL WENT BACK TO CONFIG that will override these later events
@@ -2092,6 +2099,31 @@ else:   #not opt report
 			Archivename = "/var/www/html/widget/archive/auv_{}".format(VEHICLE) +  "-"  +  str(roundtime) + ".json"	
 			with open(Archivename,'w') as archivefile:
 				archivefile.write(json.dumps(cdd))
+				
+			ArchiveImage = False
+			
+			if ArchiveImage:
+				ArchiveImage = "/var/www/html/widget/archive/auv_{}".format(VEHICLE) +  "-"  +  str(roundtime) + ".svg"	
+				with open(ArchiveImage,'w') as outfile:
+					outfile.write(svghead)
+					outfile.write(svgtext.format(**cdd))
+					if BadBattery > 100:
+						outfile.write(svgbadbattery)
+					if WaterCritical or WaterFault:
+						outfile.write(svgwaterleak.format(
+							color_leak = cdd["color_leak"],
+							text_leak = cdd["text_leak"],
+							text_leakago = cdd["text_leakago"] )
+						)
+					if len(Tracking)>=1:
+						outfile.write(makeTrackSVG(Tracking,TrackTime))
+					if not recovered:
+						outfile.write(svglabels)
+						if VEHICLE=="pontus":
+							outfile.write(svgpontus)
+					outfile.write(svgtail)
+
+			
 
 		
 		
