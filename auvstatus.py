@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 1.92- Added report for number of bad battery sticks
 	Version 1.91- In progress, Adding new Data parsing
 	Version 1.9 - Fixed Navigating to Parsing
 	Version 1.8 - Added Motor Lock Fault parsing
@@ -534,7 +535,8 @@ def parseFaults(recordlist):
 	'''https://okeanids.mbari.org/TethysDash/api/events?vehicles=brizo&eventTypes=logFault&from=1591731032512
 	Fault Lock Detect. Motor stopped spinning or could not start spinning.
 	Also includes RudderServo and DVL_Micro, RDI_Pathfinder'''
-	BadBattery    = False
+	BadBattery = False
+	BadBatteryText = ""
 	DVLError = False
 	Software = False
 	Hardware = False
@@ -550,9 +552,17 @@ def parseFaults(recordlist):
 		# if DEBUG:
 		# 	print "NAME:",Record["name"],"===> ", Record["text"]
 		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"):
-			BadBattery=Record["unixTime"]
+			if not BadBattery > 100:
+				BadBattery=Record["unixTime"]
 			if DEBUG:
 				print >> sys.stderr,"## BAD BATTERY in FAULT"
+		'''Failed to receive data from 6 sticks prior to timeout. Missing stick IDs are: 21, 22, 48, 49, 50, 51. [BPC1]'''
+		if Record["name"]=="BPC1" and not BadBatteryText and Record.get("text","NA").startswith("Failed to receive data"):
+			ma = re.search("from (\d+) sticks",x)
+			if not BadBattery > 100:
+				BadBattery=Record["unixTime"]
+			if ma:
+				BadBatteryText ='<text transform="matrix(1 0 0 1 286.0 245)" class="st31 st9 st13" text-anchor="end">{}x</text>'.format(ma.group(1))
 		if (not Software) and "software overcurrent" in Record["text"].lower():
 			Software = Record["unixTime"]
 		
@@ -572,7 +582,7 @@ def parseFaults(recordlist):
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
 		 	DVLError=Record["unixTime"]
-	return BadBattery,DVLError,Software,Overload,Hardware,WaterFault,MotorLock
+	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -1343,6 +1353,7 @@ DEBUG = Opt.DEBUG
 global VEHICLE
 VEHICLE = Opt.vehicle
 BadBattery = False
+BadBatteryText = ""
 ThrusterServo = False
 dropWeight = False
 Tracking = []
@@ -1509,7 +1520,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	MotorLock = False
 	
 	if faults:
-		BadBattery,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock = parseFaults(faults)
+		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock = parseFaults(faults)
 
 	
 # vehicle has been recovered
@@ -1537,6 +1548,7 @@ else:
 	dropWeight = False
 	ThrusterServo = False
 	BadBattery = False
+	BadBatteryText = ""
 	DVLError = False
 	logtime = now
 	startTime = now
@@ -2073,7 +2085,7 @@ else:   #not opt report
 			outfile.write(svghead)
 			outfile.write(svgtext.format(**cdd))
 			if BadBattery > 100:
-				outfile.write(svgbadbattery)
+				outfile.write(svgbadbattery.format(BadBatteryText))
 			if WaterCritical or WaterFault:
 				outfile.write(svgwaterleak.format(
 					color_leak = cdd["color_leak"],
@@ -2111,7 +2123,7 @@ else:   #not opt report
 					outfile.write(svghead)
 					outfile.write(svgtext.format(**cdd))
 					if BadBattery > 100:
-						outfile.write(svgbadbattery)
+						outfile.write(svgbadbattery.format(BadBatteryText))
 					if WaterCritical or WaterFault:
 						outfile.write(svgwaterleak.format(
 							color_leak = cdd["color_leak"],
@@ -2134,7 +2146,7 @@ else:   #not opt report
 		print svghead
 		print svgtext.format(**cdd)   # insert values from dictionary by name
 		if BadBattery:
-			print svgbadbattery
+			print svgbadbattery.format(BadBatteryText)
 		if len(Tracking)>=1:
 			print makeTrackSVG(Tracking,TrackTime)
 		if not recovered:

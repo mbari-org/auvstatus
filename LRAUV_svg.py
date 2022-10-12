@@ -218,9 +218,9 @@ svgbadbattery='''<g><title>Bad battery cell detected</title>
 	<circle desc="badbatteryspot" class="st28" cx="329" cy="241.38" r="2"/>
 	<circle desc="badbatteryspot" class="st28" cx="349" cy="241.38" r="2"/>
 	<circle desc="badbatteryspot" class="st28" cx="369" cy="241.38" r="2"/>
-	<text transform="matrix(1 0 0 1 285.0 242)" class="st12 st9 st13">BAD</text>
-	<text transform="matrix(1 0 0 1 285.0 249)" class="st12 st9 st13">CELL</text>
-	
+	<text transform="matrix(1 0 0 1 286.0 242)" class="st12 st9 st13">BAD</text>
+	<text transform="matrix(1 0 0 1 286.0 249)" class="st12 st9 st13">CELL</text>
+	{badcelltext}
 </g>	
 '''
 
