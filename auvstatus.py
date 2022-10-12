@@ -551,14 +551,15 @@ def parseFaults(recordlist):
 	for Record in recordlist:
 		# if DEBUG:
 		# 	print "NAME:",Record["name"],"===> ", Record["text"]
-		if Record["name"]=="BPC1" and Record.get("text","NA").startswith("Battery stick"):
+		RT = Record.get("text","NA")
+		if Record["name"]=="BPC1" and RT.startswith("Battery stick"):
 			if not BadBattery > 100:
 				BadBattery=Record["unixTime"]
 			if DEBUG:
 				print >> sys.stderr,"## BAD BATTERY in FAULT"
 		'''Failed to receive data from 6 sticks prior to timeout. Missing stick IDs are: 21, 22, 48, 49, 50, 51. [BPC1]'''
-		if Record["name"]=="BPC1" and not BadBatteryText and Record.get("text","NA").startswith("Failed to receive data"):
-			ma = re.search("from (\d+) sticks",x)
+		if Record["name"]=="BPC1" and not BadBatteryText and RT.startswith("Failed to receive data"):
+			ma = re.search("from (\d+) sticks",RT)
 			if not BadBattery > 100:
 				BadBattery=Record["unixTime"]
 			if ma:
