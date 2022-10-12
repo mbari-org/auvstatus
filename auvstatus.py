@@ -2086,7 +2086,7 @@ else:   #not opt report
 			outfile.write(svghead)
 			outfile.write(svgtext.format(**cdd))
 			if BadBattery > 100:
-				outfile.write(svgbadbattery.format(BadBatteryText))
+				outfile.write(svgbadbattery.format(badcelltext=BadBatteryText))
 			if WaterCritical or WaterFault:
 				outfile.write(svgwaterleak.format(
 					color_leak = cdd["color_leak"],
@@ -2124,7 +2124,7 @@ else:   #not opt report
 					outfile.write(svghead)
 					outfile.write(svgtext.format(**cdd))
 					if BadBattery > 100:
-						outfile.write(svgbadbattery.format(BadBatteryText))
+						outfile.write(svgbadbattery.format(badcelltext=BadBatteryText))
 					if WaterCritical or WaterFault:
 						outfile.write(svgwaterleak.format(
 							color_leak = cdd["color_leak"],
@@ -2147,7 +2147,7 @@ else:   #not opt report
 		print svghead
 		print svgtext.format(**cdd)   # insert values from dictionary by name
 		if BadBattery:
-			print svgbadbattery.format(BadBatteryText)
+			print svgbadbattery.format(badcelltext=BadBatteryText)
 		if len(Tracking)>=1:
 			print makeTrackSVG(Tracking,TrackTime)
 		if not recovered:
