@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 '''
+v 1.1.2 : Fixed reporting of one-off failed samples 
 v 1.1.1 : Fixed some parsing of re-pumped samplers. Need to confirm with true redo.
 v 1.1   : Starting version numbers!
 '''
@@ -341,6 +342,8 @@ def parseESP(recordlist,big_circle_list):
 							print("## FOUND PARTIAL RESULT",VolumeResult,file=sys.stderr)
 						else:
 							print("## NO VOLUME RESULT FOUND",RecordText,file=sys.stderr)
+					if not VolumeResult:
+						VolumeResult=[-199]
 					
 				if len(CartResult) == 1:
 					Cartnum = int(CartResult[-1])
@@ -351,7 +354,8 @@ def parseESP(recordlist,big_circle_list):
 							ESPL[Cartnum] = round(float(mls)/10)
 							TimeList[Cartnum] = Record["unixTime"]					
 					else:
-						mls = .123
+						mls=-100
+						VolumeResult=[-199]
 											
 					if not firstnum: # MOST RECENT
 						firstnum = Cartnum
