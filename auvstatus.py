@@ -58,6 +58,12 @@ def get_options():
 	options = parser.parse_args()
 	return options
 
+def unpackJSON(data):
+	if DEBUG:
+		print >> sys.stderr, "### UNPACKING:",data
+	structured = json.loads(data)
+	result = structured['result']
+	return result
 
 def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 	if limit:
@@ -99,7 +105,7 @@ def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 		handleURLerror()
 		return None
 
-def runNewStyleQuery(api="",limit="",name="",timeafter="1234567890123"):
+def runNewStyleQuery(api="",timeafter="1234567890123"):
 	apistring=""
 	extrastring=""
 	# example /events? or /data?  
@@ -124,10 +130,8 @@ def runNewStyleQuery(api="",limit="",name="",timeafter="1234567890123"):
 	try:
 		connection = urllib2.urlopen(URL,timeout=5)		
 		if connection:
-			raw = connection.read()
-			structured = json.loads(raw)
-			connection.close()
-			result = structured['result']
+			datastream = connection.read()
+			result = unpackJSON(datastream)
 		else:
 			print >> sys.stderr, "# Query timeout",URL
 			result = ''
@@ -150,7 +154,21 @@ def getDeployment():
 	except ssl.SSLError:
 		print >> sys.stderr, "# DEPLOYMENT TIMEOUT",VEHICLE
 	return startTime
-	
+
+def getNewDeployment():
+	'''return start time for deployment  UNUSED. Starts too early!'''
+	startTime = 0
+	try:
+		launchData = runNewStyleQuery(api="deployments/last")
+		if launchData:
+			startTime = launchData.get('startEvent',{}).get('unixTime',0)
+	except ssl.SSLError:
+		print >> sys.stderr, "# DEPLOYMENT TIMEOUT",VEHICLE
+	if DEBUG:
+		print >> sys.stderr, "### DEPLOYMENT:",startTime
+	return startTime
+
+
 def getRecovery(starttime):
 	launchString = runQuery(event="recover",limit="1",timeafter=starttime)
 	recover = False
@@ -1420,7 +1438,7 @@ mission_defaults = {
 ##
 now = 1000 * time.mktime(time.localtime())  # (*1000?)
 
-startTime = getDeployment()
+startTime = getDeployment()   # reverting to launch instead of start, but getNewDeployment() can be a template for other new queries
 
 if not startTime:
 	if DEBUG:
