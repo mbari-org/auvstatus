@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- March 3, 2020 version  -->
+<!-- Oct 18, 2022 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -74,7 +74,11 @@ svgtext = '''
 <text desc="SoftwareLabel" text-anchor="right" transform="matrix(1 0 0 1 245 267)" class="st9 st10">SW</text>
 <text desc="OtherLabel"    text-anchor="right" transform="matrix(1 0 0 1 245 280)" class="st9 st10">OT</text>
 
-
+<!-- battery consumption meter -->
+<rect desc="current"  x="365" y="250" class="st11" width="5" height="22"/>
+<text desc="text_current" x="372" y="267"  class="st12 st9 st13">{text_current}</text>
+<text desc="text_amplabel" x="372" y="272" class="st12 st9 st24">amps</text>
+{svg_current}
 
 
 <!-- status shapes -->

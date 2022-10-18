@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 1.93- Added battery discharge rate meter indicator
 	Version 1.92- Added report for number of bad battery sticks
 	Version 1.91- In progress, Adding new Data parsing
 	Version 1.9 - Fixed Navigating to Parsing
@@ -59,8 +60,8 @@ def get_options():
 	return options
 
 def unpackJSON(data):
-	if DEBUG:
-		print >> sys.stderr, "### UNPACKING:",data
+	# if DEBUG:
+	# 	print >> sys.stderr, "### UNPACKING:",data
 	structured = json.loads(data)
 	try:
 		result = structured['result']
@@ -457,10 +458,10 @@ def getNewBattery(starttime):
 	Change this to be more like the getDataAsc function. 
 	Sometimes the battery_charge field can be empty, so use .get instead of 
 	'''
-	volt="0"
-	amp ="0"
-	avgcurrent = 0
-	volttime="0"
+	volt= 0.0
+	amp = 0.0
+	avgcurrent = 0.0
+	volttime= 0.0
 	flowtime = 0
 	flow = 999
 	currentlist = []
@@ -472,15 +473,20 @@ def getNewBattery(starttime):
 	
 
 	BattFields = runNewStyleQuery(api="data")
-	# if BattFields:
-	# 	if DEBUG:
-	# 		print >> sys.stderr, "# BATTNEW",BattFields['battery_voltage']
-	# 	volt       = float(BattFields['battery_voltage'].get('values',[0])[-1])
-	# 	amp        = float(BattFields['battery_charge'][-1])
-	# 	currentlist = float(BattFields['average_current'])
-	# 	volttime   = int(float(BattFields['timestamp'])*1000)  # in seconds not MS
-	if currentlist:
-		avgcurrent = [float(c) for c in currentlist[-3:]]
+	for record in BattFields:
+		if record['name'] == 'battery_voltage':
+			if DEBUG:
+				print >> sys.stderr, "# VOLT RECORD",record
+			volt = record['values'][-1]
+			volttime = record['times'][-1]
+		elif record['name'] == 'battery_charge':
+			amp = record['values'][-1]
+		elif record['name'] == 'average_current':
+			currentlist = record['values'][-3:]
+			if currentlist:
+				avgcurrent = round(sum(currentlist)/(len(currentlist)*1000),1)
+	if DEBUG:
+		print >> sys.stderr, "# New Battery",volt,amp,volttime,avgcurrent
 	# TODO: Plot sparkline or report current consumption rate
 
 	return volt,amp,avgcurrent,volttime
@@ -1341,6 +1347,7 @@ def sim():
 	"text_arrow"		  : "45",
 	"text_thrusttime"     : "2.9km/hr",
 	"text_reckondistance" : "3.2km in 1.2h",
+	"text_current"        : "na",
 	"text_commago"        : "1h 2m ago",
 	"text_ampago"         : "2h 34m ago",
 	"text_cellago"        : "2h 3m ago",
@@ -1530,10 +1537,14 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
 	
-	
+	newvolt,newamp,newavgcurrent,newvolttime = getNewBattery(startTime)
+
 	if DEBUG:
-		print >> sys.stderr,"#DURATION and timeout start", missionduration,timeoutstart
-	
+		print >> sys.stderr,"# DURATION and timeout start", missionduration,timeoutstart
+	#NEW BATTERY PARSING
+		print >> sys.stderr, "# NewBatteryData: ",newvolt,newamp,newavgcurrent,newvolttime
+
+
 	#this is volt, amp, time
 	volt,amphr,batttime,flowdat,flowtime,Tracking,TrackTime = getDataAsc(startTime,missionName)
 	satcomms,cellcomms = parseComms(getComms(startTime))
@@ -1733,6 +1744,7 @@ else:   #not opt report
 	"text_thrusttime",
 	"text_reckondistance",
 	"text_commago",
+	"text_current",
 	"text_ampago",
 	"text_cellago",
 	"text_gpsago",
@@ -1746,6 +1758,7 @@ else:   #not opt report
 	cdd["text_arrow"]='90'
 	# these should persist after recovery
 	specialnames=[
+	"svg_current",
 	"text_vehicle","text_lastupdate","text_flowago",
 	"text_note", "text_notetime","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime",
@@ -1809,6 +1822,20 @@ else:   #not opt report
 
 	# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
 	cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
+
+	battsvg=""
+	'''
+<rect desc="cuorange" x="365.5" y="250.8" class="st27" width="4" height="21"/>
+<rect desc="cuyellow" x="365.5" y="257.8" class="st26" width="4" height="14"/>
+<rect desc="cugreen"  x="365.5" y="264.8" class="st25" width="4" height="7"/>'''
+	if newavgcurrent > 0:
+		cdd["text_current"] = newavgcurrent
+		if newavgcurrent > 2.1:
+			cdd['svg_current'] = '<rect desc="cuorange" x="365.5" y="250.8" class="st27" width="4" height="21"/>'
+		elif newavgcurrent < 1.5:
+			cdd['svg_current'] = '<rect desc="cugreen"  x="365.5" y="264.8" class="st25" width="4" height="7"/>'
+		else:
+			cdd['svg_current'] = '<rect desc="cuyellow" x="365.5" y="257.8" class="st26" width="4" height="14"/>'
 
 
 	###
@@ -1885,8 +1912,6 @@ else:   #not opt report
 	
 		if DEBUG:
 			print >> sys.stderr, "#TIME TO MISSION TIMEOUT",timetotimeout
-			#volt,amp,avgcurrent,volttime = getNewBattery(startTime)
-			#print >> sys.stderr, "#NewBatteryData: ",volt,amp,avgcurrent,volttime
 
 		if timetotimeout > 11:
 			cdd["color_missionago"] = 'st4'
