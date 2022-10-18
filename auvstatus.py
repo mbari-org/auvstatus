@@ -62,12 +62,17 @@ def unpackJSON(data):
 	if DEBUG:
 		print >> sys.stderr, "### UNPACKING:",data
 	structured = json.loads(data)
-	result = structured['result']
+	try:
+		result = structured['result']
+	except KeyError:
+		result = structured.get('chartData','')
 	return result
 
-def runQuery(event="",limit="",name="",timeafter="1234567890123"):
+def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 	if limit:
 		limit = "&limit=" + limit
+	if match:
+ 		match = "&text.matches=" + match
 	if name:
 		name = "&name=" + name
 	if event:
@@ -80,8 +85,8 @@ def runQuery(event="",limit="",name="",timeafter="1234567890123"):
 	if not timeafter:
 		timeafter="1234567890123"
 		
-	BaseQuery = "https://okeanids.mbari.org/TethysDash/api/events?vehicles={v}{e}{n}{l}&from={t}"
-	URL = BaseQuery.format(v=vehicle,e=event,n=name,l=limit,t=timeafter)
+	BaseQuery = "https://okeanids.mbari.org/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
+	URL = BaseQuery.format(v=vehicle,e=event,n=name,tm=match,l=limit,t=timeafter)
 	
 	if DEBUG:
 		print >> sys.stderr, "### QUERY:",URL
@@ -151,22 +156,28 @@ def getDeployment():
 		launchString = runQuery(event="launch",limit="1")
 		if launchString:
 			startTime = launchString[0]['unixTime']
+			if DEBUG:
+				print >> sys.stderr, "# LAUNCH STRING:",launchString
 	except ssl.SSLError:
 		print >> sys.stderr, "# DEPLOYMENT TIMEOUT",VEHICLE
 	return startTime
 
 def getNewDeployment():
-	'''return start time for deployment  UNUSED. Starts too early!'''
+	'''return start time for deployment and deploymentID. Starts too early!'''
 	startTime = 0
+	deployID = ""
 	try:
 		launchData = runNewStyleQuery(api="deployments/last")
 		if launchData:
 			startTime = launchData.get('startEvent',{}).get('unixTime',0)
+			deployID = launchData.get('deploymentId',"")
 	except ssl.SSLError:
 		print >> sys.stderr, "# DEPLOYMENT TIMEOUT",VEHICLE
 	if DEBUG:
-		print >> sys.stderr, "### DEPLOYMENT:",startTime
-	return startTime
+		print >> sys.stderr, "### DEPLOYMENT TIME:",startTime
+		print >> sys.stderr, "### DEPLOYMENT ID:",deployID
+		print >> sys.stderr, "### New Deploy String:",launchData
+	return startTime,deployID
 
 
 def getRecovery(starttime):
@@ -436,7 +447,7 @@ def getDataAsc(starttime,mission):
 
 
 
-def getBatteryNew(starttime):
+def getNewBattery(starttime):
 	'''Walk through the file backwards'''
 	''' IBIT will show battery thresholds that could be used to determine warning colors'''
 	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
@@ -448,9 +459,11 @@ def getBatteryNew(starttime):
 	'''
 	volt="0"
 	amp ="0"
+	avgcurrent = 0
 	volttime="0"
 	flowtime = 0
 	flow = 999
+	currentlist = []
 	Tracking = []
 	TrackTime = []
 	NeedTracking = True
@@ -459,14 +472,15 @@ def getBatteryNew(starttime):
 	
 
 	BattFields = runNewStyleQuery(api="data")
-	if BattFields:
-		volt       = float(BattFields['battery_voltage'].get('values',[0])[-1])
-		amp        = float(BattFields['battery_charge'][-1])
-		avgcurrent = float(BattFields['average_current'])
-		volttime   = int(float(BattFields['timestamp'])*1000)  # in seconds not MS
-		if DEBUG:
-			print >> sys.stderr, "# BATTNEW",BattFields
-
+	# if BattFields:
+	# 	if DEBUG:
+	# 		print >> sys.stderr, "# BATTNEW",BattFields['battery_voltage']
+	# 	volt       = float(BattFields['battery_voltage'].get('values',[0])[-1])
+	# 	amp        = float(BattFields['battery_charge'][-1])
+	# 	currentlist = float(BattFields['average_current'])
+	# 	volttime   = int(float(BattFields['timestamp'])*1000)  # in seconds not MS
+	if currentlist:
+		avgcurrent = [float(c) for c in currentlist[-3:]]
 	# TODO: Plot sparkline or report current consumption rate
 
 	return volt,amp,avgcurrent,volttime
@@ -1438,7 +1452,9 @@ mission_defaults = {
 ##
 now = 1000 * time.mktime(time.localtime())  # (*1000?)
 
-startTime = getDeployment()   # reverting to launch instead of start, but getNewDeployment() can be a template for other new queries
+startTime = getDeployment()   
+
+newdeploy,deployID = getNewDeployment()# reverting to launch instead of start, but getNewDeployment() can be a template for other new queries
 
 if not startTime:
 	if DEBUG:
@@ -1869,6 +1885,8 @@ else:   #not opt report
 	
 		if DEBUG:
 			print >> sys.stderr, "#TIME TO MISSION TIMEOUT",timetotimeout
+			#volt,amp,avgcurrent,volttime = getNewBattery(startTime)
+			#print >> sys.stderr, "#NewBatteryData: ",volt,amp,avgcurrent,volttime
 
 		if timetotimeout > 11:
 			cdd["color_missionago"] = 'st4'

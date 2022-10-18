@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 '''
+v 1.2.1 : Adding json export of percentages and times
+v 1.2   : import functions from auvstatus instead of repeating them
 v 1.1.2 : Fixed reporting of one-off failed samples 
 v 1.1.1 : Fixed some parsing of re-pumped samplers. Need to confirm with true redo.
 v 1.1   : Starting version numbers!
@@ -7,6 +9,7 @@ v 1.1   : Starting version numbers!
 from __future__ import print_function
 
 from ESPelements import svghead,svgtail
+from auvstatus import runNewStyleQuery,getNewDeployment,runQuery,getDeployment,getRecovery, getPlugged,hours,dates,elapsed
 
 import argparse
 import sys
@@ -72,126 +75,8 @@ from datetime import datetime,timedelta
  .fill_lightergray { fill: #919396; }
 '''
 
-
-def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
-	'''https://okeanids.mbari.org/TethysDash/api/events?vehicles=makai&text.matches=.*Select.*&limit=50&from=1595181435290'''
-	if match:
-		match = "&text.matches=" + match
-	if limit:
-		limit = "&limit=" + limit
-	if name:
-		name = "&name=" + name
-	if event:
-		event = "&eventTypes=" + event
-		
-	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
-	
-	vehicle = VEHICLE
-
-	if not timeafter:
-		timeafter="1234567890123"
-		
-	BaseQuery = "https://okeanids.mbari.org/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
-	URL = BaseQuery.format(v=vehicle,e=event,n=name,tm=match,l=limit,t=timeafter)
-	
-	if DEBUG:
-		print("### QUERY:",URL, file=sys.stderr)
-		
-	connection = urllib2.urlopen(URL,timeout=5)	
-# 	connection = requests.get(URL,timeout=5,verify=False)		# requests version
-	if connection:
-# 		raw = connection.text
-		raw = connection.read()
-		# if DEBUG:
-		# 	print("##### START RAW #######\n",raw[:100],"##### START RAW #######\n",file=sys.stderr)
-		structured = json.loads(raw)
-		connection.close()
-		result = structured['result']
-	else:
-		print ("# Query timeout",URL,file=sys.stderr)
-		result = ''
-	return result
-
-	
-def getDeployment():
-	'''return start time for deployment'''
-	startTime = 0
-	launchString = runQuery(event="launch",limit="1")
-	if launchString:
-		startTime = launchString[0]['unixTime']
-	# get deployment ID from this
-	return startTime
-	
-def getRecovery(starttime):
-	launchString = runQuery(event="recover",limit="1",timeafter=starttime)
-	recover = False
-	if launchString:
-		recover = launchString[0]['unixTime']
-	
-	return recover
-
-def getPlugged(starttime):
-	launchString = runQuery(event="deploy",limit="1",timeafter=starttime)
-	plugged = False
-	if launchString:
-		plugged = launchString[0]['unixTime']
-	
-	return plugged
 	
 	
-def hours(unixtime):
-	'''return epoch in HH:MM string'''
-	if unixtime:
-		t1=time.localtime(unixtime/1000)
-		TimeString = time.strftime('%H:%M',t1)
-		return TimeString
-	else:
-		return "99:99"
-		
-def dates(unixtime):
-	'''return epoch in DDmonYY string'''
-	if unixtime:
-		t1=time.localtime(unixtime/1000)
-		TimeString = time.strftime('%d%b%y',t1)
-		return TimeString
-	else:
-		return "9NaN99"
-
-
-def elapsed(rawdur):
-	'''input in millis not seconds'''
-	if rawdur:
-		MinuteString=""
-		DurationBase = '{d}{h}{m}'
-		duration = abs(rawdur/1000)
-		minutes = int(duration/60)
-		hours = int(minutes/60)
-		days = int(hours/24)
-		MinuteString = minutes
-		HourString = ""
-		DayString  = ""
-		
-		if minutes>59:
-			MinuteString = str(minutes%60) + "m"
-			HourString = str(minutes//60) + "h " 
-			hours = minutes//60
-		else:
-			MinuteString = str(minutes) + "m"
-		if (hours)>23:
-			HourString = str(hours%24) + "h "
-			DayString = str(hours//24) + "d " 
-		if DEBUG:
-			print("D",DayString,"\nH",HourString,"\nM",MinuteString)
-		DurationString = DurationBase.format(d=DayString,h=HourString,m=MinuteString)
-		if days > 4:
-			DurationString = "long time"
-		if rawdur < 1:
-			DurationString += " ago"
-		else:
-			DurationString = "in " + DurationString
-		return DurationString
-	else:
-		return "NA"
 
 ##############
 ##
@@ -672,17 +557,20 @@ if Opt.testout:
 	print(svgtail)
 
 if Opt.savefile and (not recovered):
+	deployID="none"
+	deploytime,deployID = getNewDeployment()
 	if DEBUG:
 		print (sys.stderr, "#Saving file ", OutPath.format(VEHICLE))		
+		print (sys.stderr, "#DEPLOYMENT: ", deployID)
 	
 	writefile(OutPath,RedoList)
 	writefile(OutPath.replace('.svg','-archive.svg'),RedoList,ArchiveStr="ARCHIVED")
-	# roundtime = int(now) // 100000
-	# Archivename = "/var/www/html/widget/archive/auv_{}".format(VEHICLE) +  "-"  +  DeploymentID + ".json"	
-	# with open(Archivename,'w') as archivefile:
-	# archivefile.write(json.dumps(cdd))
+	# outlist and mytimes contain percentages and time events.
+	Archivename = "/var/www/html/widget/archive/auv_{}".format(VEHICLE) +  "-"  +  deployID + ".json"	
+	with open(Archivename,'w') as archivefile:
+		archivefile.write(json.dumps([mytimes,outlist]))
 
-	writefile(OutPath.replace('-archive.svg','.json'),RedoList,ArchiveStr="ARCHIVED")
+	#writefile(OutPath.replace('-archive.svg','.json'),RedoList,ArchiveStr="ARCHIVED")
 
 elif Opt.savefile:
 	NoDeployString = '''<svg id="Layer_1" data-name="Layer 1" 
@@ -705,9 +593,6 @@ x="0px" y="0px" viewBox="0 0 300 110" xml:space="preserve">
 		outfile.write('''</text></svg>''')
 		
 		
-
-
-
 ''' OTHER ELEMENTS LIKE TIME AND WHITE LINE:
   <text class="st7" transform="translate(22.54 52.58)">12:34</text>
   <text class="st9" transform="translate(58.37 47.49)">04/02</text>
