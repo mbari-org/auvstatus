@@ -448,7 +448,7 @@ def getDataAsc(starttime,mission):
 
 
 
-def getNewBattery(starttime):
+def getNewBattery():
 	'''Walk through the file backwards'''
 	''' IBIT will show battery thresholds that could be used to determine warning colors'''
 	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
@@ -1536,8 +1536,8 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# stationdist,stationdeltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
-	
-	newvolt,newamp,newavgcurrent,newvolttime = getNewBattery(startTime)
+	newavgcurrent=0
+	newvolt,newamp,newavgcurrent,newvolttime = getNewBattery()
 
 	if DEBUG:
 		print >> sys.stderr,"# DURATION and timeout start", missionduration,timeoutstart
