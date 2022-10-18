@@ -1478,6 +1478,7 @@ note,noteTime = parseNotes(getNotes(startTime))
 bearing = 999
 WaterCritical = False
 WaterFault = False
+newavgcurrent=0
 
 # vehicle not recovered
 if (not recovered) or Opt.anyway or DEBUG:
@@ -1536,7 +1537,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# stationdist,stationdeltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
-	newavgcurrent=0
+	
 	newvolt,newamp,newavgcurrent,newvolttime = getNewBattery()
 
 	if DEBUG:
