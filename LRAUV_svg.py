@@ -77,7 +77,6 @@ svgtext = '''
 <!-- battery consumption meter -->
 <rect desc="current"  x="365" y="250" class="st11" width="5" height="22"/>
 <text desc="text_current" x="372" y="267"  class="st12 st9 st13">{text_current}</text>
-<text desc="text_amplabel" x="372" y="272" class="st12 st9 st24">amps</text>
 {svg_current}
 
 
@@ -201,6 +200,7 @@ svglabels='''
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
+<text desc="text_amplabel" x="372" y="272" class="st12 st9 st24">amps</text>
 <text transform="matrix(1 0 0 1 285 300)" class="st12 st9 st13">DROP WEIGHT</text>
 <text transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
