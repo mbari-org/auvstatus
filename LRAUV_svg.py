@@ -15,6 +15,7 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st9{font-family:HelveticaNeue, Helvetica, Arial, sans-serif;}
 	.st10{font-size:9px;}
 	.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
+	.st32{fill:#aaaaaa;stroke:#000000; } <!-- LighterGray Fill-->
 	.st12{fill:#606060;}  <!--MidGray text -->
 	.st13{font-size:7px;}
 	.st14{font-family:HelveticaNeue-Medium, Helvetica, Arial, sans-serif; }
@@ -75,7 +76,7 @@ svgtext = '''
 <text desc="OtherLabel"    text-anchor="right" transform="matrix(1 0 0 1 245 280)" class="st9 st10">OT</text>
 
 <!-- battery consumption meter -->
-<rect desc="current"  x="365" y="250" class="st11" width="5" height="22"/>
+<rect desc="current"  x="365" y="250" class="st32" width="5" height="22"/>
 <text desc="text_current" x="372" y="267"  class="st12 st9 st13">{text_current}</text>
 {svg_current}
 
