@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Oct 18, 2022 version  -->
+<!-- Nov 18, 2022 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -107,6 +107,7 @@ svgtext = '''
 </g>
 
 
+<circle desc="CTD" class="{color_ctd}" cx="544" cy="241" r="4" /> 
 <circle desc="missiondefault"   class="{color_missiondefault}" cx="415" cy="183" r="2"/>
 <circle desc="scheduleddefault" class="{color_scheduled}"      cx="415" cy="193.5" r="1.6"/>
 <circle desc="commoverdue"     class="{color_commago}"        cx="138.5" cy="295.5" r="2"/>
@@ -131,9 +132,9 @@ svgtext = '''
 <circle desc="circle2" class="{color_cartcircle}" cx="510.1" cy="298.44" r="5.86"/>
 
 <!--pontus specific but can be made invisible-->
-<circle desc="UBAT" class="{color_ubat}" cx="543.96" cy="246.8" r="4.07" /> 
-<circle desc="flow" class="{color_flow}" cx="544.33" cy="259.45" r="4.07"/>
 <text desc="text_flowago" transform="matrix(1 0 0 1 541.0 272.0)" class="st12 st9 st13">{text_flowago}</text>
+<circle desc="UBAT" class="{color_ubat}" cx="544" cy="251" r="4" /> 
+<circle desc="flow" class="{color_flow}" cx="544" cy="261" r="4"/>
 <!-- end shapes -->
 
 
@@ -205,6 +206,8 @@ svglabels='''
 <text transform="matrix(1 0 0 1 285 300)" class="st12 st9 st13">DROP WEIGHT</text>
 <text transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
+<text desc="" transform="matrix(1 0 0 1 551 244)" class="st9 st10">CTD</text>
+
 <g><title>Ground Fault: None means not detected. False means no recent scan</title>
 <text transform="matrix(1 0 0 1 485 273)" class="st12 st9 st13">GROUND</text>
 <text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT</text>
@@ -228,6 +231,8 @@ svgbadbattery='''<g><title>Bad battery cell detected</title>
 	{badcelltext}
 </g>	
 '''
+
+
 
 svgpontus='''
 <!-- vehicle-specific shapes -->

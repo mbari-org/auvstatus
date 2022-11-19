@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 1.94- Added indicator for failure to communicate with CTD
 	Version 1.93- Added battery discharge rate meter indicator
 	Version 1.92- Added report for number of bad battery sticks
 	Version 1.91- In progress, Adding new Data parsing
@@ -581,6 +582,7 @@ def parseFaults(recordlist):
 	Overload = False
 	MotorLock = False
 	WaterFault    = False
+	CTDError = False
 	# if DEBUG:
 	# 	print "### Start Recordlist"
 	# 	print recordlist
@@ -611,6 +613,9 @@ def parseFaults(recordlist):
 		if (not Hardware) and ("thruster uart error" in Record["text"].lower()):
 			Hardware = Record["unixTime"]
 		
+		if (not CTDError) and ("Failed to acquire real or simulated CTD" in Record["text"]):
+			CTDError = Record["unixTime"]
+			
 		if (not MotorLock) and ("motor stopped spinning" in Record["text"].lower()):
 			MotorLock = Record["unixTime"]
 				
@@ -621,7 +626,7 @@ def parseFaults(recordlist):
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
 		 	DVLError=Record["unixTime"]
-	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock
+	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock,CTDError
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -1304,12 +1309,13 @@ def sim():
 	"color_gps"            : "st4",
 	"color_amps"           : "st4",
 	"color_volts"          : "st4",
+	"color_ctd"	           : "st3",
 	"color_gf"             : "st6",
 	"color_dvl"            : "st3",
 	"color_bt2"            : "st3",
 	"color_bt1"            : "st3",
-	"color_ubat"           : "st3",
-	"color_flow"           : "st3",
+	"color_ubat"           : "st18",
+	"color_flow"           : "st18",
 	"color_sw"        	   : "st3",
 	"color_wavecolor"      : "st0",
 	"color_dirtbox"        : "st18",
@@ -1567,7 +1573,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	MotorLock = False
 	
 	if faults:
-		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock = parseFaults(faults)
+		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock,CTDError = parseFaults(faults)
 
 	
 # vehicle has been recovered
@@ -1690,6 +1696,7 @@ else:   #not opt report
 	"color_bat6",
 	"color_bat7",
 	"color_bat8",
+	"color_ctd",
 	"color_satcomm",
 	"color_cell",
 	"color_gps",
@@ -1714,7 +1721,8 @@ else:   #not opt report
 		cdd[cname] = 'st3'
 	
 	cdd["color_arrow"] = "st16"
-	
+	cdd["color_ubat"] = "st18"
+	cdd["color_flow"] = "st18"
 	# These are made invisible
 	cartcolors=["color_bigcable",
 	"color_smallcable",
@@ -2010,8 +2018,8 @@ else:   #not opt report
 
 			cdd["color_ubat"] = ubatStatus
 		else:
-			cdd["color_ubat"] = 'st3'
-			cdd["color_flow"] = 'st3'
+			cdd["color_ubat"] = 'st18'
+			cdd["color_flow"] = 'st18'
 	
 		# ubatTime TO ADD?
 
@@ -2088,7 +2096,12 @@ else:   #not opt report
 
  		if (HWError and ((now - HWError)/3600000 < 4)):
 			cdd["color_hw"] = 'st5'
-
+			
+		if (CTDError and ((now - CTDError)/3600000 < 4)):
+			cdd["color_ctd"] = 'st6'
+		else:
+			cdd["color_ctd"] = 'st4'
+			
 		if DVLError and not GotDVL:
 			DVLcolor = 'st6'
 			cdd["text_dvlstatus"]="ERROR"
