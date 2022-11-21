@@ -1,7 +1,6 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
-	Version 1.95- Updated Overthreshold so it reports properly
 	Version 1.94- Added indicator for failure to communicate with CTD
 	Version 1.93- Added battery discharge rate meter indicator
 	Version 1.92- Added report for number of bad battery sticks
@@ -1716,7 +1715,6 @@ else:   #not opt report
 	"color_cart",
 	"color_sw" ,
 	"color_hw",
-	"color_ot",
 	"color_cartcircle",
 	"color_missiondefault" ]
 	for cname in colornames:
@@ -1790,8 +1788,10 @@ else:   #not opt report
 	| || (_) | (_| | (_) |
 	 \__\___/ \__,_|\___/ 
 
+	 transparent for vehicle-specific features
 	 TODO: Warning: Battery Data not active. Expected only when running primaries
 	 Change GPS calculation to look over a longer time scale
+	 add more time ago fields
 	 GO TO SLEEP
  
 	 '''
@@ -2096,10 +2096,7 @@ else:   #not opt report
 
  		if (HWError and ((now - HWError)/3600000 < 4)):
 			cdd["color_hw"] = 'st5'
-
-		if (OverloadError and ((now - OverloadError)/3600000 < 4)):
-			cdd["color_ot"] = 'st5'
-				
+			
 		if (CTDError and ((now - CTDError)/3600000 < 4)):
 			cdd["color_ctd"] = 'st6'
 		else:
