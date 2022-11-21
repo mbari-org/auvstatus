@@ -1,6 +1,8 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+    Version 2.0   - Implemented config file.
+	Version 1.96  - Starting to incorporate config file. Removed email function
 	Version 1.95a - Implemented over threshold
 	Version 1.94  - Added indicator for failure to communicate with CTD
 	Version 1.93  - Added battery discharge rate meter indicator
@@ -19,16 +21,6 @@
 	
 	Usage: auvstatus.py -v pontus -r  (see a summary of reports)
 	       auvstatus.py -v pontus > pontusfile.svg  (save svg display)
-			 
-	https://okeanids.mbari.org/TethysDash/api/events?vehicles=pontus&eventTypes=logImportant&limit=4
-	
-
-	Battery thresholds:
-	onfigSet IBIT.batteryVoltageThreshold 13 v persist;configSet IBIT.batteryCapacityThreshold 15 Ah persist
-	
-		  
-	Ground faults - check with Erik about what is most useful for GF reporting
-	
 	  
 	  '''
 
@@ -42,6 +34,7 @@ import math
 import re
 from collections import deque
 from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak   # define the svg text?
+from config_auv import servername, basefilepath
 import ssl
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -88,8 +81,8 @@ def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 	if not timeafter:
 		timeafter="1234567890123"
 		
-	BaseQuery = "https://okeanids.mbari.org/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
-	URL = BaseQuery.format(v=vehicle,e=event,n=name,tm=match,l=limit,t=timeafter)
+	BaseQuery = "https://{ser}/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
+	URL = BaseQuery.format(ser=servername,v=vehicle,e=event,n=name,tm=match,l=limit,t=timeafter)
 	
 	if DEBUG:
 		print >> sys.stderr, "### QUERY:",URL
@@ -129,8 +122,8 @@ def runNewStyleQuery(api="",timeafter="1234567890123"):
 	if not timeafter:
 		timeafter="1234567890123"
 
-	NewBaseQuery = "https://okeanids.mbari.org/TethysDash/api/{apistring}{e}"
-	URL = NewBaseQuery.format(apistring=apistring,e=extrastring)
+	NewBaseQuery = "https://{ser}/TethysDash/api/{apistring}{e}"
+	URL = NewBaseQuery.format(ser=servername,apistring=apistring,e=extrastring)
 	
 	if DEBUG:
 		print >> sys.stderr, "### QUERY:",URL
@@ -220,11 +213,12 @@ def getOldGPS(gpstime,missionstart):
 	return retstring
 
 def getMissionDefaults():
-	'''print standard defaults for the listed missions. some must have inheritance because it doesn't get them all'''
+	'''MBARI specific Utility script. Not routinely used. 
+	print standard defaults for the listed missions. some must have inheritance because it doesn't get them all'''
 	missions=["Science/profile_station","Science/sci2","Science/mbts_sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
 	missions=["Science/mbts_sci2","Science/profile_station"]
 	for mission in missions:
-		URL = "https://okeanids.mbari.org/TethysDash/api/git/mission/{}.xml".format(mission)
+		URL = "https://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)
 		print >> sys.stderr, "\n#===========================\n",mission, "\n"
 		try:
 			connection = urllib2.urlopen(URL,timeout=5)
@@ -362,7 +356,7 @@ def getDataAsc(starttime,mission):
 
 	Bailout=False
 	
-	DataURL='https://okeanids.mbari.org/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
+	DataURL='https://{ser}/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
 	volt = 0
 	amp  = 0
 	volttime = 0
@@ -390,7 +384,7 @@ def getDataAsc(starttime,mission):
 		volttime=0
 		
 		extrapath = pathpart
-		NewURL = DataURL.format(vehicle=VEHICLE,extrapath=extrapath)
+		NewURL = DataURL.format(ser=servername,vehicle=VEHICLE,extrapath=extrapath)
 		if DEBUG:
 			print >> sys.stderr, "# DATA NewURL",NewURL
 		datacon = urllib2.urlopen(NewURL,timeout=5)
@@ -458,7 +452,12 @@ def getNewBattery():
 	 https://okeanids.mbari.org/TethysDash/api/data?vehicle=pontus&from={extrapath}  REPLACE WITH THIS! starttime?
 	 Fields available: average_current, battery_voltage, battery_charge
 	Change this to be more like the getDataAsc function. 
-	Sometimes the battery_charge field can be empty, so use .get instead of 
+	Sometimes the battery_charge field can be empty, so use .get instead of []
+		Battery thresholds:
+	onfigSet IBIT.batteryVoltageThreshold 13 v persist;configSet IBIT.batteryCapacityThreshold 15 Ah persist
+
+	
+
 	'''
 	volt= 0.0
 	amp = 0.0
@@ -1275,34 +1274,6 @@ def dates(unixtime):
 	else:
 		return "9NaN99"
 
-def sendMessage(MessageText="EV Status"):
-	'''not presently used, but email / sms notification sending function'''
-	import smtplib
-	import settings
-
-	from email.mime.text import MIMEText
-
-
-	# PCfB Stuff
-	me = 'XXXXXX@jellywatch.org'
-	port = 587
-	password = settings.pa
-	mailhost = 'smtp.dreamhost.com'
-
-	you = 'XXXXx@mms.att.net'
-	msg = MIMEText(MessageText)
-	msg['Subject'] = "EV Charger" 
-	msg['From'] = me
-	msg['To'] = you
-
-	server = smtplib.SMTP(mailhost, port)
-	# server.ehlo()
-	server.starttls()
-	# server.ehlo()
-	server.login(me, password)
-	server.sendmail(me, you, msg.as_string() )
-	server.quit()
-
 def sim():
 	cdd={
 	"color_drop"           : "st4",
@@ -1433,14 +1404,16 @@ if Opt.printhtml:
 	
 # TODO: If running on tethys, use '/var/www/html/widget/auv_{}.svg' as the outpath
 if 'tethysdash' in os.uname()[1]:
-	OutPath       = '/var/www/html/widget/auv_{}.svg'
-	StartTimePath = '/var/www/html/widget/auvstats_{}.csv'
+	OutPath       = '{bas}/auv_{veh}.svg'
+	StartTimePath = '{bas}/auvstats_{veh}.csv'
 elif 'jellywatch' in os.uname():
-	OutPath       = '/home/jellywatch/jellywatch.org/misc/auv_{}.svg'
-	StartTimePath = '/home/jellywatch/jellywatch.org/misc/auvstats_{}.csv'
+	basefilepath=""
+	OutPath       = '{bas}/home/jellywatch/jellywatch.org/misc/auv_{}.svg'
+	StartTimePath = '{bas}/home/jellywatch/jellywatch.org/misc/auvstats_{}.csv'
 else:
-	OutPath = './auv_{}.svg'
-	StartTimePath = "./auvstats_{}.csv" # make this .py for importing or .json?
+	basefilepath=""
+	OutPath = '.{bas}/auv_{}.svg'
+	StartTimePath = ".{bas}/auvstats_{}.csv" # make this .py for importing or .json?
 	
 # TIMEOUTS are in hours? or days?
 mission_defaults = {
@@ -2175,8 +2148,8 @@ else:   #not opt report
 
 	if Opt.savefile:
 		if DEBUG:
-			print >> sys.stderr, "#Saving file ", OutPath.format(VEHICLE)
-		with open(OutPath.format(VEHICLE),'w') as outfile:
+			print >> sys.stderr, "#Saving file ", OutPath.format(bas=basefilepath,veh=VEHICLE)
+		with open(OutPath.format(bas=basefilepath,veh=VEHICLE),'w') as outfile:
 			outfile.write(svghead)
 			outfile.write(svgtext.format(**cdd))
 			if BadBattery > 100:
@@ -2196,7 +2169,7 @@ else:   #not opt report
 			outfile.write(svgtail)
 			
 		#adding JSON version of cdd state dictionary
-		with open(OutPath.format(VEHICLE).replace(".svg",".json"),'w') as jsonfile:
+		with open(OutPath.format(bas=basefilepath,veh=VEHICLE).replace(".svg",".json"),'w') as jsonfile:
 			jsonfile.write(json.dumps(cdd))
 
 		if not recovered:
@@ -2206,14 +2179,14 @@ else:   #not opt report
 				16560980
 				To retrieve, take unixtime //100'''
 			roundtime = int(now) // 100000
-			Archivename = "/var/www/html/widget/archive/auv_{}".format(VEHICLE) +  "-"  +  str(roundtime) + ".json"	
+			Archivename = "{bas}/archive/auv_{veh}".format(bas=basefilepath, veh=VEHICLE) +  "-"  +  str(roundtime) + ".json"	
 			with open(Archivename,'w') as archivefile:
 				archivefile.write(json.dumps(cdd))
 				
 			ArchiveImage = False
 			
 			if ArchiveImage:
-				ArchiveImage = "/var/www/html/widget/archive/auv_{}".format(VEHICLE) +  "-"  +  str(roundtime) + ".svg"	
+				ArchiveImage = "{bas}/archive/auv_{veh}".format(bas=basefilepath,veh=VEHICLE) +  "-"  +  str(roundtime) + ".svg"	
 				with open(ArchiveImage,'w') as outfile:
 					outfile.write(svghead)
 					outfile.write(svgtext.format(**cdd))
