@@ -774,6 +774,10 @@ def parseImptMisc(recordlist):
 	
 	StationLat = False
 	StationLon = False
+	
+	CTDonCommand = False
+	CTDoffCommand = False
+	
 	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 
@@ -881,8 +885,14 @@ def parseImptMisc(recordlist):
 		if not GotDVL and ("configSet AMEcho.enabled" in Record.get("text","NA")):
 			DVL_on = bool(float(Record["text"].split(".enabled ")[1].split(" ")[0]))
 			GotDVL = True
-			
-
+		
+		# ADDING CTD on/off parsing
+		if (not CTDonCommand and not CTDoffCommand) and ("CTD_Seabird.loadAtStartup" in Record["text"]):
+			CTD_command = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
+			if CTD_command:
+				CTDonCommand = Record["unixTime"]
+			else:
+				CTDoffCommand = Record["unixTime"]
 	
 			
 		'''Change to got command ubat on  got command restart application'''
@@ -918,7 +928,7 @@ def parseImptMisc(recordlist):
 		# 	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 		# 	FlowTime   = Record["unixTime"]
 
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, CTDonCommand,CTDoffCommand
 	
 
 def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
@@ -1504,7 +1514,8 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# mission time is off if schedule paused (default) and resumed. Detect this and go back further?
 	missionName,missionTime = parseMission(important)
 	
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint  = parseImptMisc(important)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,CTDonCommand,CTDoffCommand  = parseImptMisc(important)
+	
 	
 	gf,gftime = parseCBIT(gfrecords)
 
@@ -2096,9 +2107,12 @@ else:   #not opt report
 
  		if (HWError and ((now - HWError)/3600000 < 4)):
 			cdd["color_hw"] = 'st5'
+		
 			
-		if (CTDError and ((now - CTDError)/3600000 < 4)):
+		if (CTDError and not CTDoffCommand and ((now - CTDError)/3600000 < 4)):
 			cdd["color_ctd"] = 'st6'
+		elif CTDoffCommand:
+			cdd["color_ctd"] = 'st5'
 		else:
 			cdd["color_ctd"] = 'st4'
 			
