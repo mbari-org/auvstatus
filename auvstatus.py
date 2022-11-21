@@ -1,20 +1,21 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
-	Version 1.94- Added indicator for failure to communicate with CTD
-	Version 1.93- Added battery discharge rate meter indicator
-	Version 1.92- Added report for number of bad battery sticks
-	Version 1.91- In progress, Adding new Data parsing
-	Version 1.9 - Fixed Navigating to Parsing
-	Version 1.8 - Added Motor Lock Fault parsing
-	Version 1.7 - Minor enhancements
-	Version 1.6 - Updated needcomms parsing
-	Version 1.5 - Updated default mission list
-	Version 1.4 - Bumping version number after misc changes.
-	Version 1.3 - Streamlined code so it doesn't download data for recovered vehicles
-	Version 1.2 - making UBAT pontus-specific (move to svg["pontus"] for more vehicles)
-	Version 1.1 - adding cart
-	Version 1.0 - works for pontus
+	Version 1.95a - Implemented over threshold
+	Version 1.94  - Added indicator for failure to communicate with CTD
+	Version 1.93  - Added battery discharge rate meter indicator
+	Version 1.92  - Added report for number of bad battery sticks
+	Version 1.91  - In progress, Adding new Data parsing
+	Version 1.9   - Fixed Navigating to Parsing
+	Version 1.8   - Added Motor Lock Fault parsing
+	Version 1.7   - Minor enhancements
+	Version 1.6   - Updated needcomms parsing
+	Version 1.5   - Updated default mission list
+	Version 1.4   - Bumping version number after misc changes.
+	Version 1.3   - Streamlined code so it doesn't download data for recovered vehicles
+	Version 1.2   - making UBAT pontus-specific (move to svg["pontus"] for more vehicles)
+	Version 1.1   - adding cart
+	Version 1.0   - works for pontus
 	
 	Usage: auvstatus.py -v pontus -r  (see a summary of reports)
 	       auvstatus.py -v pontus > pontusfile.svg  (save svg display)
@@ -1726,6 +1727,7 @@ else:   #not opt report
 	"color_cart",
 	"color_sw" ,
 	"color_hw",
+	"color_ot",
 	"color_cartcircle",
 	"color_missiondefault" ]
 	for cname in colornames:
@@ -2107,10 +2109,13 @@ else:   #not opt report
 
  		if (HWError and ((now - HWError)/3600000 < 4)):
 			cdd["color_hw"] = 'st5'
-		
+			
+		if (OverloadError and ((now - OverloadError)/3600000 < 4)):
+			cdd["color_ot"] = 'st5'
 			
 		if (CTDError and not CTDoffCommand and ((now - CTDError)/3600000 < 4)):
 			cdd["color_ctd"] = 'st6'
+			
 		elif CTDoffCommand:
 			cdd["color_ctd"] = 'st5'
 		else:
