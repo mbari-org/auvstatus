@@ -50,6 +50,7 @@ def get_options():
 	parser.add_argument("-m", "--missions",action="store_true"  , help="spit out mission defaults")
 	parser.add_argument("-s", "--sim",action="store_true"  , help="create a fake example SVG")
 	parser.add_argument("-a", "--anyway",action="store_true"  , help="process even after recovery")
+	parser.add_argument("-i", "--inst",default="mbari"  , help="choose the server (mbari or whoi)")
 	parser.add_argument("Args", nargs='*')
 	options = parser.parse_args()
 	return options
@@ -1397,6 +1398,11 @@ if Opt.sim:
 	sim()
 	sys.exit("Done")
 
+if Opt.inst == 'whoi':
+	servername = 'lrauv.whoi.edu'
+else:
+	servername = 'okeanids.mbari.org'
+	
 if Opt.printhtml:
 	'''print format of auv.html auto-refreshing file'''
 	printhtmlutility()
