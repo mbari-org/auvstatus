@@ -120,7 +120,7 @@ svgtext = '''
 <rect desc="gf_rect" x="480" y="254.0" class="{color_gf}" width="24.43" height="10.5"/>
 <circle desc="HW" class="{color_hw}" cx="267" cy="251" r="4" /> 
 <circle desc="SW" class="{color_sw}" cx="267" cy="264" r="4"/>
-<circle desc="OT" class="st3" cx="267" cy="277" r="4" /> 
+<circle desc="OT" class="{color_ot}" cx="267" cy="277" r="4" /> 
 
 
 <polygon desc="dvl" class="{color_dvl}" points="541.91,287.26 553.41,287.26 558.97,295.79 541.52,295.79 "/>
