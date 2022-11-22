@@ -31,16 +31,16 @@ To see the full "gallery" of vehicles being monitored, see [this page](https://o
 
 ### INSTALLATION
 * Place these four scripts on your server, ideally in your _`<server>/widgets/`_ folder. (For ESP, add `esp_widget.py` and `ESPelements.py`)
-  * `auvstatus.py`
-  * `LRAUV_svg.py`
-  * `config_auv.py`
-  * `update-active.sh`
+    * `auvstatus.py`
+    * `LRAUV_svg.py`
+    * `config_auv.py`
+    * `update-active.sh`
 
 * Edit `config_auv.py` to set the server and path
 * Test the script with `auvstatus.py -v <vehicle> -r    `   (Using `-r` outputs summary instead of SVG)
 * Edit the `VEH` variable in `update-active.sh` to have a space-separated list of your vehicles to monitor
 * Edit your cron (`crontab -e`) to run the updater script, for example: 
-    * ```*/2 * * * * /var/www/html/widget/update-active.sh ```
+     * ```*/2 * * * * /var/www/html/widget/update-active.sh ```
 
 ### NOTES
 
