@@ -299,9 +299,9 @@
 	<rect x="265.8" y="121.7" class="st20" width="59.6" height="24.8"/>
 	<text transform="matrix(1 0 0 1 268.3311 131.2306)" class="st18 st5 st6">Battery level</text>
 	<text transform="matrix(1 0 0 1 268.3311 142.0306)" class="st18 st5 st6">13.5 to 16.5v</text>
-	<rect x="124.1" y="137.7" class="st20" width="61.1" height="24.8"/>
+	<rect x="124.1" y="137.7" class="st20" width="65" height="24.8"/>
 	<text transform="matrix(1 0 0 1 127.6565 147.2306)" class="st18 st5 st6">Black spots =</text>
-	<text transform="matrix(1 0 0 1 127.6565 158.0306)" class="st18 st5 st6">bad cell</text>
+	<text transform="matrix(1 0 0 1 127.6565 158.0306)" class="st18 st5 st24">bad battery cell</text>
 	<rect x="20" y="121.4" class="st20" width="85.8" height="13.9"/>
 	<rect x="18.5" y="162" class="st20" width="85.8" height="13.9"/>
 	<text transform="matrix(1 0 0 1 22.4912 130.9908)" class="st18 st5 st6">Commanded speed</text>
