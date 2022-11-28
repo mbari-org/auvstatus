@@ -30,6 +30,8 @@ To see the full "gallery" of vehicles being monitored, see [this page](https://o
 -----
 
 ### INSTALLATION
+* (Alternative: clone this repo and then copy the needed files into your local environment. Then you can get updates to the scripts.)
+
 * Place these four scripts on your server, ideally in your _`<server>/widgets/`_ folder. (For ESP, add `esp_widget.py` and `ESPelements.py`)
     * `auvstatus.py`
     * `LRAUV_svg.py`

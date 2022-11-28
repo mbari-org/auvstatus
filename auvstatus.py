@@ -791,7 +791,11 @@ def parseImptMisc(recordlist):
 		'pontus':True,
 		'tethys':True,
 		'daphne':False,
-		'brizo':True
+		'brizo':True,
+		'polaris':True,
+		'proxima':True,
+		'stella':True,
+		'pyxis':True
 	}
 	
 	DVL_on = GetDVLStartup.get(VEHICLE,False)
