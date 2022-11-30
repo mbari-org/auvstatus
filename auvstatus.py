@@ -1,8 +1,8 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
-    Version 2.01  - Missing variable initialization in recovered vehicle
-    Version 2.0   - Implemented config file
+	Version 2.01  - Missing variable initialization in recovered vehicle
+	Version 2.0   - Implemented config file
 	Version 1.96  - Starting to incorporate config file. Removed email function
 	Version 1.95a - Implemented over threshold
 	Version 1.94  - Added indicator for failure to communicate with CTD
@@ -1567,6 +1567,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	HWError = False
 	OverloadError = False
 	MotorLock = False
+	CTDError = False
 	
 	if faults:
 		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock,CTDError = parseFaults(faults)
