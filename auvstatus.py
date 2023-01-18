@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 2.02  - Adding #sticky note functionality
 	Version 2.01  - Missing variable initialization in recovered vehicle
 	Version 2.0   - Implemented config file
 	Version 1.96  - Starting to incorporate config file. Removed email function
@@ -34,7 +35,7 @@ import json
 import math
 import re
 from collections import deque
-from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,stickynote   # define the svg text?
 from config_auv import servername, basefilepath
 import ssl
 
@@ -511,8 +512,9 @@ def parseNotes(recordlist):
 	for Record in recordlist:
 		# if DEBUG:
 		# 	print Record["name"],Record["text"]
-		if "#widget" in Record["note"]:
-			Note = "NOTE " + Record["note"].replace("#widget","")[:120]
+
+		if ("#sticky" in Record["note"]) or ("#note" in Record["note"]):
+			Note = Record["note"].replace("#sticky","").replace("#note","").lstrip(" :")[:120]
 			NoteTime = Record["unixTime"]
 			break
 	return Note,NoteTime 
@@ -1474,7 +1476,7 @@ recovered = getRecovery(starttime=startTime)
 
 plugged = getPlugged(recovered)
 
-note,noteTime = parseNotes(getNotes(startTime))
+text_note,text_noteago = parseNotes(getNotes(startTime))
 
 bearing = 999
 WaterCritical = False
@@ -2234,5 +2236,7 @@ else:   #not opt report
 			print svglabels
 			if VEHICLE=="pontus":
 				print svgpontus
+		if text_note:
+			print stickynote.format(text_note,text_noteago)
 		print svgtail
 	

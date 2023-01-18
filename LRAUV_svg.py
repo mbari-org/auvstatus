@@ -257,6 +257,11 @@ svgtail = '''
 </svg>
 '''
 
+stickynote = '''<rect desc="stickyrect" x="439" y="166" class="st28" width="160" height="11.5"/>
+<text desc="sticky" transform="matrix(1 0 0 1 442.0 175)" class="st9 st13">{text_note}</text>
+<text desc="stickyago" transform="matrix(1 0 0 1 601.0 176)" class="st9 st24 st12">{text_noteago}</text>
+<text desc="noteago"   transform="matrix(1 0 0 1 601.0 171)" class="st9 st24 st12">#note</text>'''
+
 
 
 svgerrorhead =  '''<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" 
