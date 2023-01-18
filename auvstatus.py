@@ -512,7 +512,7 @@ def parseNotes(recordlist):
 	for Record in recordlist:
 		if DEBUG:
 		 	print >> sys.stderr,"NOTES:",Record["name"],Record["text"]
-		if ("#sticky" in Record["note"]) or ("#note" in Record["note"]):
+		if (("#sticky" in Record["note"]) or ("#note" in Record["note"])):
 			Note = Record["note"].replace("#sticky","").replace("#note","").lstrip(" :")[:120]
 			NoteTime = Record["unixTime"]
 			break
@@ -2226,13 +2226,13 @@ else:   #not opt report
 		print svgtext.format(**cdd)   # insert values from dictionary by name
 		if BadBattery:
 			print svgbadbattery.format(badcelltext=BadBatteryText)
+		if text_note:
+			print svgstickynote.format(text_note=text_note,text_noteago=elapsed(text_noteago))
 		if len(Tracking)>=1:
 			print makeTrackSVG(Tracking,TrackTime)
 		if not recovered:
 			print svglabels
 			if VEHICLE=="pontus":
 				print svgpontus
-		if text_note:
-			print svgstickynote.format(text_note,elapsed(text_noteago))
 		print svgtail
 	
