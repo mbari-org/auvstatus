@@ -246,10 +246,11 @@ def getMissionDefaults():
 def getNotes(starttime):
 	'''get notes with #widget in the text'''
 	qString = runQuery(event="note",limit="10",timeafter=starttime)
+	if DEBUG:
+		print >> sys.stderr, "# NOTESTRING FOUND",qString
 	retstring = ''
 	if qString:
 		retstring=qString
-
 	return retstring
 	
 def getCritical(starttime):
@@ -509,13 +510,14 @@ def parseGPS(recordlist):
 def parseNotes(recordlist):
 	Note = ''
 	NoteTime = False
-	for Record in recordlist:
-		if DEBUG:
-		 	print >> sys.stderr,"NOTES:",Record["name"],Record["text"]
-		if (("#sticky" in Record["note"]) or ("#note" in Record["note"])):
-			Note = Record["note"].replace("#sticky","").replace("#note","").lstrip(" :")[:120]
-			NoteTime = Record["unixTime"]
-			break
+	if recordlist:
+		for Record in recordlist:
+			if DEBUG:
+				print >> sys.stderr,"NOTES:",Record["name"],Record["text"]
+			if (("#sticky" in Record["note"]) or ("#note" in Record["note"])):
+				Note = Record["note"].replace("#sticky","").replace("#note","").lstrip(" :")[:120]
+				NoteTime = Record["unixTime"]
+				break
 	return Note,NoteTime 
 	
 def parseDrop(recordlist):
