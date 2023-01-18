@@ -15,7 +15,6 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st9{font-family:HelveticaNeue, Helvetica, Arial, sans-serif;}
 	.st10{font-size:9px;}
 	.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
-	.st32{fill:#aaaaaa;stroke:#000000; } <!-- LighterGray Fill-->
 	.st12{fill:#606060;}  <!--MidGray text -->
 	.st13{font-size:7px;}
 	.st14{font-family:HelveticaNeue-Medium, Helvetica, Arial, sans-serif; }
@@ -35,7 +34,8 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st28{fill:#333333; } <!-- DarkGray Fill-->
 	.st30{font-size:8px;} 
 	.st31{fill:#B4372D;} <!-- Maroon text-->
-	.st32{fill:#FFEEBB;stroke:none; } <!--PaleYellow No Stroke -->
+	.st32{fill:#aaaaaa;stroke:#000000; } <!-- LighterGray Fill-->
+	.st33{fill:#FFEEBB;stroke:none; } <!--PaleYellow No Stroke -->
 	.stleak2{fill:#7DA6D8;} <!-- critical water leak-->
 	.stleak1{fill:#92c19b;} <!--aux water leak-->
 
@@ -255,7 +255,7 @@ svgtail = '''
 </svg>
 '''
 
-svgstickynote = '''<rect desc="stickyrect" x="439" y="166" class="st32" width="160" height="11.5"/>
+svgstickynote = '''<rect desc="stickyrect" x="439" y="166" class="st33" width="160" height="11.5"/>
 <text desc="sticky" transform="matrix(1 0 0 1 442.0 175)" class="st9 st13 st28">{text_note}</text>
 <text desc="stickyago" transform="matrix(1 0 0 1 601.0 176)" class="st9 st24 st12">{text_noteago}</text>
 <text desc="noteago"   transform="matrix(1 0 0 1 601.0 171)" class="st9 st24 st12">#note</text>'''
