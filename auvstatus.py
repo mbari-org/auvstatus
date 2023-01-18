@@ -518,8 +518,6 @@ def parseNotes(recordlist):
 				Note = Record["note"].replace("#sticky","").replace("#note","").lstrip(" :")[:120]
 				NoteTime = Record["unixTime"]
 				break
-		if DEBUG:
-				print >> sys.stderr,"## CLEAN NOTE:",Note,elapsed(NoteTime-now)
 	return Note,NoteTime 
 	
 def parseDrop(recordlist):
@@ -1478,7 +1476,8 @@ recovered = getRecovery(starttime=startTime)
 plugged = getPlugged(recovered)
 
 text_note,text_noteago = parseNotes(getNotes(startTime))
-
+if DEBUG and text_note:
+	print >> sys.stderr,"## CLEAN NOTE:",text_note,elapsed(text_noteago-now)
 bearing = 999
 WaterCritical = False
 WaterFault = False
@@ -2167,6 +2166,8 @@ else:   #not opt report
 		with open(OutPath.format(bas=basefilepath,veh=VEHICLE),'w') as outfile:
 			outfile.write(svghead)
 			outfile.write(svgtext.format(**cdd))
+			if text_note:
+				outfile.write(svgstickynote.format(text_note=text_note,text_noteago=elapsed(text_noteago - now)))
 			if BadBattery > 100:
 				outfile.write(svgbadbattery.format(badcelltext=BadBatteryText))
 			if WaterCritical or WaterFault:
@@ -2205,6 +2206,8 @@ else:   #not opt report
 				with open(ArchiveImage,'w') as outfile:
 					outfile.write(svghead)
 					outfile.write(svgtext.format(**cdd))
+					if text_note:
+						outfile.write(svgstickynote.format(text_note=text_note,text_noteago=elapsed(text_noteago - now)))
 					if BadBattery > 100:
 						outfile.write(svgbadbattery.format(badcelltext=BadBatteryText))
 					if WaterCritical or WaterFault:
