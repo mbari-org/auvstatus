@@ -515,7 +515,7 @@ def parseNotes(recordlist):
 		for Record in recordlist:
 			
 			if (("#sticky" in Record["note"]) or ("#note" in Record["note"])):
-				Note = Record["note"].replace("#sticky","").replace("#note","").lstrip(" :")[:40]
+				Note = Record["note"].replace("#sticky","").replace("#note","").lstrip(" :")[:55]
 				NoteTime = Record["unixTime"]
 				break
 	return Note,NoteTime 
