@@ -35,7 +35,7 @@ import json
 import math
 import re
 from collections import deque
-from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,stickynote   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote   # define the svg text?
 from config_auv import servername, basefilepath
 import ssl
 
@@ -1352,8 +1352,6 @@ def sim():
 	"text_logtime"        : "01:23",
 	"text_vehicle"        : "SIMULON",
 	"text_lastupdate"     : "12:34",
-	"text_note"           : "", 
-	"text_notetime"       : "",
 	"text_arrivestation"  : "12:34 in 1h 12m",
 	"text_stationdist"    : "4.5km",
 	"text_stationdist"    : "1.2km",
@@ -1768,8 +1766,7 @@ else:   #not opt report
 	# these should persist after recovery
 	specialnames=[
 	"svg_current",
-	"text_vehicle","text_lastupdate","text_flowago",
-	"text_note", "text_notetime","text_scheduled","text_arrivestation",
+	"text_vehicle","text_lastupdate","text_flowago","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime",
 	"text_leak","text_leakago",
 	"text_criticalerror"
@@ -1857,9 +1854,9 @@ else:   #not opt report
 	cdd["color_missiondefault"] = ['st27','st25'][missionName in mission_defaults] 
 	
 	# NOT USED YET! NOTES  
-	if noteTime:
-		cdd["text_note"] = note
-		cdd["text_notetime"] = elapsed(noteTime)
+	# if noteTime:
+	# 	cdd["text_note"] = note
+	# 	cdd["text_notetime"] = elapsed(noteTime)
 		
 
 	
@@ -2236,6 +2233,6 @@ else:   #not opt report
 			if VEHICLE=="pontus":
 				print svgpontus
 		if text_note:
-			print stickynote.format(text_note,text_noteago)
+			print svgstickynote.format(text_note,elapsed(text_noteago))
 		print svgtail
 	

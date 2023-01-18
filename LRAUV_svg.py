@@ -160,8 +160,6 @@ svgtext = '''
 <text desc="mission" transform="matrix(1 0 0 1 462.0 186)" class="st9 st10 st12">{text_mission}</text>
 <text desc="missionsched" transform="matrix(1 0 0 1 419.5 196)" class="st12 st9 st13">{text_scheduled}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
-<text desc="test_note" transform="matrix(1 0 0 1 133 174)" class="st12 st9 st13">{text_note}</text>
-<text desc="test_notetime" transform="matrix(1 0 0 1 134 180)" class="st12 st9 st24">{text_notetime}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
 <text desc="text_bearing" transform="matrix(1 0 0 1 596 262.3)" class="st9 st13">{text_bearing}</text>
@@ -257,7 +255,7 @@ svgtail = '''
 </svg>
 '''
 
-stickynote = '''<rect desc="stickyrect" x="439" y="166" class="st28" width="160" height="11.5"/>
+svgstickynote = '''<rect desc="stickyrect" x="439" y="166" class="st28" width="160" height="11.5"/>
 <text desc="sticky" transform="matrix(1 0 0 1 442.0 175)" class="st9 st13">{text_note}</text>
 <text desc="stickyago" transform="matrix(1 0 0 1 601.0 176)" class="st9 st24 st12">{text_noteago}</text>
 <text desc="noteago"   transform="matrix(1 0 0 1 601.0 171)" class="st9 st24 st12">#note</text>'''
