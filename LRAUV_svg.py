@@ -32,10 +32,10 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st25{fill:#5AC1A4;stroke:none; } <!--Green No Stroke -->
 	.st26{fill:#FFE850;stroke:none; } <!--Yellow No Stroke -->
 	.st27{fill:#EF9D30;stroke:none; } <!--Orange No Stroke -->	
-	
 	.st28{fill:#333333; } <!-- DarkGray Fill-->
 	.st30{font-size:8px;} 
 	.st31{fill:#B4372D;} <!-- Maroon text-->
+	.st32{fill:#FFEEBB;stroke:none; } <!--PaleYellow No Stroke -->
 	.stleak2{fill:#7DA6D8;} <!-- critical water leak-->
 	.stleak1{fill:#92c19b;} <!--aux water leak-->
 
@@ -255,8 +255,8 @@ svgtail = '''
 </svg>
 '''
 
-svgstickynote = '''<rect desc="stickyrect" x="439" y="166" class="st28" width="160" height="11.5"/>
-<text desc="sticky" transform="matrix(1 0 0 1 442.0 175)" class="st9 st13">{text_note}</text>
+svgstickynote = '''<rect desc="stickyrect" x="439" y="166" class="st32" width="160" height="11.5"/>
+<text desc="sticky" transform="matrix(1 0 0 1 442.0 175)" class="st9 st13 st28">{text_note}</text>
 <text desc="stickyago" transform="matrix(1 0 0 1 601.0 176)" class="st9 st24 st12">{text_noteago}</text>
 <text desc="noteago"   transform="matrix(1 0 0 1 601.0 171)" class="st9 st24 st12">#note</text>'''
 
