@@ -1567,6 +1567,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	HWError = False
 	OverloadError = False
 	MotorLock = False
+	CTDError = False
 	
 	if faults:
 		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock,CTDError = parseFaults(faults)
