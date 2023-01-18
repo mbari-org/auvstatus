@@ -508,16 +508,18 @@ def parseGPS(recordlist):
 	return site,gpstime
 
 def parseNotes(recordlist):
+	'''{u'eventId': 17402257, u'unixTime': 1674066119081, u'isoTime': u'2023-01-18T18:21:59.081Z', u'note': u'#note Test of new feature.', u'state': 0, u'user': u'Steven Haddock', u'eventType': u'note', u'vehicleName': u'daphne'},'''
 	Note = ''
 	NoteTime = False
 	if recordlist:
 		for Record in recordlist:
-			if DEBUG:
-				print >> sys.stderr,"NOTES:",Record["name"],Record["text"]
+			
 			if (("#sticky" in Record["note"]) or ("#note" in Record["note"])):
 				Note = Record["note"].replace("#sticky","").replace("#note","").lstrip(" :")[:120]
 				NoteTime = Record["unixTime"]
 				break
+		if DEBUG:
+				print >> sys.stderr,"## CLEAN NOTE:",Note,elapsed(NoteTime-now)
 	return Note,NoteTime 
 	
 def parseDrop(recordlist):
@@ -2229,7 +2231,7 @@ else:   #not opt report
 		if BadBattery:
 			print svgbadbattery.format(badcelltext=BadBatteryText)
 		if text_note:
-			print svgstickynote.format(text_note=text_note,text_noteago=elapsed(text_noteago))
+			print svgstickynote.format(text_note=text_note,text_noteago=elapsed(text_noteago - now))
 		if len(Tracking)>=1:
 			print makeTrackSVG(Tracking,TrackTime)
 		if not recovered:
