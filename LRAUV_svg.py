@@ -255,8 +255,8 @@ svgtail = '''
 </svg>
 '''
 
-svgstickynote = '''<rect desc="stickyrect" x="439" y="166" class="st33" width="160" height="11.5"/>
-<text desc="sticky" transform="matrix(1 0 0 1 442.0 175)" class="st9 st13 st28">{text_note}</text>
+svgstickynote = '''<rect desc="stickyrect" x="419" y="166" class="st33" width="180" height="11.5"/>
+<text desc="sticky" transform="matrix(1 0 0 1 422.0 175)" class="st9 st13 st28">{text_note}</text>
 <text desc="stickyago" transform="matrix(1 0 0 1 601.0 176)" class="st9 st24 st12">{text_noteago}</text>
 <text desc="noteago"   transform="matrix(1 0 0 1 601.0 171)" class="st9 st24 st12">#note</text>'''
 
