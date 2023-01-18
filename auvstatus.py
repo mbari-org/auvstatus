@@ -510,9 +510,8 @@ def parseNotes(recordlist):
 	Note = ''
 	NoteTime = False
 	for Record in recordlist:
-		# if DEBUG:
-		# 	print Record["name"],Record["text"]
-
+		if DEBUG:
+		 	print >> sys.stderr,"NOTES:",Record["name"],Record["text"]
 		if ("#sticky" in Record["note"]) or ("#note" in Record["note"]):
 			Note = Record["note"].replace("#sticky","").replace("#note","").lstrip(" :")[:120]
 			NoteTime = Record["unixTime"]
