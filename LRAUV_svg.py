@@ -216,7 +216,7 @@ svglabels='''
 <text transform="matrix(1 0 0 1 291.6499 221.6039)" class="st9 st10">Cell comms</text>
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
-<text desc="arrive_label" transform="matrix(1 0 0 1 580 222)" class="st12 st9 st24">Arrive Station</text>
+<text desc="arrive_label" transform="matrix(1 0 0 1 580 222)" class="st12 st9 st24">Arrive Waypoint</text>
 '''
 
 svgbadbattery='''<g><title>Bad battery cell detected</title>
