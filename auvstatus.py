@@ -1,6 +1,8 @@
-#! /usr/bin/env python2.7
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.11  - Fixed data decoding from ASCII retrieve
+	Version 2.1   - Updated to Python 3
 	Version 2.03  - Fixed pontus-specific UBAT formatting
 	Version 2.02  - Adding #sticky note functionality
 	Version 2.01  - Missing variable initialization in recovered vehicle
@@ -31,7 +33,7 @@ import argparse
 import sys
 import time
 import os
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 import math
 import re
@@ -43,7 +45,7 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
 def get_options():
-	parser = argparse.ArgumentParser(usage = __doc__) 
+	parser = argparse.ArgumentParser(usage = __doc__)
 #	parser.add_argument('infile', type = argparse.FileType('rU'), nargs='?',default = sys.stdin, help="output of vars_retrieve")
 	parser.add_argument("-b", "--DEBUG",	action="store_true", help="Print debug info")
 	parser.add_argument("-r", "--report",	action="store_true", help="print results")
@@ -60,7 +62,7 @@ def get_options():
 
 def unpackJSON(data):
 	# if DEBUG:
-	# 	print >> sys.stderr, "### UNPACKING:",data
+	#	print >> sys.stderr, "### UNPACKING:",data
 	structured = json.loads(data)
 	try:
 		result = structured['result']
@@ -72,7 +74,7 @@ def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 	if limit:
 		limit = "&limit=" + limit
 	if match:
- 		match = "&text.matches=" + match
+		match = "&text.matches=" + match
 	if name:
 		name = "&name=" + name
 	if event:
@@ -89,24 +91,24 @@ def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 	URL = BaseQuery.format(ser=servername,v=vehicle,e=event,n=name,tm=match,l=limit,t=timeafter)
 	
 	if DEBUG:
-		print >> sys.stderr, "### QUERY:",URL
+		print("### QUERY:",URL, file=sys.stderr)
 
 	try:
-		connection = urllib2.urlopen(URL,timeout=5)		
+		connection = urllib.request.urlopen(URL,timeout=5)		
 		if connection:
 			raw = connection.read()
 			structured = json.loads(raw)
 			connection.close()
 			result = structured['result']
 		else:
-			print >> sys.stderr, "# Query timeout",URL
+			print("# Query timeout",URL, file=sys.stderr)
 			result = ''
 		return result
-	except urllib2.HTTPError or ssl.SSLError:
+	except urllib.error.HTTPError or ssl.SSLError:
 		if ssl.SSLError:
-			print >> sys.stderr, "# QUERY TIMEOUT:",URL
+			print("# QUERY TIMEOUT:",URL, file=sys.stderr)
 		else:
-			print >> sys.stderr, "# FAILURE IN QUERY:",URL
+			print("# FAILURE IN QUERY:",URL, file=sys.stderr)
 		handleURLerror()
 		return None
 
@@ -130,22 +132,22 @@ def runNewStyleQuery(api="",timeafter="1234567890123"):
 	URL = NewBaseQuery.format(ser=servername,apistring=apistring,e=extrastring)
 	
 	if DEBUG:
-		print >> sys.stderr, "### QUERY:",URL
+		print("### QUERY:",URL, file=sys.stderr)
 
 	try:
-		connection = urllib2.urlopen(URL,timeout=5)		
+		connection = urllib.request.urlopen(URL,timeout=5)		
 		if connection:
 			datastream = connection.read()
 			result = unpackJSON(datastream)
 		else:
-			print >> sys.stderr, "# Query timeout",URL
+			print("# Query timeout",URL, file=sys.stderr)
 			result = ''
 		return result
-	except urllib2.HTTPError or ssl.SSLError:
+	except urllib.error.HTTPError or ssl.SSLError:
 		if ssl.SSLError:
-			print >> sys.stderr, "# QUERY TIMEOUT:",URL
+			print("# QUERY TIMEOUT:",URL, file=sys.stderr)
 		else:
-			print >> sys.stderr, "# FAILURE IN QUERY:",URL
+			print("# FAILURE IN QUERY:",URL, file=sys.stderr)
 		handleURLerror()
 		return None	
 
@@ -157,9 +159,9 @@ def getDeployment():
 		if launchString:
 			startTime = launchString[0]['unixTime']
 			if DEBUG:
-				print >> sys.stderr, "# LAUNCH STRING:",launchString
+				print("# LAUNCH STRING:",launchString, file=sys.stderr)
 	except ssl.SSLError:
-		print >> sys.stderr, "# DEPLOYMENT TIMEOUT",VEHICLE
+		print("# DEPLOYMENT TIMEOUT",VEHICLE, file=sys.stderr)
 	return startTime
 
 def getNewDeployment():
@@ -172,11 +174,11 @@ def getNewDeployment():
 			startTime = launchData.get('startEvent',{}).get('unixTime',0)
 			deployID = launchData.get('deploymentId',"")
 	except ssl.SSLError:
-		print >> sys.stderr, "# DEPLOYMENT TIMEOUT",VEHICLE
+		print("# DEPLOYMENT TIMEOUT",VEHICLE, file=sys.stderr)
 	if DEBUG:
-		print >> sys.stderr, "### DEPLOYMENT TIME:",startTime
-		print >> sys.stderr, "### DEPLOYMENT ID:",deployID
-		print >> sys.stderr, "### New Deploy String:",launchData
+		print("### DEPLOYMENT TIME:",startTime, file=sys.stderr)
+		print("### DEPLOYMENT ID:",deployID, file=sys.stderr)
+		print("### New Deploy String:",launchData, file=sys.stderr)
 	return startTime,deployID
 
 
@@ -223,24 +225,24 @@ def getMissionDefaults():
 	missions=["Science/mbts_sci2","Science/profile_station"]
 	for mission in missions:
 		URL = "https://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)
-		print >> sys.stderr, "\n#===========================\n",mission, "\n"
+		print("\n#===========================\n",mission, "\n", file=sys.stderr)
 		try:
-			connection = urllib2.urlopen(URL,timeout=5)
+			connection = urllib.request.urlopen(URL,timeout=5)
 			if connection: # here?
 				raw = connection.read()
 				structured = json.loads(raw)
 				connection.close()
 				result = structured['result']
 			
-				print >> sys.stderr, URL
+				print(URL, file=sys.stderr)
 				try: 
 					splitted = str(result).split("{")
 					for item in splitted:
-						print >> sys.stderr,item
+						print(item, file=sys.stderr)
 				except KeyError:
-					print >> sys.stderr,"NA"
-		except urllib2.HTTPError:
-			print >> sys.stderr, "# FAILED TO FIND MISSION",mission
+					print("NA", file=sys.stderr)
+		except urllib.error.HTTPError:
+			print("# FAILED TO FIND MISSION",mission, file=sys.stderr)
 			
 
 	
@@ -248,7 +250,7 @@ def getNotes(starttime):
 	'''get notes with #widget in the text'''
 	qString = runQuery(event="note",limit="10",timeafter=starttime)
 	if DEBUG:
-		print >> sys.stderr, "# NOTESTRING FOUND",qString
+		print("# NOTESTRING FOUND",qString, file=sys.stderr)
 	retstring = ''
 	if qString:
 		retstring=qString
@@ -309,9 +311,9 @@ def getComms(starttime):
 	if qString:
 		retstring = qString
 	if DEBUG:
-		print >> sys.stderr, "# GETCOMMS\n#\nPrinting Comms SBD", len(retstring)
+		print("# GETCOMMS\n#\nPrinting Comms SBD", len(retstring), file=sys.stderr)
 		# for rec in retstring:
-		# 	print >> sys.stderr,  rec
+		#	print >> sys.stderr,  rec
 	return retstring
 
 def makePlot():
@@ -391,14 +393,15 @@ def getDataAsc(starttime,mission):
 		extrapath = pathpart
 		NewURL = DataURL.format(ser=servername,vehicle=VEHICLE,extrapath=extrapath)
 		if DEBUG:
-			print >> sys.stderr, "# DATA NewURL",NewURL
-		datacon = urllib2.urlopen(NewURL,timeout=5)
+			print("# DATA NewURL",NewURL, file=sys.stderr)
+		datacon = urllib.request.urlopen(NewURL,timeout=5)
+		content =  datacon.read().decode('utf-8')
 		# pull last X lines from queue. This was causing problems on some missions so increased it
-		lastlines = deque(datacon)
+		lastlines = deque(content)
 		lastlines.reverse() #in place
 		for nextline in lastlines:
-# 			if DEBUG:
-# 				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
+#			if DEBUG:
+#				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
 			if "platform_battery_" in nextline:
 				fields = nextline.split("=")
 				
@@ -413,12 +416,12 @@ def getDataAsc(starttime,mission):
 				'''WetLabsUBAT.flow_rate=0.333607 l/s'''
 				if (flow == 999) and "WetLabsUBAT.flow_rate" in nextline:
 					if DEBUG:
-						print >> sys.stderr, "# FLOWDATA",nextline.rstrip()
+						print("# FLOWDATA",nextline.rstrip(), file=sys.stderr)
 					flowfields = nextline.split("=")
 					flow      = int(1000 * float(flowfields[-1].split(" ")[0]))
 					flowtime = int(float(flowfields[0].split(',')[1].split(" ")[0])*1000)
 					if DEBUG:
-						print >> sys.stderr, "# FLOWNUM",flow
+						print("# FLOWNUM",flow, file=sys.stderr)
 					
 			if "acoustic" in mission and NeedTracking:
 				'''2020-10-10T20:41:20.873Z,1602362480.873 Unknown-->Tracking.range_to_contact=389.093750 m'''
@@ -443,7 +446,7 @@ def getDataAsc(starttime,mission):
 			break
 	if DEBUG:
 		if len(TrackTime) > 1:
-			print >> sys.stderr, "#> Complete tracking:",Tracking, TrackTime, elapsed(TrackTime[0] - now)
+			print("#> Complete tracking:",Tracking, TrackTime, elapsed(TrackTime[0] - now), file=sys.stderr)
 
 	return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
 
@@ -482,7 +485,7 @@ def getNewBattery():
 	for record in BattFields:
 		if record['name'] == 'battery_voltage':
 			if DEBUG:
-				print >> sys.stderr, "# VOLT RECORD",record
+				print("# VOLT RECORD",record, file=sys.stderr)
 			volt = record['values'][-1]
 			volttime = record['times'][-1]
 		elif record['name'] == 'battery_charge':
@@ -492,7 +495,7 @@ def getNewBattery():
 			if currentlist:
 				avgcurrent = round(sum(currentlist)/(len(currentlist)*1000),1)
 	if DEBUG:
-		print >> sys.stderr, "# New Battery",volt,amp,volttime,avgcurrent
+		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
 	# TODO: Plot sparkline or report current consumption rate
 
 	return volt,amp,avgcurrent,volttime
@@ -538,17 +541,17 @@ def parseCritical(recordlist):
 	Water         = False
 	
 	# if DEBUG:
-	# 	print "### Start Recordlist"
-	# 	print recordlist
-	# 	print "### End Recordlist"
-	# 	# need to split this record?
+	#	print "### Start Recordlist"
+	#	print recordlist
+	#	print "### End Recordlist"
+	#	# need to split this record?
 	'''WATER DETECTED IN PRESSURE HULL. BURNWIRE ACTIVATED CBIT'''
 	
 	
 	for Record in recordlist:
 		RecordText = Record.get("text","NA")
 		# if DEBUG:
-		# 	print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
+		#	print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
 		if RecordText.startswith("Dropped weight"):
@@ -568,7 +571,7 @@ def parseCritical(recordlist):
 				CriticalError += "..."
 			CriticalTime = Record["unixTime"]
 			if DEBUG:
-				print >> sys.stderr, CriticalError, (now-CriticalTime)/3600000
+				print(CriticalError, (now-CriticalTime)/3600000, file=sys.stderr)
 			if (((now - CriticalTime)/3600000) > 6):
 				CriticalError = ""
 				CriticalTime = False
@@ -590,19 +593,19 @@ def parseFaults(recordlist):
 	WaterFault    = False
 	CTDError = False
 	# if DEBUG:
-	# 	print "### Start Recordlist"
-	# 	print recordlist
-	# 	print "### End Recordlist"
-	# 	# need to split this record?
+	#	print "### Start Recordlist"
+	#	print recordlist
+	#	print "### End Recordlist"
+	#	# need to split this record?
 	for Record in recordlist:
 		# if DEBUG:
-		# 	print "NAME:",Record["name"],"===> ", Record["text"]
+		#	print "NAME:",Record["name"],"===> ", Record["text"]
 		RT = Record.get("text","NA")
 		if Record["name"]=="BPC1" and RT.startswith("Battery stick"):
 			if not BadBattery > 100:
 				BadBattery=Record["unixTime"]
 			if DEBUG:
-				print >> sys.stderr,"## BAD BATTERY in FAULT"
+				print("## BAD BATTERY in FAULT", file=sys.stderr)
 		'''Failed to receive data from 6 sticks prior to timeout. Missing stick IDs are: 21, 22, 48, 49, 50, 51. [BPC1]'''
 		if Record["name"]=="BPC1" and not BadBatteryText and RT.startswith("Failed to receive data"):
 			ma = re.search("from (\d+) sticks",RT)
@@ -631,7 +634,7 @@ def parseFaults(recordlist):
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
-		 	DVLError=Record["unixTime"]
+			DVLError=Record["unixTime"]
 	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock,CTDError
 
 def parseDVL(recordlist):
@@ -649,7 +652,7 @@ def parseDVL(recordlist):
 	ThrusterServo=False
 	for Record in recordlist:
 		# if DEBUG:
-		# 	print Record["name"],Record["text"]
+		#	print Record["name"],Record["text"]
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
 		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
@@ -681,14 +684,14 @@ def parseMission(recordlist):
 	## PARSE MISSION NAME
 	for Record in recordlist:
 		# if Record["name"]=="MissionManager":
-# 		if MissionTime: 
-# 			if Record["text"].startswith("Scheduling is paused") or Record["text"].startswith("Resuming mission and schedule"):
-# 				MissionTime = False
-# 			else:
-# 				break
+#		if MissionTime: 
+#			if Record["text"].startswith("Scheduling is paused") or Record["text"].startswith("Resuming mission and schedule"):
+#				MissionTime = False
+#			else:
+#				break
 		if Record["name"]=="MissionManager" and Record["text"].startswith("Started mission"):
 			if DEBUG:
-				print >> sys.stderr,"\n\n## MISSION RECORD",Record
+				print("\n\n## MISSION RECORD",Record, file=sys.stderr)
 			MissionName = Record.get("text","mission NA").split("mission ")[1]
 			MissionTime = Record["unixTime"]
 			break
@@ -711,7 +714,7 @@ def parseCBIT(recordlist):
 	if recordlist:
 		for Record in recordlist:
 			# if DEBUG:
-			# 	print >> sys.stderr, "# GF RECORD",Record
+			#	print >> sys.stderr, "# GF RECORD",Record
 			if GF == False:
 				if Record.get("text","NA").startswith("Ground fault detected") or Record.get("text","NA").startswith("Low side ground fault detected"):
 					# print "\n####\n",Record["text"]
@@ -724,7 +727,7 @@ def parseCBIT(recordlist):
 			if DVL == False:
 				if Record.get("text","NA").startswith("Communications Fault in component: RDI_Pathfinder"):
 					if DEBUG:
-						print >> sys.stderr, "DVL COMM ERROR"
+						print("DVL COMM ERROR", file=sys.stderr)
 					#need to find turned off commands.
 	else:
 		GF = "NA"
@@ -809,7 +812,7 @@ def parseImptMisc(recordlist):
 	for Record in recordlist:
 		if DEBUG:
 			if "dvl" in Record["text"].lower():
-				print >> sys.stderr, "** ImptMisc:",Record["name"],"<-->",Record.get("text","NO TEXT FIELD")
+				print("** ImptMisc:",Record["name"],"<-->",Record.get("text","NO TEXT FIELD"), file=sys.stderr)
 				
 		if not LogTime and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec') and 'got command restart logs' in Record.get("text","NA"):
 			LogTime = Record["unixTime"]
@@ -824,28 +827,28 @@ def parseImptMisc(recordlist):
 		## RELOCATED (Duplicated) from parseMission
 		RecordText = Record["text"]
 		# if not ReachedWaypoint and StationLon == False and RecordText.startswith("got command set") and (".Lon " in RecordText or ".Longitude" in RecordText or ".CenterLongitude" in RecordText):
-		# 	if "itude" in RecordText:
-		# 		StationLon = RecordText.split("itude ")[1]
-		# 	else:
-		# 		StationLon = RecordText.split(".Lon ")[1]
-		# 	StationLon = float(StationLon.split(" ")[0])
-		# 	if DEBUG:
-		# 		print >> sys.stderr, "## Got Lon from ImptMisc", StationLon
+		#	if "itude" in RecordText:
+		#		StationLon = RecordText.split("itude ")[1]
+		#	else:
+		#		StationLon = RecordText.split(".Lon ")[1]
+		#	StationLon = float(StationLon.split(" ")[0])
+		#	if DEBUG:
+		#		print >> sys.stderr, "## Got Lon from ImptMisc", StationLon
 
 		# if not ReachedWaypoint and StationLat == False and RecordText.startswith("got command set") and (".Lat " in RecordText or ".Latitude" in RecordText or ".CenterLatitude" in RecordText):
-		# 	if "itude" in RecordText:
-		# 		StationLat = RecordText.split("itude ")[1]
-		# 	else:
-		# 		StationLat = RecordText.split(".Lat ")[1]
-		# 	StationLat = float(StationLat.split(" ")[0])
-		# 	if DEBUG:
-		# 		print >> sys.stderr, "## Got Lat from ImptMisc", StationLat
+		#	if "itude" in RecordText:
+		#		StationLat = RecordText.split("itude ")[1]
+		#	else:
+		#		StationLat = RecordText.split(".Lat ")[1]
+		#	StationLat = float(StationLat.split(" ")[0])
+		#	if DEBUG:
+		#		print >> sys.stderr, "## Got Lat from ImptMisc", StationLat
 		
 		# This will only parse the most recent event in the queue between Reached or Nav
 		if not NavigatingTo and not ReachedWaypoint: 
 			if Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
 				if DEBUG:
-					print >> sys.stderr, "## Found Navigating To Event", Record["text"]
+					print("## Found Navigating To Event", Record["text"], file=sys.stderr)
 					'''Navigating to waypoint: 36.750000,-122.022003'''
 				NavRes = wayre.search(Record["text"].replace("arcdeg",""))
 				if NavRes:
@@ -854,11 +857,11 @@ def parseImptMisc(recordlist):
 						StationLat = float(textlat)
 						StationLon = float(textlon)
 					if DEBUG:
-						print >> sys.stderr, "## Got LatLon from Navigating To", StationLat,StationLon
+						print("## Got LatLon from Navigating To", StationLat,StationLon, file=sys.stderr)
 					NavigatingTo = Record["unixTime"]
 			if Record["text"].lower().startswith("reached waypoint"):
 				if DEBUG:
-					print >> sys.stderr, "## Found Reached Event", Record["text"]
+					print("## Found Reached Event", Record["text"], file=sys.stderr)
 				waresult = wayre.search(Record["text"])
 				if waresult:
 					textlat,textlon=waresult.groups()
@@ -866,7 +869,7 @@ def parseImptMisc(recordlist):
 						StationLat = float(textlat)
 						StationLon = float(textlon)
 				if DEBUG:
-					print >> sys.stderr, "## Got ReachedWaypoint", StationLat,StationLon
+					print("## Got ReachedWaypoint", StationLat,StationLon, file=sys.stderr)
 				ReachedWaypoint = Record["unixTime"]
 					
 			
@@ -875,23 +878,23 @@ def parseImptMisc(recordlist):
 		## configSet AMEcho.loadAtStartup 0 bool
 		## got command configSet AMEcho.enabled 1.000000 bool
 
- 		if not GotDVL and (not "(bool)" in Record.get("text","NA")) and (not "requires" in Record.get("text","NA")) and (
- 		      ("DVL_micro.loadAtStartup"      in Record.get("text","NA")) or 
- 		      ("RDI_Pathfinder.loadAtStartup" in Record.get("text","NA")) or 
- 		      ("AMEcho.loadAtStartup"         in Record.get("text","NA")) or 
- 		      ("Rowe_600.loadAtStartup"       in Record.get("text","NA"))
- 		      ):
- 		    # TO CHECK. this might split incorrectly on the space because sometimes config set?
- 		    # configSet
- 		    
- 		    ## SHOULD ADD A CHECK FOR restart HERE TO SEE IF DVL WENT BACK TO CONFIG that will override these later events
- 		    
+		if not GotDVL and (not "(bool)" in Record.get("text","NA")) and (not "requires" in Record.get("text","NA")) and (
+		      ("DVL_micro.loadAtStartup"      in Record.get("text","NA")) or 
+		      ("RDI_Pathfinder.loadAtStartup" in Record.get("text","NA")) or 
+		      ("AMEcho.loadAtStartup"         in Record.get("text","NA")) or 
+		      ("Rowe_600.loadAtStartup"       in Record.get("text","NA"))
+		      ):
+		    # TO CHECK. this might split incorrectly on the space because sometimes config set?
+		    # configSet
+		    
+		    ## SHOULD ADD A CHECK FOR restart HERE TO SEE IF DVL WENT BACK TO CONFIG that will override these later events
+		    
 			if DEBUG: 
-				print >> sys.stderr, "#>> FOUND DVL: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"])
+				print("#>> FOUND DVL: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"]), file=sys.stderr)
 			DVL_on = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
 			GotDVL = True
 			if DEBUG: 
-				print >> sys.stderr, "DVL Value: ", DVL_on
+				print("DVL Value: ", DVL_on, file=sys.stderr)
 		if not GotDVL and ("configSet AMEcho.enabled" in Record.get("text","NA")):
 			DVL_on = bool(float(Record["text"].split(".enabled ")[1].split(" ")[0]))
 			GotDVL = True
@@ -924,7 +927,7 @@ def parseImptMisc(recordlist):
 				ubatBool = "on" in RecordText
 				ubatTime   = Record["unixTime"]
 				if DEBUG:
-					print >>sys.stderr, "## Got UBAT ON", RecordText
+					print("## Got UBAT ON", RecordText, file=sys.stderr)
 				
 			elif RecordText.startswith("got command restart app") or RecordText.startswith("got command restart system") or RecordText.startswith("got command restart hardware"):
 				ubatBool = True
@@ -935,8 +938,8 @@ def parseImptMisc(recordlist):
 
 		# THIS IS NOT CURRENTLY REPORTED	
 		# if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("WetLabsUBAT.flow_rate"):
-		# 	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
-		# 	FlowTime   = Record["unixTime"]
+		#	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
+		#	FlowTime   = Record["unixTime"]
 
 	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, CTDonCommand,CTDoffCommand
 	
@@ -957,14 +960,14 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	hash = "9x9x9"
 	
 	if DEBUG:
-		print >>sys.stderr, "## Parsing defaults"
+		print("## Parsing defaults", file=sys.stderr)
 		
 
 	for Record in recordlist:
 		RecordText = Record.get("text","NA")
 		
-#  		if DEBUG and Record["name"] != 'CBIT':
-# 			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",RecordText, "[{}]".format(Record["unixTime"])
+#		if DEBUG and Record["name"] != 'CBIT':
+#			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",RecordText, "[{}]".format(Record["unixTime"])
 			
 		## PARSE TIMEOUTS Assumes HOURS
 		## NOTE / TODO: When schedule is stopped or goes to default mission and you do schedule resume, does the timeout start at zero then?
@@ -980,9 +983,9 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			if "minute" in Record["text"]:
 				TimeoutDuration = TimeoutDuration/60.0
 				if DEBUG:
-					print >> sys.stderr, "# NOTE: Timeout given in minutes "
+					print("# NOTE: Timeout given in minutes ", file=sys.stderr)
 			if DEBUG:
-				print >> sys.stderr, "# Found TimeOut of ",TimeoutDuration, Record["text"]
+				print("# Found TimeOut of ",TimeoutDuration, Record["text"], file=sys.stderr)
 			TimeoutStart    = Record["unixTime"]
 			
 			"esp samples have 3h timeout"
@@ -990,12 +993,12 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 		if RecordText.startswith("Started mission") or RecordText.startswith('got command schedule clear'):
 			Cleared = True
 			if DEBUG:
-				print >> sys.stderr, "## Got CLEAR"
+				print("## Got CLEAR", file=sys.stderr)
 
 		if Scheduled == False and not Cleared and (RecordText.startswith('got command schedule "run') or RecordText.startswith('got command schedule "load') or RecordText.startswith('got command schedule asap "set')) :
 			'''got command schedule "run " 3p78c'''
 			if DEBUG:
-				print >> sys.stderr, "## Schedule Record ",RecordText
+				print("## Schedule Record ",RecordText, file=sys.stderr)
 
 			if RecordText.startswith('got command schedule "run"') or RecordText.startswith('got command schedule "run "'):
 				hashre = re.compile(r'got command schedule "run ?" (\w+)')
@@ -1004,7 +1007,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				if hash_result:
 					hash=hash_result.group(1)
 					if DEBUG:
-						print >> sys.stderr, "## Schedule Hash found ",hash
+						print("## Schedule Hash found ",hash, file=sys.stderr)
 			else:
 			#'''got command schedule "run Science/mbts_sci2.xml"'''
 			#	'''got command schedule "load Science/circle_acoustic_contact.xml'''
@@ -1015,7 +1018,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					'''got command schedule "set circle_acoustic_contact'''
 					Scheduled = RecordText.split('"')[1].split(' ')[1].split('.')[0]
 				if DEBUG:
-					print >> sys.stderr, "## Found Scheduled in else",Scheduled
+					print("## Found Scheduled in else",Scheduled, file=sys.stderr)
 					
 #				TODO REPLACE WITH REGEX 
 #Scheduled #27 (#1 of 2 with id='3p78c'): "load Science/profile_station.xml;set profile_station.MissionTimeout 14 hour;set profile_station.Lat 36.7970 degree;set profile_station.L'''
@@ -1030,7 +1033,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			except IndexError:
 				sys.exit("## Can't parse scheduled mission name: \n\t" + RecordText)
 			if DEBUG:
-				print >> sys.stderr, "## Found Scheduled hash",Scheduled
+				print("## Found Scheduled hash",Scheduled, file=sys.stderr)
 
 					
 		# SETTING STATION. Will fail on multi-station missions..?
@@ -1047,7 +1050,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				StationLon = RecordText.split(".Lon ")[1]
 			StationLon = float(StationLon.split(" ")[0])
 			if DEBUG:
-				print >> sys.stderr, "## Got Lon from mission", StationLon
+				print("## Got Lon from mission", StationLon, file=sys.stderr)
 
 		if StationLat == False and RecordText.startswith("got command set") and (".Lat " in RecordText or ".Latitude" in RecordText or ".CenterLatitude" in RecordText):
 			if "itude" in RecordText:
@@ -1056,7 +1059,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				StationLat = RecordText.split(".Lat ")[1]
 			StationLat = float(StationLat.split(" ")[0])
 			if DEBUG:
-				print >> sys.stderr, "## Got Lat from mission", StationLat
+				print("## Got Lat from mission", StationLat, file=sys.stderr)
 		
 		## PARSE NEED COMMS Assumes MINUTES
 		if NeedComms == False and (Record["name"]=="CommandLine" or Record["name"]=="CommandExec") and RecordText.startswith("got command") and not "chedule" in RecordText and ".NeedCommsTime" in RecordText:
@@ -1067,20 +1070,20 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			'''NeedCommsTimePatchMapping'''
 			'''NeedCommsTimeMarginPatchTracking'''
 			if DEBUG:
-				print >> sys.stderr, "#Entering NeedComms",Record["text"], VEHICLE, NeedComms
+				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 			try:
 				NeedComms = int(float(re.split("NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking ",Record["text"])[1].split(" ")[0]))
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
 					NeedComms = int(float(Record["text"].split("Smear.NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
 					if DEBUG:
-						print >> sys.stderr, "#Long NeedComms",Record["text"], VEHICLE, NeedComms
+						print("#Long NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 				except IndexError:	
-					print >> sys.stderr, "#NeedComms but no split",Record["text"], VEHICLE
+					print("#NeedComms but no split",Record["text"], VEHICLE, file=sys.stderr)
 			if NeedComms and "hour" in Record["text"]:
 				NeedComms = NeedComms * 60
 			if DEBUG:
-				print >> sys.stderr, "#FOUND NEEDCOMMS",NeedComms, VEHICLE
+				print("#FOUND NEEDCOMMS",NeedComms, VEHICLE, file=sys.stderr)
 			## ADD FLOW RATE FOR UBAT...
 			
 			### For the moment this will just go from the start of the mission, but once we get SatComms, use that time
@@ -1098,11 +1101,11 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				try:
 					Speed = "%.2f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
 				except ValueError:
-					print >> sys.stderr, "Error parsing speed",Record["text"]
+					print("Error parsing speed",Record["text"], file=sys.stderr)
 					Speed = "na"
 			
 			if DEBUG:
-				print >> sys.stderr, "# FOUND SPEED:",Speed
+				print("# FOUND SPEED:",Speed, file=sys.stderr)
 			# Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].split(" ")[0]))
 		
 	if not Speed:
@@ -1111,7 +1114,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			NeedComms = mission_defaults.get(MissionName,{}).get("NeedCommsTime",0)
 	if not TimeoutDuration:
 			if DEBUG:
-				print >> sys.stderr, "# NO TIMEOUT - checking defaults"
+				print("# NO TIMEOUT - checking defaults", file=sys.stderr)
 			
 			TimeoutDuration = mission_defaults.get(MissionName,{}).get("MissionTimeout",0)
 			TimeoutStart = MissionTime
@@ -1126,11 +1129,11 @@ def handleURLerror():
 		with open(OutPath.format(VEHICLE),'w') as outfile:
 			outfile.write(svgerrorhead)
 			outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
-		print >> sys.stderr, "URL ACCESS ERROR:",VEHICLE
+		print("URL ACCESS ERROR:",VEHICLE, file=sys.stderr)
 		
 	elif not Opt.report:
-		print svgerrorhead
-		print svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring)
+		print(svgerrorhead)
+		print(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))
 		sys.exit("URL ACCESS ERROR:"+VEHICLE)
 
 def makeTrackSVG(Tracking,TrackTime):
@@ -1167,11 +1170,11 @@ def printhtmlutility():
 	vehicles = ["daphne","pontus","tethys","galene","sim","triton","makai"]
 
 	for v in vehicles:
-		print '''var myImageElement1 = document.getElementById('{0}');
-myImageElement1.src = 'https://okeanids.mbari.org/widget/auv_{0}.svg';'''.format(v)
+		print('''var myImageElement1 = document.getElementById('{0}');
+myImageElement1.src = 'https://okeanids.mbari.org/widget/auv_{0}.svg';'''.format(v))
 
 	for v in vehicles:
-		print '''<img src="https://okeanids.mbari.org/widget/auv_{0}.svg" id="{0}" width="100%"/>'''.format(v)
+		print('''<img src="https://okeanids.mbari.org/widget/auv_{0}.svg" id="{0}" width="100%"/>'''.format(v))
 	
 	
 def elapsed(rawdur):
@@ -1211,8 +1214,8 @@ def parseDistance(site,StationLat,StationLon,knownspeed,knownbearing,gpstime):
 	if knownspeed > 0.09 and abs(site[0]) > 1:
 		deltadist,deltat,speedmadegood,bearing = distance((StationLat,StationLon),3600000,site,7200000)
 		if DEBUG:
-			print >> sys.stderr, "# StationDistance, bearing:", deltadist,bearing
-			print >> sys.stderr, "# OldBearing:", knownbearing
+			print("# StationDistance, bearing:", deltadist,bearing, file=sys.stderr)
+			print("# OldBearing:", knownbearing, file=sys.stderr)
 						
 		if (deltadist > 0.3):			
 			timetogo = deltadist / knownspeed
@@ -1221,7 +1224,7 @@ def parseDistance(site,StationLat,StationLon,knownspeed,knownbearing,gpstime):
 			# heading mismatch
 			return bearing,deltadist			  
 			if DEBUG:									  
-				print "# Station close or bearing mismatch"
+				print("# Station close or bearing mismatch")
 		else:
 			return -1,deltadist							  
 	else:
@@ -1308,7 +1311,7 @@ def sim():
 	"color_bt1"            : "st3",
 	"color_ubat"           : "st18",
 	"color_flow"           : "st18",
-	"color_sw"        	   : "st3",
+	"color_sw"             : "st3",
 	"color_wavecolor"      : "st0",
 	"color_dirtbox"        : "st18",
 	"color_missiondefault" : "st25",
@@ -1364,8 +1367,8 @@ def sim():
 	}
 
 
-	cdd = dict(cdd.items() + textdict.items())
-	print >> sys.stderr, "#Saving file auv_sim.svg"
+	cdd = dict(list(cdd.items()) + list(textdict.items()))
+	print("#Saving file auv_sim.svg", file=sys.stderr)
 	SimPath="./auv_sim.svg"
 	with open(SimPath,'w') as outfile:
 		outfile.write(svghead)
@@ -1440,7 +1443,7 @@ mission_defaults = {
 	"profile_station_backseat" : {"MissionTimeout": 1, "NeedCommsTime":60,  "Speed":1.0 },
 	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1.0 },
-	"transit"      	   : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1.0 },
+	"transit"          : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1.0 },
 	"CorkAndScrew"     : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
 	"IsothermDepthSampling"      : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
 	"location_depth_sampling"    : {"MissionTimeout": 168,  "NeedCommsTime":60,  "Speed":1 },
@@ -1478,7 +1481,7 @@ plugged = getPlugged(recovered)
 
 text_note,text_noteago = parseNotes(getNotes(startTime))
 if DEBUG and text_note:
-	print >> sys.stderr,"## CLEAN NOTE:",text_note,elapsed(text_noteago-now)
+	print("## CLEAN NOTE:",text_note,elapsed(text_noteago-now), file=sys.stderr)
 bearing = 999
 WaterCritical = False
 WaterFault = False
@@ -1519,7 +1522,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 		postmission = ''
 	
 	if DEBUG:
-		print >> sys.stderr, "MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime
+		print("MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime, file=sys.stderr)
 		
 	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon  = \
 	          parseDefaults(postmission,mission_defaults,missionName,missionTime)
@@ -1546,9 +1549,9 @@ if (not recovered) or Opt.anyway or DEBUG:
 	newvolt,newamp,newavgcurrent,newvolttime = getNewBattery()
 
 	if DEBUG:
-		print >> sys.stderr,"# DURATION and timeout start", missionduration,timeoutstart
+		print("# DURATION and timeout start", missionduration,timeoutstart, file=sys.stderr)
 	#NEW BATTERY PARSING
-		print >> sys.stderr, "# NewBatteryData: ",newvolt,newamp,newavgcurrent,newvolttime
+		print("# NewBatteryData: ",newvolt,newamp,newavgcurrent,newvolttime, file=sys.stderr)
 
 
 	#this is volt, amp, time
@@ -1561,7 +1564,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	CriticalError=False
 	if (critical):
 		if DEBUG:
-			print >> sys.stderr,"# Starting CRITICAL parse  "
+			print("# Starting CRITICAL parse  ", file=sys.stderr)
 		dropWeight,ThrusterServo,CriticalError,CriticalTime,WaterCritical = parseCritical(critical)
 
 	DVLError=False
@@ -1611,43 +1614,43 @@ else:
 	
 
 if Opt.report:
-	print "###############\nVehicle: " ,VEHICLE.upper()
-	print "Now: " ,hours(now)
-	print "Epoch: ", int(now)
+	print("###############\nVehicle: " ,VEHICLE.upper())
+	print("Now: " ,hours(now))
+	print("Epoch: ", int(now))
 	# roundtime = int(now) // 100000
 	# Archivename = "auv_brizo"+ "-" + str(roundtime)+".json"
 	# print "Archivename: ",Archivename
-	print "GroundFault: ",gf,hours(gftime)
-	print "MissionDuration:    ",missionduration
-	print "TimeoutStart:",hours(timeoutstart)
-	print "NeedComms:",needcomms
-	print "SatComms:",satcomms
-	print "CellComms:",cellcomms
+	print("GroundFault: ",gf,hours(gftime))
+	print("MissionDuration:    ",missionduration)
+	print("TimeoutStart:",hours(timeoutstart))
+	print("NeedComms:",needcomms)
+	print("SatComms:",satcomms)
+	print("CellComms:",cellcomms)
 	ago_log = logtime - now
-	print "LogRestart",hours(logtime), elapsed(ago_log), logtime
+	print("LogRestart",hours(logtime), elapsed(ago_log), logtime)
 	if VEHICLE=="pontus" and (not recovered):
-		print "UBAT: ", ubatStatus, hours(ubatTime)
-		print "FLOW: ",flowdat, hours(flowtime)
-	print "SPEED: ",speed  
-	print "GPS",site
-	print "GPSTIme",hours(gpstime)
-	print "OLDGPS",oldsite
-	print "OLDGPSTIme",hours(oldgpstime)
+		print("UBAT: ", ubatStatus, hours(ubatTime))
+		print("FLOW: ",flowdat, hours(flowtime))
+	print("SPEED: ",speed)  
+	print("GPS",site)
+	print("GPSTIme",hours(gpstime))
+	print("OLDGPS",oldsite)
+	print("OLDGPSTIme",hours(oldgpstime))
 	  # last two points: [0] is most recent
-	print "Distance:",deltadist,deltat,speedmadegood
-	print "Bearing: ",bearing
-	print "Battery: ",volt, amphr, batttime
-	print "DropWeight:",dropWeight
-	print "Thruster:  ",ThrusterServo
-	print "Mission: ",missionName,hours(missionTime)
-	print "Deployed:  ", hours(startTime), dates(startTime),elapsed(startTime - now)
+	print("Distance:",deltadist,deltat,speedmadegood)
+	print("Bearing: ",bearing)
+	print("Battery: ",volt, amphr, batttime)
+	print("DropWeight:",dropWeight)
+	print("Thruster:  ",ThrusterServo)
+	print("Mission: ",missionName,hours(missionTime))
+	print("Deployed:  ", hours(startTime), dates(startTime),elapsed(startTime - now))
 	if recovered and not Opt.anyway:
-		print "Recovered: ",hours(recovered), elapsed(recovered - now), recovered
+		print("Recovered: ",hours(recovered), elapsed(recovered - now), recovered)
 		if plugged:
-			print "Plugged in: ",hours(plugged)
+			print("Plugged in: ",hours(plugged))
 	else:
-		print "Still out there..."
-	print "#####   ", VEHICLE, "######"
+		print("Still out there...")
+	print("#####   ", VEHICLE, "######")
 
 
 else:   #not opt report
@@ -1685,7 +1688,7 @@ else:   #not opt report
 
 	'''
 	cdd={}
-	# 	these are made white with black stroke
+	#	these are made white with black stroke
 	colornames=[
 	"color_drop",
 	"color_thrust",
@@ -1859,8 +1862,8 @@ else:   #not opt report
 	
 	# NOT USED YET! NOTES  
 	# if noteTime:
-	# 	cdd["text_note"] = note
-	# 	cdd["text_notetime"] = elapsed(noteTime)
+	#	cdd["text_note"] = note
+	#	cdd["text_notetime"] = elapsed(noteTime)
 		
 
 	
@@ -1921,7 +1924,7 @@ else:   #not opt report
 		timetotimeout =  ((missionTime+missionduration*3600*1000)  - now) / (60*1000)
 	
 		if DEBUG:
-			print >> sys.stderr, "#TIME TO MISSION TIMEOUT",timetotimeout
+			print("#TIME TO MISSION TIMEOUT",timetotimeout, file=sys.stderr)
 
 		if timetotimeout > 11:
 			cdd["color_missionago"] = 'st4'
@@ -1935,7 +1938,7 @@ else:   #not opt report
 		# CIRCLE NEXT TO COMM TIME in minutes
 		timetocomm = int(((commreftime+needcomms*60*1000) -now) / (60*1000))
 		if DEBUG:
-			print >> sys.stderr, "#TIME TO COMM",timetocomm
+			print("#TIME TO COMM",timetocomm, file=sys.stderr)
 		if timetocomm > 9:
 			cdd["color_commago"] = 'st4'
 		elif timetocomm < -4:
@@ -1971,7 +1974,7 @@ else:   #not opt report
 
 
 		if DEBUG and (waypointtime >= 0):
-			print >> sys.stderr, "TIME TO STATION from GPS TIME, not now:",hours(waypointtime),elapsed(waypointtime)
+			print("TIME TO STATION from GPS TIME, not now:",hours(waypointtime),elapsed(waypointtime), file=sys.stderr)
 		if ReachedWaypoint:
 			arrivetext = "Arrived at WP"
 			cdd["text_stationdist"]   = elapsed(waypointtime - now)
@@ -1985,7 +1988,7 @@ else:   #not opt report
 			arrivetext = "Nav missing"
 		# Cheating by storing heading in waypointtime if mismatch in function
 		elif waypointtime < 361:
-			 arrivetext = "Heading? %d" % waypointtime
+			arrivetext = "Heading? %d" % waypointtime
 		else:
 			timeatstation = gpstime + waypointtime
 			arriveago = timeatstation - now
@@ -2073,7 +2076,7 @@ else:   #not opt report
 
 		if BadBattery > 100: # this is the unixtine
 			if DEBUG:
-				print >> sys.stderr, "# BAD BATTERY:",elapsed(BadBattery)
+				print("# BAD BATTERY:",elapsed(BadBattery), file=sys.stderr)
 			LowBattColor='st6'
 		else:
 			LowBattColor='st11'
@@ -2091,13 +2094,13 @@ else:   #not opt report
 			cdd["color_bat8"] = ['st4',LowBattColor][volt < 16.5]
 
 		if DEBUG and SWError:
-			print >> sys.stderr, "SOFTWARE ERROR: " ,(now-SWError)/3600000
- 		
+			print("SOFTWARE ERROR: " ,(now-SWError)/3600000, file=sys.stderr)
+		
 		# Ignore SW errors more than 4 hours old	
- 		if (SWError and ((now - SWError)/3600000 < 4)):
+		if (SWError and ((now - SWError)/3600000 < 4)):
 			cdd["color_sw"] = 'st5'
 
- 		if (HWError and ((now - HWError)/3600000 < 4)):
+		if (HWError and ((now - HWError)/3600000 < 4)):
 			cdd["color_hw"] = 'st5'
 			
 		if (OverloadError and ((now - OverloadError)/3600000 < 4)):
@@ -2138,8 +2141,8 @@ else:   #not opt report
 			cdd["text_leakago"] = elapsed(WaterFault-now)
 		
 		if DEBUG:
-			print >> sys.stderr, "#Speed and textspeed ", speed, cdd["text_speed"]
- 		if (ThrusterServo>100) and ((now - ThrusterServo)/3600000 < 4):
+			print("#Speed and textspeed ", speed, cdd["text_speed"], file=sys.stderr)
+		if (ThrusterServo>100) and ((now - ThrusterServo)/3600000 < 4):
 			cdd["color_thrust"] = 'st6'
 		else:
 			cdd["color_thrust"] = 'st4'
@@ -2161,11 +2164,11 @@ else:   #not opt report
 
 	# print "Launched:  ", hours(startTime)  
 	# if recovered:
-	# 	print "Recovered: ",hours(recovered)
+	#	print "Recovered: ",hours(recovered)
 
 	if Opt.savefile:
 		if DEBUG:
-			print >> sys.stderr, "#Saving file ", OutPath.format(bas=basefilepath,veh=VEHICLE)
+			print("#Saving file ", OutPath.format(bas=basefilepath,veh=VEHICLE), file=sys.stderr)
 		with open(OutPath.format(bas=basefilepath,veh=VEHICLE),'w') as outfile:
 			outfile.write(svghead)
 			outfile.write(svgtext.format(**cdd))
@@ -2232,17 +2235,17 @@ else:   #not opt report
 		
 		
 	elif not Opt.report:
-		print svghead
-		print svgtext.format(**cdd)   # insert values from dictionary by name
+		print(svghead)
+		print(svgtext.format(**cdd))   # insert values from dictionary by name
 		if BadBattery:
-			print svgbadbattery.format(badcelltext=BadBatteryText)
+			print(svgbadbattery.format(badcelltext=BadBatteryText))
 		if text_note:
-			print svgstickynote.format(text_note=text_note,text_noteago=elapsed(text_noteago - now))
+			print(svgstickynote.format(text_note=text_note,text_noteago=elapsed(text_noteago - now)))
 		if len(Tracking)>=1:
-			print makeTrackSVG(Tracking,TrackTime)
+			print(makeTrackSVG(Tracking,TrackTime))
 		if not recovered:
-			print svglabels
+			print(svglabels)
 			if VEHICLE=="pontus":
-				print svgpontus
-		print svgtail
+				print(svgpontus)
+		print(svgtail)
 	

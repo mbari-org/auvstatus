@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
 v 1.2.1 : Adding json export of percentages and times
 v 1.2   : import functions from auvstatus instead of repeating them
@@ -6,7 +6,7 @@ v 1.1.2 : Fixed reporting of one-off failed samples
 v 1.1.1 : Fixed some parsing of re-pumped samplers. Need to confirm with true redo.
 v 1.1   : Starting version numbers!
 '''
-from __future__ import print_function
+#from __future__ import print_function
 
 from ESPelements import svghead,svgtail
 from auvstatus import runNewStyleQuery,getNewDeployment,runQuery,getDeployment,getRecovery, getPlugged,hours,dates,elapsed
@@ -19,7 +19,7 @@ import os
 import json
 import re
 import ssl
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from datetime import datetime,timedelta
 # import urllib3
 # urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
