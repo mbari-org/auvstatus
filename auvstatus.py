@@ -453,7 +453,6 @@ def getDataAsc(starttime,mission):
 
 
 def getNewBattery():
-	'''Walk through the file backwards'''
 	''' IBIT will show battery thresholds that could be used to determine warning colors'''
 	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
 	 Make battery meter function of amph instead of volts (360 = 100%)
@@ -1556,6 +1555,10 @@ if (not recovered) or Opt.anyway or DEBUG:
 
 	#this is volt, amp, time
 	volt,amphr,batttime,flowdat,flowtime,Tracking,TrackTime = getDataAsc(startTime,missionName)
+	volt=newvolt
+	amphr=newamp
+	batttime=newvolttime
+	
 	satcomms,cellcomms = parseComms(getComms(startTime))
 
 	if not needcomms: 
