@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
+	Version 2.03  - Fixed pontus-specific UBAT formatting
 	Version 2.02  - Adding #sticky note functionality
 	Version 2.01  - Missing variable initialization in recovered vehicle
 	Version 2.0   - Implemented config file
@@ -2005,6 +2006,8 @@ else:   #not opt report
 		###   UBAT FLOW DISPLAY
 		###
 		if VEHICLE == 'pontus':
+			cdd["color_ubat"] = 'st3'
+			cdd["color_flow"] = 'st3'
 			if (flowdat < 999) and (ubatStatus=="st4"):
 				if ((290 < flowdat) and (flowdat < 500)):
 					cdd["color_flow"]= 'st4'

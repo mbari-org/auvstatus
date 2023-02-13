@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Nov 18, 2022 version  -->
+<!-- Feb 2023 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -234,8 +234,8 @@ svgbadbattery='''<g><title>Bad battery cell detected</title>
 
 svgpontus='''
 <!-- vehicle-specific shapes -->
-<text desc="" transform="matrix(1 0 0 1 551.3628 250.3636)" class="st9 st10">UBAT</text>
-<text desc="" transform="matrix(1 0 0 1 551.3628 263.259)" class="st9 st10">Flow</text>
+<text desc="" transform="matrix(1 0 0 1 551.3628 254.5)" class="st9 st10">UBAT</text>
+<text desc="" transform="matrix(1 0 0 1 551.3628 264.5)" class="st9 st10">Flow</text>
 '''
 
 svgwaterleak='''<!--water leak-->
