@@ -46,7 +46,7 @@ To see the full "gallery" of vehicles being monitored, see [this page](https://o
 
 ### NOTES
 
-  * This is written in python 2.7 (sorry:lazy) but should only require built-in libraries (The esp widget should work with either python 2.x or 3)
+  * This has been updated to work with python3, but please report any issues.
   * `LRAUV_svg.py` contains the SVG template for substitution of style fields
     - It needs to reside in the same folder as `auvstatus.py` to be imported
   * Opening the SVG in an illustration program will destructively reformat it 
