@@ -2066,7 +2066,7 @@ else:   #not opt report
 			#	print >> sys.stderr, "#BATTTIME", batttime
 			cdd["text_ampago"] = elapsed(batttime-now)
 		else:
-			cdd["text_flowago"]="Default"
+			cdd["text_flowago"]=""
 	
 
 		cdd["text_volts"]= "%.1f" % volt
