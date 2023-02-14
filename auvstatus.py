@@ -395,10 +395,20 @@ def getDataAsc(starttime,mission):
 		if DEBUG:
 			print("# DATA NewURL",NewURL, file=sys.stderr)
 		datacon = urllib.request.urlopen(NewURL,timeout=5)
-		content =  datacon.read().decode('utf-8')
+		content =  datacon.read().decode('utf-8').splitlines()
+		if DEBUG:
+			print("# DATA content",content[:10], file=sys.stderr)
 		# pull last X lines from queue. This was causing problems on some missions so increased it
-		lastlines = deque(content)
+		lastlines = list(deque(content))
+		#lastlines = list(deque(content))
 		lastlines.reverse() #in place
+		if DEBUG:
+			print("dimensions of lastlines",len(lastlines), file=sys.stderr)
+			print("# Lastlines (reversed):",lastlines[0:10], file=sys.stderr)
+			for li in lastlines:
+				if "flow" in li:
+					print("#",li, file=sys.stderr)
+
 		for nextline in lastlines:
 #			if DEBUG:
 #				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
@@ -1558,7 +1568,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	volt=newvolt
 	amphr=newamp
 	batttime=newvolttime
-	
+
 	satcomms,cellcomms = parseComms(getComms(startTime))
 
 	if not needcomms: 
