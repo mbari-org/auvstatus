@@ -316,28 +316,7 @@ def getComms(starttime):
 		#	print >> sys.stderr,  rec
 	return retstring
 
-def makePlot():
-	'''<div class='body'>
-<!--viewBox="minx miny width height"--> 
-<svg viewBox="0 0 500 100" class="chart">
-  <polyline
-     fill="#b3d1ff"
-     stroke="#0074d9"
-     stroke-width="1"
-     points="
-       00,500
-       00,100
-       30,60
-       60,80
-       90,50
-       90,500"
-   />
-  <circle cx='30' cy='60' stroke='#0074d9' fill='#0074d9' r='2px' />
-  <circle cx='60' cy='80' stroke='#0074d9' fill='#0074d9' r='2px' />
-  <circle cx='90' cy='50' stroke='#0074d9' fill='#0074d9' r='2px' />
-</svg>
-</div>'''
-	return 0
+
 
 def getDataAsc(starttime,mission):
 	''' TODO: cache batteries for when there is a new log file
@@ -520,6 +499,80 @@ def parseGPS(recordlist):
 	gpstime = recordlist[0]['unixTime']
 	return site,gpstime
 
+def sparkline(datain):
+	'''
+	https://cdpn.io/fnando/fullpage/GOQLVE?anon=true&view=<svg   id="chart"   width="200"   height="50"   viewBox="0 0 2000 500"   xmlns="http://www.w3.org/2000/svg" >      <path d="M 0,47.05389089063071 C 5.36,46.530867585613755 56.28,42.6744716550538 67,40.51609957791875 C 77.72,38.35772750078371 123.28,21.771931863510126 134,20.07423992644265 C 144.72,18.376547989375176 195.64,19.357293529524682 201,19.294950364575293,L 200 50,L 0 50Z" fill="#7777f41a" />   <path d="M 0,47.05389089063071 C 5.36,46.530867585613755 56.28,42.6744716550538 67,40.51609957791875 C 77.72,38.35772750078371 123.28,21.771931863510126 134,20.07423992644265 C 144.72,18.376547989375176 195.64,19.357293529524682 201,19.294950364575293" fill="none" stroke="#7777f4" stroke-width="4px" />   <g>   		<circle cx="0" cy="47.05389089063071" r="8" fill="#7777f4" />,		<circle cx="67" cy="40.51609957791875" r="8" fill="#7777f4" />,		<circle cx="134" cy="20.07423992644265" r="8" fill="#7777f4" />,		<circle cx="201" cy="19.294950364575293" r="8" fill="#7777f4" />   </g> </svg>'''
+	'''data from getNewBattery
+	  vcPointX = INT(
+            DIVIDE( DimDate[MonthID] - vMonthFirst, vMonthLast - vMonthFirst )
+            * vImgWidth )
+    vcPointY =
+        vImgHeight - INT(
+            DIVIDE( [Total Sales] - vSalesMin, vSalesMax - vSalesMin )
+            * vImgHeight  * 0.90
+            + ( vImgHeight * 0.05 )
+        )
+		
+		def normalize(x):
+    """Scale array to [0, 1]"""
+    _, (xmin, xmax) = np.histogram(x, bins=1)
+    return (x - xmin) / (xmax - xmin)
+
+
+		<div class='body'>
+<!--viewBox="minx miny width height"--> 
+.chart {
+  background: lightgrey;
+  width: 500px;
+  height: 100px;
+  padding: 20px 20px 20px 0;
+}
+
+<svg viewBox="0 0 500 100" class="chart">
+  <polyline
+     fill="#b3d1ff"
+     stroke="#0074d9"
+     stroke-width="1"
+     points="
+       00,500
+       00,100
+       30,60
+       60,80
+       90,50
+       90,500"
+   />
+  <circle cx='30' cy='60' stroke='#0074d9' fill='#0074d9' r='2px' />
+  <circle cx='60' cy='80' stroke='#0074d9' fill='#0074d9' r='2px' />
+  <circle cx='90' cy='50' stroke='#0074d9' fill='#0074d9' r='2px' />
+</svg>
+</div>
+  '''
+	return 0
+  
+  
+def makePlot():
+	'''<div class='body'>
+<!--viewBox="minx miny width height"--> 
+<svg viewBox="0 0 500 100" class="chart">
+  <polyline
+     fill="#b3d1ff"
+     stroke="#0074d9"
+     stroke-width="1"
+     points="
+       00,500
+       00,100
+       30,60
+       60,80
+       90,50
+       90,500"
+   />
+  <circle cx='30' cy='60' stroke='#0074d9' fill='#0074d9' r='2px' />
+  <circle cx='60' cy='80' stroke='#0074d9' fill='#0074d9' r='2px' />
+  <circle cx='90' cy='50' stroke='#0074d9' fill='#0074d9' r='2px' />
+</svg>
+</div>'''
+	return 0
+	
 def parseNotes(recordlist):
 	'''{u'eventId': 17402257, u'unixTime': 1674066119081, u'isoTime': u'2023-01-18T18:21:59.081Z', u'note': u'#note Test of new feature.', u'state': 0, u'user': u'Steven Haddock', u'eventType': u'note', u'vehicleName': u'daphne'},'''
 	Note = ''
