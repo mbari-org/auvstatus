@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.12  - In progress sparkline for depth
 	Version 2.11  - Fixed data decoding from ASCII retrieve
 	Version 2.1   - Updated to Python 3
 	Version 2.03  - Fixed pontus-specific UBAT formatting
@@ -441,7 +442,7 @@ def getDataAsc(starttime,mission):
 
 
 
-def getNewBattery():
+def getNewData():
 	''' IBIT will show battery thresholds that could be used to determine warning colors'''
 	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
 	 Make battery meter function of amph instead of volts (360 = 100%)
@@ -451,8 +452,6 @@ def getNewBattery():
 	Sometimes the battery_charge field can be empty, so use .get instead of []
 		Battery thresholds:
 	onfigSet IBIT.batteryVoltageThreshold 13 v persist;configSet IBIT.batteryCapacityThreshold 15 Ah persist
-
-	
 
 	'''
 	volt= 0.0
@@ -465,10 +464,11 @@ def getNewBattery():
 	Tracking = []
 	TrackTime = []
 	NeedTracking = True
-
+	depthl = []
+	deptht = []
+	maxdepthseconds = 480
 	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
 	
-
 	BattFields = runNewStyleQuery(api="data")
 	for record in BattFields:
 		if record['name'] == 'battery_voltage':
@@ -482,11 +482,25 @@ def getNewBattery():
 			currentlist = record['values'][-3:]
 			if currentlist:
 				avgcurrent = round(sum(currentlist)/(len(currentlist)*1000),1)
-	if DEBUG:
-		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
-	# TODO: Plot sparkline or report current consumption rate
+		elif record['name'] == 'depth':
+			depthl = record['values'][:]
+			millis = record['times'][:]
+			depthl = [-0.993011,0.102385,0.065651,0.117626,0.060571,0.105122,2.669861,17.237305,28.119141,31.023926,30.093750,29.107910,0.071512,0.076593,0.081284,0.126614,0.086754,0.059008,1.560425,40.828125,1.911346,20.146484,1.978973,40.566406,2.295471,40.296875,2.434631,40.497070,1.792938,40.433594,0.143028,0.074247,1.753479,40.653320,14.269775,1.691742,39.653320,1.316193,40.268555,1.810150,18.678711,17.157227,31.187012,30.313477,28.996582,0.170383,0.097305,0.067604,0.130524,0.091835,1.672180,39.883789,1.678436,40.720703,2.512756,3.323242,40.277344,1.808563,40.340820,3.286133,2.399048,12.588135,0.106293,0.089098,0.108639,1.649902,39.648438,10.620605,1.938721,30.812012,0.092224,0.044939,0.150452,0.158268,0.080893,0.059008,0.101604,0.103167,1.726135,40.442383,8.166504,1.699158,40.311523,2.993469,2.450623,34.390625,22.701172,0.234081,0.076202,1.844910,40.644531,34.384766,34.854492,27.496094,30.463867,30.583008,28.158691,0.100822,0.126614,0.150063,0.220406]
+			millis = [1676497296190,1676497452506,1676497521881,1676497853558,1676497959418,1676497960217,1676498110631,1676498229806,1676498308178,1676498378481,1676498494060,1676500238921,1676500298712,1676500339930,1676500750518,1676501082201,1676501238954,1676501239366,1676501766221,1676501887410,1676502033260,1676502106414,1676502173458,1676502314893,1676502452638,1676502591218,1676502726162,1676502864738,1676503000918,1676503141900,1676503280473,1676503443286,1676503518242,1676503663286,1676503761056,1676503805098,1676503941247,1676504076986,1676504219634,1676504356158,1676504424433,1676504483023,1676504625626,1676504762994,1676506604327,1676506663304,1676506707348,1676507137945,1676507186970,1676507199997,1676507327348,1676507462698,1676507601282,1676507741872,1676507872787,1676507886522,1676508021049,1676508157225,1676508297401,1676508424267,1676508437599,1676508484061,1676508513148,1676508646066,1676508659573,1676508784502,1676508925910,1676509030133,1676509064074,1676509174778,1676509238600,1676509534745,1676510163866,1676510164308,1676510184145,1676510219290,1676510279217,1676510279612,1676510395234,1676510539487,1676510653418,1676510679673,1676510818271,1676510944323,1676510958462,1676511077685,1676511102317,1676511145158,1676511355273,1676511429762,1676511557810,1676511590196,1676511658837,1676511723883,1676511813189,1676513466133,1676513612535,1676513666698,1676513718046,1676513836238,1676513861722]
+			deptht = [(x/1000)/60 for x in millis] # in minutes
+			if (max(deptht)-min(deptht) > maxdepthseconds-1):
+				md = max(deptht)
+				chopt = [x for x in deptht if md - x < maxdepthseconds]
+				chopd = depthl[-len(chopt):]   # last n elements
+			else:
+				chopt = deptht
+				chopd = depthl
 
-	return volt,amp,avgcurrent,volttime
+	if DEBUG:
+		print("Depth Times",[dd - deptht[0] for dd in deptht], file=sys.stderr)
+		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
+
+	return volt,amp,avgcurrent,volttime,chopt,chopd
 
 def parseGPS(recordlist):
 	# print "GPS record", recordlist
@@ -499,80 +513,39 @@ def parseGPS(recordlist):
 	gpstime = recordlist[0]['unixTime']
 	return site,gpstime
 
-def sparkline(datain):
-	'''
-	https://cdpn.io/fnando/fullpage/GOQLVE?anon=true&view=<svg   id="chart"   width="200"   height="50"   viewBox="0 0 2000 500"   xmlns="http://www.w3.org/2000/svg" >      <path d="M 0,47.05389089063071 C 5.36,46.530867585613755 56.28,42.6744716550538 67,40.51609957791875 C 77.72,38.35772750078371 123.28,21.771931863510126 134,20.07423992644265 C 144.72,18.376547989375176 195.64,19.357293529524682 201,19.294950364575293,L 200 50,L 0 50Z" fill="#7777f41a" />   <path d="M 0,47.05389089063071 C 5.36,46.530867585613755 56.28,42.6744716550538 67,40.51609957791875 C 77.72,38.35772750078371 123.28,21.771931863510126 134,20.07423992644265 C 144.72,18.376547989375176 195.64,19.357293529524682 201,19.294950364575293" fill="none" stroke="#7777f4" stroke-width="4px" />   <g>   		<circle cx="0" cy="47.05389089063071" r="8" fill="#7777f4" />,		<circle cx="67" cy="40.51609957791875" r="8" fill="#7777f4" />,		<circle cx="134" cy="20.07423992644265" r="8" fill="#7777f4" />,		<circle cx="201" cy="19.294950364575293" r="8" fill="#7777f4" />   </g> </svg>'''
-	'''data from getNewBattery
-	  vcPointX = INT(
-            DIVIDE( DimDate[MonthID] - vMonthFirst, vMonthLast - vMonthFirst )
-            * vImgWidth )
-    vcPointY =
-        vImgHeight - INT(
-            DIVIDE( [Total Sales] - vSalesMin, vSalesMax - vSalesMin )
-            * vImgHeight  * 0.90
-            + ( vImgHeight * 0.05 )
-        )
-		
-		def normalize(x):
-    """Scale array to [0, 1]"""
-    _, (xmin, xmax) = np.histogram(x, bins=1)
-    return (x - xmin) / (xmax - xmin)
-
-
-		<div class='body'>
-<!--viewBox="minx miny width height"--> 
-.chart {
-  background: lightgrey;
-  width: 500px;
-  height: 100px;
-  padding: 20px 20px 20px 0;
-}
-
-<svg viewBox="0 0 500 100" class="chart">
-  <polyline
-     fill="#b3d1ff"
-     stroke="#0074d9"
-     stroke-width="1"
-     points="
-       00,500
-       00,100
-       30,60
-       60,80
-       90,50
-       90,500"
-   />
-  <circle cx='30' cy='60' stroke='#0074d9' fill='#0074d9' r='2px' />
-  <circle cx='60' cy='80' stroke='#0074d9' fill='#0074d9' r='2px' />
-  <circle cx='90' cy='50' stroke='#0074d9' fill='#0074d9' r='2px' />
-</svg>
-</div>
-  '''
-	return 0
-  
-  
-def makePlot():
-	'''<div class='body'>
-<!--viewBox="minx miny width height"--> 
-<svg viewBox="0 0 500 100" class="chart">
-  <polyline
-     fill="#b3d1ff"
-     stroke="#0074d9"
-     stroke-width="1"
-     points="
-       00,500
-       00,100
-       30,60
-       60,80
-       90,50
-       90,500"
-   />
-  <circle cx='30' cy='60' stroke='#0074d9' fill='#0074d9' r='2px' />
-  <circle cx='60' cy='80' stroke='#0074d9' fill='#0074d9' r='2px' />
-  <circle cx='90' cy='50' stroke='#0074d9' fill='#0074d9' r='2px' />
-</svg>
-</div>'''
-	return 0
+def addSparkDepth(xlist,ylist,w=48,h=15,x0=588,y0=295):
+	''' h0 362 for near the middle of the vehicle
+	    h0 588 for the lower right corner '''
 	
+	boxr = x0+w
+	xmax = max(xlist)
+	xplist = [(boxr-(xmax-x)/10) for x in xlist]  # move from right to left
+	ytrunc = [y/10 if y < h*10 else h for y in ylist]
+	yplist = [0.5+y0+y for y in ytrunc]
+
+	pliststring = ''
+	for i in range(len(xplist)):
+		pliststring += """{},{} """.format(xplist[i],yplist[i])
+	
+	lp = """{},{}""".format(xplist[0],y0)
+
+	rp = """{},{}""".format(boxr,y0)
+
+	polystring = '''<polygon desc="sparkpoly" class="sparkpoly" points="{lp} {ps} {rp}"/>
+	<!-- <polyline desc="sparkline" class="sparkline" points="{ps}"/> -->\n'''.format(lp=lp,ps=pliststring,rp=rp)
+	SVGbody=f'''<rect desc="sparkbox" x="{x0}" y="{y0}" class="sparkbg" width="{w}" height="{h}"/> 
+	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+9} {y0+20})" class="st12 st9 sparktext">150m x 8 h</text>
+	<polyline desc="sparkline" class="gridline" points="{x0+w*.25},{y0} {x0+w*.25},{y0+h}"/>
+	<polyline desc="sparkline" class="gridline" points="{x0+w*.50},{y0} {x0+w*.50},{y0+h}"/>
+	<polyline desc="sparkline" class="gridline" points="{x0+w*.75},{y0} {x0+w*.75},{y0+h}"/>
+	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h/1.5} {x0+w},{y0+h/1.5}"/>
+	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h/3} {x0+w},{y0+h/3}"/>\n'''
+
+	return SVGbody + polystring
+
+
+  
+
 def parseNotes(recordlist):
 	'''{u'eventId': 17402257, u'unixTime': 1674066119081, u'isoTime': u'2023-01-18T18:21:59.081Z', u'note': u'#note Test of new feature.', u'state': 0, u'user': u'Steven Haddock', u'eventType': u'note', u'vehicleName': u'daphne'},'''
 	Note = ''
@@ -1459,6 +1432,7 @@ ThrusterServo = False
 dropWeight = False
 Tracking = []
 TrackTime = []
+sparktext = ""
 
 if Opt.missions:
 	'''utility to show default values for selected missions'''
@@ -1608,7 +1582,8 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
 	
-	newvolt,newamp,newavgcurrent,newvolttime = getNewBattery()
+	newvolt,newamp,newavgcurrent,newvolttime,depthdepth,depthtime = getNewData()
+
 
 	if DEBUG:
 		print("# DURATION and timeout start", missionduration,timeoutstart, file=sys.stderr)
@@ -2080,6 +2055,8 @@ else:   #not opt report
 			if (flowdat < 999) and (ubatStatus=="st4"):
 				if ((290 < flowdat) and (flowdat < 500)):
 					cdd["color_flow"]= 'st4'
+				elif (224 < flowdat):
+					cdd["color_flow"]= 'st5'
 				else:
 					cdd["color_flow"]= 'st6'
 
@@ -2094,6 +2071,15 @@ else:   #not opt report
 			cdd["color_flow"] = 'st18'
 	
 		# ubatTime TO ADD?
+
+
+		###
+		###   SPARKLINE for DEPTH DISPLAY
+		###
+		if depthdepth:
+			#h0 362 for near the middle of the vehicle
+			#h0 588 for the lower right corner 
+			sparktext = addSparkDepth(depthdepth,depthtime,w=48,h=15,x0=362,y0=295)
 
 		###
 		###   SAT COMM DISPLAY
@@ -2242,6 +2228,7 @@ else:   #not opt report
 				outfile.write(svgstickynote.format(text_note=text_note,text_noteago=elapsed(text_noteago - now)))
 			if BadBattery > 100:
 				outfile.write(svgbadbattery.format(badcelltext=BadBatteryText))
+			outfile.write(sparktext)
 			if WaterCritical or WaterFault:
 				outfile.write(svgwaterleak.format(
 					color_leak = cdd["color_leak"],
@@ -2282,6 +2269,7 @@ else:   #not opt report
 						outfile.write(svgstickynote.format(text_note=text_note,text_noteago=elapsed(text_noteago - now)))
 					if BadBattery > 100:
 						outfile.write(svgbadbattery.format(badcelltext=BadBatteryText))
+					outfile.write(sparktext)
 					if WaterCritical or WaterFault:
 						outfile.write(svgwaterleak.format(
 							color_leak = cdd["color_leak"],
@@ -2313,5 +2301,6 @@ else:   #not opt report
 			print(svglabels)
 			if VEHICLE=="pontus":
 				print(svgpontus)
+		print(sparktext)
 		print(svgtail)
 	

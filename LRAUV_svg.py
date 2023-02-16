@@ -38,7 +38,11 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st33{fill:#FFEEBB;stroke:none; } <!--PaleYellow No Stroke -->
 	.stleak2{fill:#7DA6D8;} <!-- critical water leak-->
 	.stleak1{fill:#92c19b;} <!--aux water leak-->
-
+	.sparkbg{fill:#E8E8F0;stroke:none; } <!-- light bluegray Fill-->
+	.sparkline{fill:none;stroke:#000000; stroke-width:0.2;}  <!-- changed from black to invisible line -->
+	.sparkpoly{fill:#549fd4;stroke:none; } <!--seafoamgreen No Stroke -->	
+	.sparktext{font-size:5px; } 
+	.gridline{fill:none;stroke:#BBBBBB; stroke-width:0.3;}  
 	</style>
 '''
 
@@ -142,13 +146,7 @@ svgtext = '''
 <circle desc="BT2" class="{color_bt2}" cx="546.72" cy="225.78" r="4.07"/>
 <circle desc="BT1" class="{color_bt1}" cx="535.99" cy="225.78" r="4.07"/>
 -->
-<!-- OLD ARROW <g desc="arrow">
-	<rect x="594.14" y="256.24" class="{color_arrow}" width="11.73" height="7"/>
-	<g>
-		<polygon class="{color_arrow}" points="618.22,259.74 600.81,266.86 604.94,259.74 600.81,252.63 		"/>
-	</g>
-</g>
--->
+
 <g desc="arrow" transform="rotate (-90,604.94,259.74), rotate({text_arrow},605,259.74)">
     <rect x="594.14" y="256.24" class="st16" width="11.73" height="7"/>
     <g>
@@ -180,7 +178,7 @@ svgtext = '''
 <text desc="text_speed" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">{text_speed}<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
-<text desc="reckoned_detail" transform="matrix(1 0 0 1 592 294)" class="st12 st9 st24">{text_reckondistance}</text>
+<text desc="reckoned_detail" transform="matrix(1 0 0 1 592 293)" class="st12 st9 st24">{text_reckondistance}</text>
 <text desc="text_arrivestation" transform="matrix(1 0 0 1 581 230)" class="st9 st13">{text_arrivestation}</text>
 <text desc="text_stationdist" transform="matrix(1 0 0 1 582 238)" class="st12 st9 st24">{text_stationdist}</text>
 <text desc="text_currentdist" transform="matrix(1 0 0 1 582 245)" class="st12 st9 st24">{text_currentdist}</text>
@@ -196,7 +194,7 @@ svgtext = '''
 '''
 svglabels='''
 <!-- create new variable for these -->
-<text desc="reckoned_label" transform="matrix(1 0 0 1 592 287)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
+<text desc="reckoned_label" transform="matrix(1 0 0 1 592 286)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
@@ -247,7 +245,7 @@ svgwaterleak='''<!--water leak-->
 	c5.1-0.1,8.3-3.8,8.3-3.8s1.4,3.3,7.6,3.1c6.1-0.2,6.8-2.8,6.8-2.8s1.8,3.3,7.2,3.1c5.5-0.2,7.4-3.2,7.4-3.2s1.8,2.9,6.5,2.6
 	c4.8-0.3,7.1-2,7.1-2s2.3,3.1,7.4,2.9s8.3-3.8,8.3-3.8s1.4,3.3,7.6,3.1c6.1-0.2,6.8-2.8,6.8-2.8s1.8,3.3,7.3,3.1"/>
 </g>
-<text transform="matrix(1 0 0 1 420 300.0)" class="st12 st9 st13">{text_leak}{text_leakago}</text>
+<text transform="matrix(1 0 0 1 426 300.0)" class="st12 st9 st13">{text_leak}{text_leakago}</text>
 
 '''
 
