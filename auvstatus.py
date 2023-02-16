@@ -113,9 +113,8 @@ def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 		handleURLerror()
 		return None
 
-def runNewStyleQuery(api="",timeafter="1234567890123"):
+def runNewStyleQuery(api="",timeafter="1234567890123",extrastring=""):
 	apistring=""
-	extrastring=""
 	# example /events? or /data?  
 	# https://okeanids.mbari.org/TethysDash/api/vconfig?vehicle=makai&gitTag=2020-07-18a&since=2020-07-21
 	# https://okeanids.mbari.org/TethysDash/api/deployments/last?vehicle=pontus
@@ -133,7 +132,7 @@ def runNewStyleQuery(api="",timeafter="1234567890123"):
 	URL = NewBaseQuery.format(ser=servername,apistring=apistring,e=extrastring)
 	
 	if DEBUG:
-		print("### QUERY:",URL, file=sys.stderr)
+		print("### NEW QUERY:",URL, file=sys.stderr)
 
 	try:
 		connection = urllib.request.urlopen(URL,timeout=5)		
@@ -364,11 +363,14 @@ def getDataAsc(starttime,mission):
 			z=allpaths.pop(1)
 		else:            # otherwise drop last one
 			z=allpaths.pop(2)
-			
+	
+	firstlast = 0		
+	
 	for pathpart in allpaths:
 		volt = 0
 		amp  = 0
 		volttime=0
+
 		
 		extrapath = pathpart
 		NewURL = DataURL.format(ser=servername,vehicle=VEHICLE,extrapath=extrapath)
@@ -388,6 +390,17 @@ def getDataAsc(starttime,mission):
 			for li in lastlines:
 				if "flow" in li:
 					print("#",li, file=sys.stderr)
+		
+		if DEBUG:
+			print("# Lastlines first):",lastlines[0], file=sys.stderr)
+		# trying to avoid parsing the same part twice
+		# THIS doesn't work even if the first entity is the same
+		if firstlast == lastlines[0]:
+			Bailout = True
+			lastlines=[]
+			break
+		else:
+			firstlast = lastlines[0]
 
 		for nextline in lastlines:
 #			if DEBUG:
@@ -485,6 +498,24 @@ def getNewData():
 		elif record['name'] == 'depth':
 			depthl = record['values'][:]
 			millis = record['times'][:]
+			if DEBUG:
+				print("# LENGTH DEPTH RECORD",len(millis), file=sys.stderr)
+			# If we don't have enough depth records, go back one hour and get more
+			if len(millis)<100:
+				if DEBUG:
+					print("# TOO SHORT DEPTH LEN",len(millis), file=sys.stderr)
+
+				pasttime = int(millis[0] - 60*60*1000) #go back one hour from first entry
+				extrapath = "&to={}".format(pasttime)
+				extrarecords = runNewStyleQuery(api="data",extrastring=extrapath)
+				for record in extrarecords:
+					if record['name'] == 'depth':
+						if depthl[0] != record['values'][0]:
+							depthl = record['values'][:] + depthl
+							millis = record['times'][:] + millis
+				if DEBUG:
+					print("# NEW DEPTH LEN",len(millis), file=sys.stderr)
+
 			# depthl = [-0.993011,0.102385,0.065651,0.117626,0.060571,0.105122,2.669861,17.237305,28.119141,31.023926,30.093750,29.107910,0.071512,0.076593,0.081284,0.126614,0.086754,0.059008,1.560425,40.828125,1.911346,20.146484,1.978973,40.566406,2.295471,40.296875,2.434631,40.497070,1.792938,40.433594,0.143028,0.074247,1.753479,40.653320,14.269775,1.691742,39.653320,1.316193,40.268555,1.810150,18.678711,17.157227,31.187012,30.313477,28.996582,0.170383,0.097305,0.067604,0.130524,0.091835,1.672180,39.883789,1.678436,40.720703,2.512756,3.323242,40.277344,1.808563,40.340820,3.286133,2.399048,12.588135,0.106293,0.089098,0.108639,1.649902,39.648438,10.620605,1.938721,30.812012,0.092224,0.044939,0.150452,0.158268,0.080893,0.059008,0.101604,0.103167,1.726135,40.442383,8.166504,1.699158,40.311523,2.993469,2.450623,34.390625,22.701172,0.234081,0.076202,1.844910,40.644531,34.384766,34.854492,27.496094,30.463867,30.583008,28.158691,0.100822,0.126614,0.150063,0.220406]
 			# millis = [1676497296190,1676497452506,1676497521881,1676497853558,1676497959418,1676497960217,1676498110631,1676498229806,1676498308178,1676498378481,1676498494060,1676500238921,1676500298712,1676500339930,1676500750518,1676501082201,1676501238954,1676501239366,1676501766221,1676501887410,1676502033260,1676502106414,1676502173458,1676502314893,1676502452638,1676502591218,1676502726162,1676502864738,1676503000918,1676503141900,1676503280473,1676503443286,1676503518242,1676503663286,1676503761056,1676503805098,1676503941247,1676504076986,1676504219634,1676504356158,1676504424433,1676504483023,1676504625626,1676504762994,1676506604327,1676506663304,1676506707348,1676507137945,1676507186970,1676507199997,1676507327348,1676507462698,1676507601282,1676507741872,1676507872787,1676507886522,1676508021049,1676508157225,1676508297401,1676508424267,1676508437599,1676508484061,1676508513148,1676508646066,1676508659573,1676508784502,1676508925910,1676509030133,1676509064074,1676509174778,1676509238600,1676509534745,1676510163866,1676510164308,1676510184145,1676510219290,1676510279217,1676510279612,1676510395234,1676510539487,1676510653418,1676510679673,1676510818271,1676510944323,1676510958462,1676511077685,1676511102317,1676511145158,1676511355273,1676511429762,1676511557810,1676511590196,1676511658837,1676511723883,1676511813189,1676513466133,1676513612535,1676513666698,1676513718046,1676513836238,1676513861722]
 			deptht = [(x/1000)/60 for x in millis] # in minutes
