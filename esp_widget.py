@@ -203,6 +203,7 @@ def parseESP(recordlist,big_circle_list):
 	firsttime = False
 	RedoList = []
 	DoneList = []
+
 	
 	for Record in recordlist:
 		RecordText = Record.get("text","NA")
@@ -485,6 +486,8 @@ if Opt.lines:
 GoodCount = 'na'
 LeakCount = 'na'
 RedoList = []
+mytimes = []
+outlist = []
 if (not recovered) or DEBUG:
 	esprecords = getESP(startTime)
 # 	if DEBUG:
@@ -522,7 +525,6 @@ if (not recovered) or DEBUG:
 		# Changing from 10 to 1 on the min sample
 		GoodCount = sum([1 for x in outlist if 10 < x < 101])
 		LeakCount = sum([1 for x in outlist if x < 10])
-		
 		TimeList = [decimalday(x) for x in mytimes]
 		
 	else:
@@ -566,7 +568,7 @@ if Opt.savefile and (not recovered):
 	writefile(OutPath,RedoList)
 	writefile(OutPath.replace('.svg','-archive.svg'),RedoList,ArchiveStr="ARCHIVED")
 	# outlist and mytimes contain percentages and time events.
-	Archivename = "/var/www/html/widget/archive/auv_{}".format(VEHICLE) +  "-"  +  deployID + ".json"	
+	Archivename = "/var/www/html/widget/archive/auv_{v}-{d}.json".format(v=VEHICLE,d=deployID)
 	with open(Archivename,'w') as archivefile:
 		archivefile.write(json.dumps([mytimes,outlist]))
 
