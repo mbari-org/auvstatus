@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.14  - New style query for Depth Data. Changed GPS query to limit 2
 	Version 2.13  - Reformatted and relocated sparkline
 	Version 2.12  - In progress sparkline for depth
 	Version 2.11  - Fixed data decoding from ASCII retrieve
@@ -63,18 +64,24 @@ def get_options():
 	return options
 
 def unpackJSON(data):
-	# if DEBUG:
-	#	print >> sys.stderr, "### UNPACKING:",data
+	if type(data) == type(b'x'):
+		data = data.decode('utf-8')
+
 	structured = json.loads(data)
-	try:
+	# if DEBUG:
+	# 	print("### STRUCTURED:",structured, file=sys.stderr)
+	if 'result' in structured:
 		result = structured['result']
-	except KeyError:
-		result = structured.get('chartData','')
+	elif 'chartData' in structured:
+		result = structured['chartData']
+	else:
+		result = structured
 	return result
 
 def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
+	limit_str=""
 	if limit:
-		limit = "&limit=" + limit
+		limit_str = "&limit={}".format(limit)
 	if match:
 		match = "&text.matches=" + match
 	if name:
@@ -90,7 +97,7 @@ def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 		timeafter="1234567890123"
 		
 	BaseQuery = "https://{ser}/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
-	URL = BaseQuery.format(ser=servername,v=vehicle,e=event,n=name,tm=match,l=limit,t=timeafter)
+	URL = BaseQuery.format(ser=servername,v=vehicle,e=event,n=name,tm=match,l=limit_str,t=timeafter)
 	
 	if DEBUG:
 		print("### QUERY:",URL, file=sys.stderr)
@@ -114,8 +121,7 @@ def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 		handleURLerror()
 		return None
 
-def runNewStyleQuery(api="",timeafter="1234567890123",extrastring=""):
-	apistring=""
+def runNewStyleQuery(api="",extrastring=""):
 	# example /events? or /data?  
 	# https://okeanids.mbari.org/TethysDash/api/vconfig?vehicle=makai&gitTag=2020-07-18a&since=2020-07-21
 	# https://okeanids.mbari.org/TethysDash/api/deployments/last?vehicle=pontus
@@ -125,9 +131,6 @@ def runNewStyleQuery(api="",timeafter="1234567890123",extrastring=""):
 		apistring = "{a}?vehicle={v}".format(a=api,v=VEHICLE)
 		
 	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
-
-	if not timeafter:
-		timeafter="1234567890123"
 
 	NewBaseQuery = "https://{ser}/TethysDash/api/{apistring}{e}"
 	URL = NewBaseQuery.format(ser=servername,apistring=apistring,e=extrastring)
@@ -199,24 +202,26 @@ def getPlugged(starttime):
 	
 	return plugged
  
-def getGPS(starttime):
+def getGPS(starttime,mylimit="1"):
 	''' extract the most recent GPS entry'''
-	qString = runQuery(event="gpsFix",limit="1",timeafter=starttime)
+	if DEBUG:
+		print("###\n### RUNNING GPS LIMIT 1 starttime:",starttime, file=sys.stderr)
+	qString = runQuery(event="gpsFix",limit=mylimit,timeafter=starttime)
 	retstring=""
 	if qString:
 		retstring = qString	
 	return retstring
-	
-def getOldGPS(gpstime,missionstart):
-	'''using the date of the most recent entry [mission start], go back 30 minutes and get GPS fix'''
-	
-	previoustime = gpstime - 30*60*1000
-	qString=""
-	if (previoustime > 100):
-		qString = runQuery(event="gpsFix",limit="1&to={}".format(previoustime),timeafter=missionstart)
+
+def newGetOldGPS(starttime,mylimit="2"):
+	''' extract the most recent GPS entry'''
+	if DEBUG:
+		print("###\n### RUNNING NEW OLD GPS LIMIT 2 starttime:",starttime, file=sys.stderr)
+	qString = runQuery(event="gpsFix",limit=mylimit,timeafter=starttime)
 	retstring=""
-	if qString:
-		retstring = qString
+	if qString and len(qString) > 1:
+		retstring = [qString[1]]
+		if DEBUG:
+			print ("###\n### NEW OLD GPS:",retstring, file=sys.stderr)
 	return retstring
 
 def getMissionDefaults():
@@ -427,7 +432,7 @@ def getDataAsc(starttime,mission):
 					if DEBUG:
 						print("# FLOWNUM",flow, file=sys.stderr)
 					
-			if "acoustic" in mission and NeedTracking:
+			if ("acoustic" in mission or "CircleSample" in mission) and NeedTracking:
 				'''2020-10-10T20:41:20.873Z,1602362480.873 Unknown-->Tracking.range_to_contact=389.093750 m'''
 				if len(Tracking) < 2:
 					if "Tracking.range" in nextline:
@@ -454,9 +459,50 @@ def getDataAsc(starttime,mission):
 
 	return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
 
+def getNewDepth():
+	'''https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=pontus&maxlen=200
+	   https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=triton&maxlen=2&from=1676609209829
+'''
+	depthl = []
+	timed = []
+	chopt = []
+	chopd = []
+	maxdepthseconds = 480
 
+	# if we are constraining with a from statement
+	howlongago = int(now - 10+maxdepthseconds*60*1000)  
 
-def getNewData():
+	record = runNewStyleQuery(api="data/depth",extrastring="&maxlen=400")
+	# if DEBUG:
+	# 	print("# DEPTH RECORD",record, file=sys.stderr)
+
+	depthl = record['values'][:]
+	millis = record['times'][:]
+	if DEBUG:
+		print("# LENGTH DEPTH RECORD",len(millis), file=sys.stderr)
+	
+	# depthl = [-0.993011,0.102385,0.065651,0.117626,0.060571,0.105122,2.669861,17.237305,28.119141,31.023926,30.093750,29.107910,0.071512,0.076593,0.081284,0.126614,0.086754,0.059008,1.560425,40.828125,1.911346,20.146484,1.978973,40.566406,2.295471,40.296875,2.434631,40.497070,1.792938,40.433594,0.143028,0.074247,1.753479,40.653320,14.269775,1.691742,39.653320,1.316193,40.268555,1.810150,18.678711,17.157227,31.187012,30.313477,28.996582,0.170383,0.097305,0.067604,0.130524,0.091835,1.672180,39.883789,1.678436,40.720703,2.512756,3.323242,40.277344,1.808563,40.340820,3.286133,2.399048,12.588135,0.106293,0.089098,0.108639,1.649902,39.648438,10.620605,1.938721,30.812012,0.092224,0.044939,0.150452,0.158268,0.080893,0.059008,0.101604,0.103167,1.726135,40.442383,8.166504,1.699158,40.311523,2.993469,2.450623,34.390625,22.701172,0.234081,0.076202,1.844910,40.644531,34.384766,34.854492,27.496094,30.463867,30.583008,28.158691,0.100822,0.126614,0.150063,0.220406]
+	# millis = [1676497296190,1676497452506,1676497521881,1676497853558,1676497959418,1676497960217,1676498110631,1676498229806,1676498308178,1676498378481,1676498494060,1676500238921,1676500298712,1676500339930,1676500750518,1676501082201,1676501238954,1676501239366,1676501766221,1676501887410,1676502033260,1676502106414,1676502173458,1676502314893,1676502452638,1676502591218,1676502726162,1676502864738,1676503000918,1676503141900,1676503280473,1676503443286,1676503518242,1676503663286,1676503761056,1676503805098,1676503941247,1676504076986,1676504219634,1676504356158,1676504424433,1676504483023,1676504625626,1676504762994,1676506604327,1676506663304,1676506707348,1676507137945,1676507186970,1676507199997,1676507327348,1676507462698,1676507601282,1676507741872,1676507872787,1676507886522,1676508021049,1676508157225,1676508297401,1676508424267,1676508437599,1676508484061,1676508513148,1676508646066,1676508659573,1676508784502,1676508925910,1676509030133,1676509064074,1676509174778,1676509238600,1676509534745,1676510163866,1676510164308,1676510184145,1676510219290,1676510279217,1676510279612,1676510395234,1676510539487,1676510653418,1676510679673,1676510818271,1676510944323,1676510958462,1676511077685,1676511102317,1676511145158,1676511355273,1676511429762,1676511557810,1676511590196,1676511658837,1676511723883,1676511813189,1676513466133,1676513612535,1676513666698,1676513718046,1676513836238,1676513861722]
+	timed = [(x/1000)/60 for x in millis] # in minutes
+
+	if (False):  # TESTING
+		depthl = [1,1,10,10,50,50,100,100,150,150,200,200,250,250,150,150,25,25]
+		millis = [10,20,30,40,50,60,70,80,100,130,150,170,190,200,250,350,400,480]
+		timed = millis
+
+	if (max(timed)-min(timed) > maxdepthseconds-1):
+		md = max(timed)
+		chopt = [x for x in timed if md - x < maxdepthseconds]
+		chopd = depthl[-len(chopt):]   # last n elements
+	else:
+		chopt = timed
+		chopd = depthl
+	# if DEBUG:
+	# 	for i in range(len(chopt)):
+	# 		print("# Chop",i,chopt[i],hours(60000*chopt[i]), file=sys.stderr)
+	return chopt,chopd
+
+def getNewBattery():
 	''' IBIT will show battery thresholds that could be used to determine warning colors'''
 	''' GREY OUT BATTERY VALUES - cache battery values to use if new log
 	 Make battery meter function of amph instead of volts (360 = 100%)
@@ -472,17 +518,8 @@ def getNewData():
 	amp = 0.0
 	avgcurrent = 0.0
 	volttime= 0.0
-	flowtime = 0
-	flow = 999
 	currentlist = []
-	Tracking = []
-	TrackTime = []
-	NeedTracking = True
-	depthl = []
-	deptht = []
-	chopt = []
-	chopd = []
-	maxdepthseconds = 480
+
 	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
 	
 	BattFields = runNewStyleQuery(api="data")
@@ -498,51 +535,14 @@ def getNewData():
 			currentlist = record['values'][-3:]
 			if currentlist:
 				avgcurrent = round(sum(currentlist)/(len(currentlist)*1000),1)
-		elif record['name'] == 'depth':
-			depthl = record['values'][:]
-			millis = record['times'][:]
-			if DEBUG:
-				print("# LENGTH DEPTH RECORD",len(millis), file=sys.stderr)
-			# If we don't have enough depth records, go back one hour and get more
-			if len(millis)<100:
-				if DEBUG:
-					print("# TOO SHORT DEPTH LEN",len(millis), file=sys.stderr)
-
-				pasttime = int(millis[0] - 60*60*1000) #go back one hour from first entry
-				extrapath = "&to={}".format(pasttime)
-				extrarecords = runNewStyleQuery(api="data",extrastring=extrapath)
-				for record in extrarecords:
-					if record['name'] == 'depth':
-						if depthl[0] != record['values'][0]:
-							depthl = record['values'][:] + depthl
-							millis = record['times'][:] + millis
-				if DEBUG:
-					print("# NEW DEPTH LEN",len(millis), file=sys.stderr)
-
-			# depthl = [-0.993011,0.102385,0.065651,0.117626,0.060571,0.105122,2.669861,17.237305,28.119141,31.023926,30.093750,29.107910,0.071512,0.076593,0.081284,0.126614,0.086754,0.059008,1.560425,40.828125,1.911346,20.146484,1.978973,40.566406,2.295471,40.296875,2.434631,40.497070,1.792938,40.433594,0.143028,0.074247,1.753479,40.653320,14.269775,1.691742,39.653320,1.316193,40.268555,1.810150,18.678711,17.157227,31.187012,30.313477,28.996582,0.170383,0.097305,0.067604,0.130524,0.091835,1.672180,39.883789,1.678436,40.720703,2.512756,3.323242,40.277344,1.808563,40.340820,3.286133,2.399048,12.588135,0.106293,0.089098,0.108639,1.649902,39.648438,10.620605,1.938721,30.812012,0.092224,0.044939,0.150452,0.158268,0.080893,0.059008,0.101604,0.103167,1.726135,40.442383,8.166504,1.699158,40.311523,2.993469,2.450623,34.390625,22.701172,0.234081,0.076202,1.844910,40.644531,34.384766,34.854492,27.496094,30.463867,30.583008,28.158691,0.100822,0.126614,0.150063,0.220406]
-			# millis = [1676497296190,1676497452506,1676497521881,1676497853558,1676497959418,1676497960217,1676498110631,1676498229806,1676498308178,1676498378481,1676498494060,1676500238921,1676500298712,1676500339930,1676500750518,1676501082201,1676501238954,1676501239366,1676501766221,1676501887410,1676502033260,1676502106414,1676502173458,1676502314893,1676502452638,1676502591218,1676502726162,1676502864738,1676503000918,1676503141900,1676503280473,1676503443286,1676503518242,1676503663286,1676503761056,1676503805098,1676503941247,1676504076986,1676504219634,1676504356158,1676504424433,1676504483023,1676504625626,1676504762994,1676506604327,1676506663304,1676506707348,1676507137945,1676507186970,1676507199997,1676507327348,1676507462698,1676507601282,1676507741872,1676507872787,1676507886522,1676508021049,1676508157225,1676508297401,1676508424267,1676508437599,1676508484061,1676508513148,1676508646066,1676508659573,1676508784502,1676508925910,1676509030133,1676509064074,1676509174778,1676509238600,1676509534745,1676510163866,1676510164308,1676510184145,1676510219290,1676510279217,1676510279612,1676510395234,1676510539487,1676510653418,1676510679673,1676510818271,1676510944323,1676510958462,1676511077685,1676511102317,1676511145158,1676511355273,1676511429762,1676511557810,1676511590196,1676511658837,1676511723883,1676511813189,1676513466133,1676513612535,1676513666698,1676513718046,1676513836238,1676513861722]
-			deptht = [(x/1000)/60 for x in millis] # in minutes
-			if (False):  # TESTING
-				depthl = [1,1,10,10,50,50,100,100,150,150,200,200,250,250,150,150,25,25]
-				millis = [10,20,30,40,50,60,70,80,100,130,150,170,190,200,250,350,400,480]
-				deptht = millis
-
-			if (max(deptht)-min(deptht) > maxdepthseconds-1):
-				md = max(deptht)
-				chopt = [x for x in deptht if md - x < maxdepthseconds]
-				chopd = depthl[-len(chopt):]   # last n elements
-			else:
-				chopt = deptht
-				chopd = depthl
-
 	if DEBUG:
-		print("Depth Times",[dd - deptht[0] for dd in deptht], file=sys.stderr)
 		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
 
-	return volt,amp,avgcurrent,volttime,chopt,chopd
+	return volt,amp,avgcurrent,volttime
 
 def parseGPS(recordlist):
-	# print "GPS record", recordlist
+	if DEBUG:
+		print("parseGPS",recordlist, file=sys.stderr)
 	site=False
 	gpstime=False
 	'''[{u'eventId': 12283560, u'unixTime': 1583301462000, u'vehicleName': u'pontus', u'fix': {u'latitude': 36.757467833070464, u'date': u'Wed Mar 04 05:57:42 GMT 2020', u'longitude': -122.02584799923866}, u'eventType': u'gpsFix'},'''
@@ -569,19 +569,19 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	xmax = max(xlist)
 	xplist = [(boxr-(xmax-x)/xdiv) for x in xlist]  # move from right to left
 	ytrunc = [y/ydiv if y < dep_to_show else h for y in ylist]
-	yplist = [0.5+y0 + y for y in ytrunc]
-	if DEBUG:
-		print("xplist",xplist, file=sys.stderr)
-		print("yplist",yplist, file=sys.stderr)
-		print("ylist",ylist, file=sys.stderr)
+	yplist = [y0 + y for y in ytrunc]
+	# if DEBUG:
+	# 	print("xplist",xplist, file=sys.stderr)
+	# 	print("yplist",yplist, file=sys.stderr)
+	# 	print("ylist",ylist, file=sys.stderr)
 
 	pliststring = ''
 	for i in range(len(xplist)):
 		pliststring += """{},{} """.format(xplist[i],yplist[i])
 	
-	lp = """{},{}""".format(xplist[0],y0)
+	lp = """{},{}""".format(xplist[0],y0-0.6)
 
-	rp = """{},{}""".format(boxr,y0)
+	rp = """{},{}""".format(boxr,y0-0.6)
 	
 	# sparkbg for gray box
 	polystring = '''<polygon desc="sparkpoly" class="sparkpoly" points="{lp} {ps} {rp}"/>
@@ -595,13 +595,14 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.50} {x0+w},{y0+h*.50}"/>
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.75} {x0+w},{y0+h*.75}"/>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>
-	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+1} {y0+4})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
+	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
+	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+4})" class="st12 st9 sparktext">{hours(max(xlist)*60000)}</text>
 	<!-- label with depth x time
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+2} {y0+1})" class="st12 st9 sparktext">{dep_to_show:n}m x {min_to_show/60:n} h</text> -->
-	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.25} {y0+h+4.5})" class="st12 st9 sparktext">{(1-0.25)*min_to_show/60:n}h</text>
-	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.50} {y0+h+4.5})" class="st12 st9 sparktext">{(1-0.50)*min_to_show/60:n}h</text>
-	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.75} {y0+h+4.5})" class="st12 st9 sparktext">{(1-0.75)*min_to_show/60:n}h</text>
-	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-1} {y0+h+4.5})" class="st12 st9 sparktext">{min_to_show/60:n}h</text>
+	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.25} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.25)*min_to_show/60:n}h</text>
+	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.50} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.50)*min_to_show/60:n}h</text>
+	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.75} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.75)*min_to_show/60:n}h</text>
+	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-1} {y0+h+5.5})" class="st12 st9 sparktext">{min_to_show/60:n}h</text>
 	\n'''
 
 	return SVGbg + polystring + SVGbody
@@ -1224,11 +1225,14 @@ def handleURLerror():
 	now = 1000 * time.mktime(time.localtime())
 	timestring = dates(now) + " - " +hours(now)
 	if Opt.savefile:
-		with open(OutPath.format(VEHICLE),'w') as outfile:
-			outfile.write(svgerrorhead)
-			outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
-		print("URL ACCESS ERROR:",VEHICLE, file=sys.stderr)
-		
+		try: 
+			with open(OutPath.format(bas=basefilepath,veh=VEHICLE),'w') as outfile:
+				outfile.write(svgerrorhead)
+				outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
+			print("URL ACCESS ERROR:",VEHICLE, file=sys.stderr)
+		except KeyError:
+			sys.exit("URL ACCESS ERROR and Key Error:"+VEHICLE)
+
 	elif not Opt.report:
 		print(svgerrorhead)
 		print(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))
@@ -1309,7 +1313,7 @@ def elapsed(rawdur):
 
 def parseDistance(site,StationLat,StationLon,knownspeed,knownbearing,gpstime):
 	''' using already calculated reckoned speed, get distance and time to last waypoint'''
-	if knownspeed > 0.09 and abs(site[0]) > 1:
+	if knownspeed > 0.01 and abs(site[0]) > 1:
 		deltadist,deltat,speedmadegood,bearing = distance((StationLat,StationLon),3600000,site,7200000)
 		if DEBUG:
 			print("# StationDistance, bearing:", deltadist,bearing, file=sys.stderr)
@@ -1519,6 +1523,7 @@ if Opt.printhtml:
 	
 # TODO: If running on tethys, use '/var/www/html/widget/auv_{}.svg' as the outpath
 if 'tethysdash' in os.uname()[1]:
+	basefilepath  = "/var/www/html/widget"
 	OutPath       = '{bas}/auv_{veh}.svg'
 	StartTimePath = '{bas}/auvstats_{veh}.csv'
 elif 'jellywatch' in os.uname():
@@ -1593,8 +1598,12 @@ if (not recovered) or Opt.anyway or DEBUG:
 	gfrecords = getCBIT(startTime)
 	
 	site,gpstime = parseGPS(getGPS(startTime))
+	if DEBUG:
+		print("## GPS: SITE:",site,gpstime, file=sys.stderr)
 
-	oldsite,oldgpstime = parseGPS(getOldGPS(gpstime,startTime))
+	oldsite,oldgpstime = parseGPS(newGetOldGPS(startTime,mylimit=2))
+	if DEBUG:
+		print("## PREVIOUS GPS: SITE:",oldsite,oldgpstime, file=sys.stderr)
 
 	deltadist,deltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
 
@@ -1645,7 +1654,8 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
 	
-	newvolt,newamp,newavgcurrent,newvolttime,depthdepth,depthtime = getNewData()
+	newvolt,newamp,newavgcurrent,newvolttime = getNewBattery()
+	depthdepth,depthtime = getNewDepth()
 
 
 	if DEBUG:
