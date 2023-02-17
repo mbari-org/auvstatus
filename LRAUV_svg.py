@@ -72,7 +72,7 @@ svgtext = '''
 	C584.77,278.6,571.25,292.12,554.57,292.12z"/>
 	
 <polygon class="st3" points="154.9,269.51 275.29,292.12 275.29,231.72 154.9,254.33 "/>
-<polygon class="st3" points="255.42,235.44 244.05,237.4 244.8,183.82 255.99,180.82 "/>
+<polygon class="st3" points="255.42,235.44 244.05,237.4 244.8,189.82 255.99,186.82 "/>
 
 <!-- add new overcurrent lights -->
 <text desc="HardwareLabel" text-anchor="right" transform="matrix(1 0 0 1 245 254)" class="st9 st10">HW</text>
@@ -112,8 +112,8 @@ svgtext = '''
 
 
 <circle desc="CTD" class="{color_ctd}" cx="544" cy="241" r="4" /> 
-<circle desc="missiondefault"   class="{color_missiondefault}" cx="415" cy="183" r="2"/>
-<circle desc="scheduleddefault" class="{color_scheduled}"      cx="415" cy="193.5" r="1.6"/>
+<circle desc="missiondefault"   class="{color_missiondefault}" cx="405" cy="183" r="2"/>
+<circle desc="scheduleddefault" class="{color_scheduled}"      cx="405" cy="193.5" r="1.6"/>
 <circle desc="commoverdue"     class="{color_commago}"        cx="138.5" cy="295.5" r="2"/>
 <circle desc="missionoverdue"     class="{color_missionago}"     cx="138.5" cy="306" r="2"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="{color_satcomm}" width="24.43" height="11.5"/>
@@ -155,8 +155,8 @@ svgtext = '''
 </g>
 
 <!-- Dynamic values -->
-<text desc="mission" transform="matrix(1 0 0 1 462.0 186)" class="st9 st10 st12">{text_mission}</text>
-<text desc="missionsched" transform="matrix(1 0 0 1 419.5 196)" class="st12 st9 st13">{text_scheduled}</text>
+<text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12">{text_mission}</text>
+<text desc="missionsched" transform="matrix(1 0 0 1 409.5 196)" class="st12 st9 st13">{text_scheduled}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
@@ -171,7 +171,7 @@ svgtext = '''
 <text desc="text_volts" transform="matrix(1 0 0 1 338.0 257.9931)" class="st9 st10">{text_volts}</text>
 <text desc="text_amps" transform="matrix(1 0 0 1 338.0 270.4917)" class="st9 st10">{text_amps}</text>
 <text desc="text_ampago" transform="matrix(1 0 0 1 330.0 280.0)" class="st12 st9 st13">{text_ampago}</text>
-<text desc="text_droptime" transform="matrix(1 0 0 1 338 300)" class="st12 st9 st13">{text_droptime}</text>
+<text desc="text_droptime" transform="matrix(1 0 0 1 285 307)" class="st12 st9 st13">{text_droptime}</text>
 <text desc="text_gftime" transform="matrix(1 0 0 1 479.3629 250)" class="st12 st9 st13">{text_gftime}</text>
 <text desc="text_gpsago" transform="matrix(1 0 0 1 481 226.5)" class="st12 st9 st13">{text_gpsago}</text>
 <text desc="text_gf" transform="matrix(1 0 0 1 482 262.4973)" class="st9 st10">{text_gf}</text>
@@ -183,13 +183,13 @@ svgtext = '''
 <text desc="text_stationdist" transform="matrix(1 0 0 1 582 238)" class="st12 st9 st24">{text_stationdist}</text>
 <text desc="text_currentdist" transform="matrix(1 0 0 1 582 245)" class="st12 st9 st24">{text_currentdist}</text>
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">{text_dvlstatus}</text>
-<text desc="text_criticalerror" transform="matrix(1 0 0 1 154.0 176)" class="st9 st30 st31">{text_criticalerror}</text>
-<text desc="text_criticaltime" transform="matrix(1 0 0 1 156 183)" class="st12 st9 st13">{text_criticaltime}</text>
+<text desc="text_criticalerror" transform="matrix(1 0 0 1 352.0 300)" class="st9 st30 st31">{text_criticalerror}</text>
+<text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13">{text_criticaltime}</text>
 
 
 
 <!-- Static labels -->  
-<text transform="matrix(1 0 0 1 419.0 186)" class="st9 st10">MISSION:</text>
+<text transform="matrix(1 0 0 1 409.0 186)" class="st9 st10">MISSION:</text>
 <text transform="matrix(1 0 0 1 404.0 268.0)" class="st12 st9 st13">UPDATED:</text>
 '''
 svglabels='''
@@ -245,7 +245,7 @@ svgwaterleak='''<!--water leak-->
 	c5.1-0.1,8.3-3.8,8.3-3.8s1.4,3.3,7.6,3.1c6.1-0.2,6.8-2.8,6.8-2.8s1.8,3.3,7.2,3.1c5.5-0.2,7.4-3.2,7.4-3.2s1.8,2.9,6.5,2.6
 	c4.8-0.3,7.1-2,7.1-2s2.3,3.1,7.4,2.9s8.3-3.8,8.3-3.8s1.4,3.3,7.6,3.1c6.1-0.2,6.8-2.8,6.8-2.8s1.8,3.3,7.3,3.1"/>
 </g>
-<text transform="matrix(1 0 0 1 426 300.0)" class="st12 st9 st13">{text_leak}{text_leakago}</text>
+<text transform="matrix(1 0 0 1 439 290.0)" class="st12 st9 st13">{text_leak}{text_leakago}</text>
 
 '''
 
