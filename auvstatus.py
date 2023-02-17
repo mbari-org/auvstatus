@@ -480,6 +480,8 @@ def getNewData():
 	NeedTracking = True
 	depthl = []
 	deptht = []
+	chopt = []
+	chopd = []
 	maxdepthseconds = 480
 	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
 	
