@@ -1224,11 +1224,14 @@ def handleURLerror():
 	now = 1000 * time.mktime(time.localtime())
 	timestring = dates(now) + " - " +hours(now)
 	if Opt.savefile:
-		with open(OutPath.format(VEHICLE),'w') as outfile:
-			outfile.write(svgerrorhead)
-			outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
-		print("URL ACCESS ERROR:",VEHICLE, file=sys.stderr)
-		
+		try:
+			with open(OutPath.format(VEHICLE),'w') as outfile:
+				outfile.write(svgerrorhead)
+				outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
+			print("URL ACCESS ERROR:",VEHICLE, file=sys.stderr)
+		except KeyError:
+			sys.exit("URL ACCESS ERROR and Key Error:"+VEHICLE)
+
 	elif not Opt.report:
 		print(svgerrorhead)
 		print(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))
