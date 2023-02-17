@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.14  - New style query for Depth Data. Changed GPS query to limit 2
 	Version 2.13  - Reformatted and relocated sparkline
 	Version 2.12  - In progress sparkline for depth
 	Version 2.11  - Fixed data decoding from ASCII retrieve
