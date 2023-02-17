@@ -2,6 +2,7 @@
 *.json
 *.bak
 *.svg
+*.csv
 !*archive.svg
 !legend.svg
 charge/startcharge.csv
