@@ -1224,8 +1224,8 @@ def handleURLerror():
 	now = 1000 * time.mktime(time.localtime())
 	timestring = dates(now) + " - " +hours(now)
 	if Opt.savefile:
-		try:
-			with open(OutPath.format(VEHICLE),'w') as outfile:
+		try: 
+			with open(OutPath.format(bas=basefilepath,veh=VEHICLE),'w') as outfile:
 				outfile.write(svgerrorhead)
 				outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
 			print("URL ACCESS ERROR:",VEHICLE, file=sys.stderr)
@@ -1522,6 +1522,7 @@ if Opt.printhtml:
 	
 # TODO: If running on tethys, use '/var/www/html/widget/auv_{}.svg' as the outpath
 if 'tethysdash' in os.uname()[1]:
+	basefilepath  = "/var/www/html/widget"
 	OutPath       = '{bas}/auv_{veh}.svg'
 	StartTimePath = '{bas}/auvstats_{veh}.csv'
 elif 'jellywatch' in os.uname():
