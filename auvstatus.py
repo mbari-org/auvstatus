@@ -580,10 +580,11 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	lp = """{},{}""".format(xplist[0],y0)
 
 	rp = """{},{}""".format(boxr,y0)
-
+	
+	# sparkbg for gray box
 	polystring = '''<polygon desc="sparkpoly" class="sparkpoly" points="{lp} {ps} {rp}"/>
 	<!-- <polyline desc="sparkline" class="sparkline" points="{ps}"/> -->\n'''.format(lp=lp,ps=pliststring,rp=rp)
-	SVGbg = f'''<rect desc="sparkbox" x="{x0}" y="{y0}" class="sparkbg" width="{w}" height="{h}"/>'''
+	SVGbg = f'''<rect desc="sparkbox" x="{x0}" y="{y0}" class="sparkline" width="{w}" height="{h}"/>'''
 	SVGbody=f'''
 	<polyline desc="sparkline" class="gridline" points="{x0+w*.25},{y0} {x0+w*.25},{y0+h}"/>
 	<polyline desc="sparkline" class="gridline" points="{x0+w*.50},{y0} {x0+w*.50},{y0+h}"/>
