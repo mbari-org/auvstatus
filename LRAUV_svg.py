@@ -41,7 +41,7 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.sparkbg{fill:#E8E8F0;stroke:none; } <!-- light bluegray Fill-->
 	.sparkline{fill:none;stroke:#000000; stroke-width:0.2;}  <!-- changed from black to invisible line -->
 	.sparkpoly{fill:#549fd4;stroke:none; } <!--seafoamgreen No Stroke -->	
-	.sparktext{font-size:5px; } 
+	.sparktext{font-size:6px; } 
 	.gridline{fill:none;stroke:#BBBBBB; stroke-width:0.3;}  
 	</style>
 '''
