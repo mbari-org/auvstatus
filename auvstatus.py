@@ -569,7 +569,7 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	xmax = max(xlist)
 	xplist = [(boxr-(xmax-x)/xdiv) for x in xlist]  # move from right to left
 	ytrunc = [y/ydiv if y < dep_to_show else h for y in ylist]
-	yplist = [0.5+y0 + y for y in ytrunc]
+	yplist = [y0 + y for y in ytrunc]
 	if DEBUG:
 		print("xplist",xplist, file=sys.stderr)
 		print("yplist",yplist, file=sys.stderr)
@@ -579,9 +579,9 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	for i in range(len(xplist)):
 		pliststring += """{},{} """.format(xplist[i],yplist[i])
 	
-	lp = """{},{}""".format(xplist[0],y0)
+	lp = """{},{}""".format(xplist[0],y0-0.6)
 
-	rp = """{},{}""".format(boxr,y0)
+	rp = """{},{}""".format(boxr,y0-0.6)
 	
 	# sparkbg for gray box
 	polystring = '''<polygon desc="sparkpoly" class="sparkpoly" points="{lp} {ps} {rp}"/>
@@ -595,7 +595,7 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.50} {x0+w},{y0+h*.50}"/>
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.75} {x0+w},{y0+h*.75}"/>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>
-	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+h-1})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
+	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+1})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
 	<!-- label with depth x time
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+2} {y0+1})" class="st12 st9 sparktext">{dep_to_show:n}m x {min_to_show/60:n} h</text> -->
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.25} {y0+h+4.5})" class="st12 st9 sparktext">{(1-0.25)*min_to_show/60:n}h</text>
