@@ -2051,7 +2051,7 @@ else:   #not opt report
 			arrivetext = "Arrived at WP"
 			cdd["text_stationdist"]   = elapsed(waypointtime - now)
 
-		elif waypointtime == -1 or waypointdist < 0.4:
+		elif (waypointdist) and (waypointtime == -1 or waypointdist < 0.4):
 			if waypointdist:
 				arrivetext = "On Station %.1f km" % waypointdist
 			else:
@@ -2059,7 +2059,7 @@ else:   #not opt report
 		elif waypointtime == -2:
 			arrivetext = "Nav missing"
 		# Cheating by storing heading in waypointtime if mismatch in function
-		elif waypointtime < 361:
+		elif waypointtime and waypointtime < 361:
 			arrivetext = "Heading? %d" % waypointtime
 		else:
 			timeatstation = gpstime + waypointtime
