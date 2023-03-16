@@ -322,6 +322,7 @@ def getComms(starttime):
 		#	print >> sys.stderr,  rec
 	return retstring
 
+	
 
 
 def getDataAsc(starttime,mission):
@@ -458,7 +459,18 @@ def getDataAsc(starttime,mission):
 			print("#> Complete tracking:",Tracking, TrackTime, elapsed(TrackTime[0] - now), file=sys.stderr)
 
 	return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
+def getNewUBATFlow(starttime):	
+	'''Returns the most recent flow rate from the UBAT sensor'''
+	'''https://okeanids.mbari.org/TethysDash/api/data/WetLabsUBAT.flow_rate?vehicle=pontus&from=0&maxlen=2'''
+	record = runNewStyleQuery(api="data/WetLabsUBAT.flow_rate",extrastring="&from=0&maxlen=1")
+	if record:
+		flow = record['values'][:]
+		flowtime = record['times'][:]
+	else:
+		flow=999
+		flowtime=""
 
+	return flow,flowtime
 def getNewDepth():
 	'''https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=pontus&maxlen=200
 	   https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=triton&maxlen=2&from=1676609209829
