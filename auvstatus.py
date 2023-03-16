@@ -596,6 +596,9 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	rp = """{},{}""".format(boxr,y0-0.6)
 	
 	# sparkbg for gray box
+	# removed point count from display
+	# <text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
+	
 	polystring = '''<polygon desc="sparkpoly" class="sparkpoly" points="{lp} {ps} {rp}"/>
 	<!-- <polyline desc="sparkline" class="sparkline" points="{ps}"/> -->\n'''.format(lp=lp,ps=pliststring,rp=rp)
 	SVGbg = f'''<rect desc="sparkbox" x="{x0}" y="{y0}" class="sparkline" width="{w}" height="{h}"/>'''
@@ -607,7 +610,6 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.50} {x0+w},{y0+h*.50}"/>
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.75} {x0+w},{y0+h*.75}"/>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>
-	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+4})" class="st12 st9 sparktext">{hours(max(xlist)*60000)}</text>
 	<!-- label with depth x time
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+2} {y0+1})" class="st12 st9 sparktext">{dep_to_show:n}m x {min_to_show/60:n} h</text> -->
