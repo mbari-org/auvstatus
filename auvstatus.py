@@ -472,7 +472,7 @@ def getNewUBATFlow(starttime):
 		flowtime=""
 
 	return flow,flowtime
-def getNewDepth(starttime):
+def getNewDepth(starttime=1676609209829):
 	'''https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=pontus&maxlen=200
 	   https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=triton&maxlen=2&from=1676609209829
 '''
@@ -488,7 +488,8 @@ def getNewDepth(starttime):
 	record = runNewStyleQuery(api="data/depth",extrastring=f"&maxlen=400&from={starttime}")
 	# if DEBUG:
 	# 	print("# DEPTH RECORD",record, file=sys.stderr)
-
+	if not record:
+		return chopt,chopd
 	depthl = record['values'][:]
 	millis = record['times'][:]
 	if DEBUG:
@@ -611,7 +612,6 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.50} {x0+w},{y0+h*.50}"/>
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.75} {x0+w},{y0+h*.75}"/>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>
-	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+4})" class="st12 st9 sparktext">{hours(max(xlist)*60000)}</text>
 	<!-- label with depth x time
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+2} {y0+1})" class="st12 st9 sparktext">{dep_to_show:n}m x {min_to_show/60:n} h</text> -->
