@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.16  - Dynamically adjust max depth for sparkline
 	Version 2.15  - Improved retrieval of Depth Data for full record
 	Version 2.14  - New style query for Depth Data. Changed GPS query to limit 2
 	Version 2.13  - Reformatted and relocated sparkline
@@ -575,12 +576,21 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 		xdivider = 480/96 = 5
 		ydivider = 200/20 = 10'''
 	min_to_show = 480
-	dep_to_show = 160
+	dep_to_show = 120
 	xdiv = min_to_show/w
-	ydiv = dep_to_show/h
+	
 
 	boxr = x0+w
 	xmax = max(xlist)
+	ymax = max(ylist)
+	if ymax > dep_to_show + 20:
+		dep_to_show = 160
+	if ymax > dep_to_show + 20:
+		dep_to_show = 240
+	
+	
+	ydiv = dep_to_show/h
+	
 	xplist = [(boxr-(xmax-x)/xdiv) for x in xlist]  # move from right to left
 	ytrunc = [y/ydiv if y < dep_to_show else h for y in ylist]
 	yplist = [y0 + y for y in ytrunc]
@@ -1575,7 +1585,8 @@ mission_defaults = {
 	"SpartonCompassCal"          : {"MissionTimeout": 1,   "NeedCommsTime":60,  "Speed":1 },
 	"spiral_cast"                : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 },
 	"trackPatchChl_yoyo"         : {"MissionTimeout": 24,  "NeedCommsTime":180, "Speed":1 },
-	"trackPatch_yoyo"            : {"MissionTimeout": 12,  "NeedCommsTime":300, "Speed":1 } 
+	"trackPatch_yoyo"            : {"MissionTimeout": 12,  "NeedCommsTime":300, "Speed":1 }.
+	"front_sampling"             : {"MissionTimeout": 12,  "NeedCommsTime":60,  "Speed":1 } 
  
 }
 
