@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.18  - Added projection of hours remaining on battery
+	Version 2.17  - Added new NeedComms syntax
 	Version 2.16  - Dynamically adjust max depth for sparkline
 	Version 2.15  - Improved retrieval of Depth Data for full record
 	Version 2.14  - New style query for Depth Data. Changed GPS query to limit 2
@@ -533,7 +535,9 @@ def getNewBattery():
 	amp = 0.0
 	avgcurrent = 0.0
 	volttime= 0.0
+	hoursleft = -999
 	currentlist = []
+	baseline = 75
 
 	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
 	
@@ -552,8 +556,10 @@ def getNewBattery():
 				avgcurrent = round(sum(currentlist)/(len(currentlist)*1000),1)
 	if DEBUG:
 		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
-
-	return volt,amp,avgcurrent,volttime
+	if amp > 0 and avgcurrent > 0.1:
+		hoursleft = int((amp-baseline)/avgcurrent)
+		
+	return volt,amp,avgcurrent,volttime,hoursleft
 
 def parseGPS(recordlist):
 	if DEBUG:
@@ -576,16 +582,20 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 		xdivider = 480/96 = 5
 		ydivider = 200/20 = 10'''
 	min_to_show = 480
-	dep_to_show = 120
+	dep_to_show = 40
 	xdiv = min_to_show/w
 	
 
 	boxr = x0+w
 	xmax = max(xlist)
 	ymax = max(ylist)
-	if ymax > dep_to_show + 20:
+	if ymax > dep_to_show + 5:
+		dep_to_show = 80
+	if ymax > dep_to_show + 10:
+		dep_to_show = 120
+	if ymax > dep_to_show + 10:
 		dep_to_show = 160
-	if ymax > dep_to_show + 20:
+	if ymax > dep_to_show + 10:
 		dep_to_show = 240
 	
 	
@@ -1194,10 +1204,11 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			'''got command set trackPatch_yoyo.NeedCommsTimePatchTracking 120.000000 minute '''
 			'''NeedCommsTimePatchMapping'''
 			'''NeedCommsTimeMarginPatchTracking'''
+			'''FrontSampling.NeedCommsTimeTransit'''
 			if DEBUG:
 				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 			try:
-				NeedComms = int(float(re.split("NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking ",Record["text"])[1].split(" ")[0]))
+				NeedComms = int(float(re.split("NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking ",Record["text"])[1].split(" ")[0]))
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
 					NeedComms = int(float(Record["text"].split("Smear.NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
@@ -1477,6 +1488,7 @@ def sim():
 	"text_thrusttime"     : "2.9km/hr",
 	"text_reckondistance" : "3.2km in 1.2h",
 	"text_current"        : "na",
+	"text_batteryduration": "na",
 	"text_commago"        : "1h 2m ago",
 	"text_ampago"         : "2h 34m ago",
 	"text_cellago"        : "2h 3m ago",
@@ -1586,6 +1598,7 @@ mission_defaults = {
 	"spiral_cast"                : {"MissionTimeout": 3,   "NeedCommsTime":180, "Speed":1 },
 	"trackPatchChl_yoyo"         : {"MissionTimeout": 24,  "NeedCommsTime":180, "Speed":1 },
 	"trackPatch_yoyo"            : {"MissionTimeout": 12,  "NeedCommsTime":300, "Speed":1 },
+	"FrontSampling"              : {"MissionTimeout": 12,  "NeedCommsTime":60,  "Speed":1 },
 	"front_sampling"             : {"MissionTimeout": 12,  "NeedCommsTime":60,  "Speed":1 } 
 }
 
@@ -1616,6 +1629,7 @@ bearing = 999
 WaterCritical = False
 WaterFault = False
 newavgcurrent=0
+batteryduration = -999
 
 # vehicle not recovered
 if (not recovered) or Opt.anyway or DEBUG:
@@ -1680,15 +1694,14 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
 	
-	newvolt,newamp,newavgcurrent,newvolttime = getNewBattery()
+	newvolt,newamp,newavgcurrent,newvolttime,batteryduration = getNewBattery()
 	depthdepth,depthtime = getNewDepth(startTime)
 
 
 	if DEBUG:
 		print("# DURATION and timeout start", missionduration,timeoutstart, file=sys.stderr)
 	#NEW BATTERY PARSING
-		print("# NewBatteryData: ",newvolt,newamp,newavgcurrent,newvolttime, file=sys.stderr)
-
+		print("# NewBatteryData: ",newvolt,newamp,newavgcurrent,newvolttime,batteryduration, file=sys.stderr)
 
 	#this is volt, amp, time
 	volt,amphr,batttime,flowdat,flowtime,Tracking,TrackTime = getDataAsc(startTime,missionName)
@@ -1899,6 +1912,7 @@ else:   #not opt report
 	"text_reckondistance",
 	"text_commago",
 	"text_current",
+	"text_batteryduration",
 	"text_ampago",
 	"text_cellago",
 	"text_gpsago",
@@ -1990,6 +2004,8 @@ else:   #not opt report
 		else:
 			cdd['svg_current'] = '<rect desc="cuyellow" x="365.5" y="257.8" class="st26" width="4" height="14"/>'
 
+	if batteryduration > -998:
+		cdd["text_batteryduration"] = batteryduration
 
 	###
 	###   MISSION OVERVIEW DISPLAY

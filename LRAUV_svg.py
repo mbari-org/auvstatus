@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Feb 17 2023 version  -->
+<!-- Apr 13 2023 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -80,6 +80,7 @@ svgtext = '''
 <text desc="OtherLabel"    text-anchor="right" transform="matrix(1 0 0 1 245 280)" class="st9 st10">OT</text>
 
 <!-- battery consumption meter -->
+<text desc="text_batteryduration" x="372" y="255"  class="st12 st9 st13">{text_batteryduration}</text>
 <rect desc="current"  x="365" y="250" class="st32" width="5" height="22"/>
 <text desc="text_current" x="372" y="267"  class="st12 st9 st13">{text_current}</text>
 {svg_current}
@@ -199,6 +200,7 @@ svglabels='''
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
 <text desc="text_amplabel" x="372" y="272" class="st12 st9 st24">amps</text>
+<text desc="text_durationlabel" x="372" y="260" class="st12 st9 st24">hours</text>
 <text transform="matrix(1 0 0 1 285 300)" class="st12 st9 st13">DROP WEIGHT</text>
 <text transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
@@ -253,10 +255,10 @@ svgtail = '''
 </svg>
 '''
 
-svgstickynote = '''<rect desc="stickyrect" x="419" y="166" class="st33" width="180" height="11.5"/>
-<text desc="sticky" transform="matrix(1 0 0 1 422.0 175)" class="st9 st13 st28">{text_note}</text>
-<text desc="stickyago" transform="matrix(1 0 0 1 601.0 176)" class="st9 st24 st12">{text_noteago}</text>
-<text desc="noteago"   transform="matrix(1 0 0 1 601.0 171)" class="st9 st24 st12">#note</text>'''
+svgstickynote = '''<rect desc="stickyrect" x="409" y="166" class="st33" width="180" height="11.5"/>
+<text desc="sticky" transform="matrix(1 0 0 1 412.0 175)" class="st9 st13 st28">{text_note}</text>
+<text desc="stickyago" transform="matrix(1 0 0 1 591.0 176)" class="st9 st24 st12">{text_noteago}</text>
+<text desc="noteago"   transform="matrix(1 0 0 1 591.0 171)" class="st9 st24 st12">#note</text>'''
 
 
 

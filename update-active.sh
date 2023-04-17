@@ -6,4 +6,4 @@ for v in $VEH; do rm -f /var/www/html/widget/auv_$v.svg; python3 /var/www/html/w
 # these should be ready for python3, but untested
 python3 /var/www/html/widget/esp_widget.py -v makai -f
 python3 /var/www/html/widget/esp_widget.py -v brizo -f
-python3 /var/www/html/widget/esp_widget.py -v pontus -f
+python3 /var/www/html/widget/esp_widget.py -v daphne -f

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 '''
+v 1.2.2 : Added toxin report if SPR is present (replacing % pumped)
 v 1.2.1 : Adding json export of percentages and times
 v 1.2   : import functions from auvstatus instead of repeating them
 v 1.1.2 : Fixed reporting of one-off failed samples 
 v 1.1.1 : Fixed some parsing of re-pumped samplers. Need to confirm with true redo.
 v 1.1   : Starting version numbers!
 '''
-#from __future__ import print_function
+
 
 from ESPelements import svghead,svgtail
 from auvstatus import runNewStyleQuery,getNewDeployment,runQuery,getDeployment,getRecovery, getPlugged,hours,dates,elapsed
@@ -21,12 +22,7 @@ import re
 import ssl
 import urllib.request, urllib.error, urllib.parse
 from datetime import datetime,timedelta
-# import urllib3
-# urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# ssl._create_default_https_context = ssl._create_unverified_context
-
-# Default timeouts for selected missions
 ''' AVAILABLE STYLES
  .st1 { fill: #dcddde; }
  .st2, .st3 { fill: #fff; }
@@ -189,6 +185,12 @@ def parseESP(recordlist,big_circle_list):
 @17:10:22.94 Selecting Cartridge 30
 @18:07:41.18 Sampled  1000.0ml"
 
+NEW? 
+[sample #1] ESP log summary report (3 messages):
+@15:14:26.79 Selecting Cartridge 51
+@16:10:09.76 Sampled 1000.0ml
+@17:00:54.39 <SPRlogger> SPRsummary:5.3RIU,220RIU,179RIU,279RIU,none,none,none after 3211s
+SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 '''
 	ESPL = [999] * 61 # Initialize percent list
 	TimeList = [''] * 61 #
@@ -197,13 +199,14 @@ def parseESP(recordlist,big_circle_list):
 	# "@21:27:49.79 Cmd::Paused in FILTERING --  during Sample Pump (SP) move after sampling 1161.4ml
 	mlre    = re.compile(r"Sampled +([\d\.]+)ml")
 	pausere = re.compile(r"after sampling +([\d\.]+)ml")
+	sprre   = re.compile(r"SPRsummary.+,(.+) after")
 
 
 	firstnum = False
 	firsttime = False
 	RedoList = []
 	DoneList = []
-
+	SPRdict = {}
 	
 	for Record in recordlist:
 		RecordText = Record.get("text","NA")
@@ -218,6 +221,8 @@ def parseESP(recordlist,big_circle_list):
 					
 
 				VolumeResult = mlre.findall(RecordText)
+				SPRResult = sprre.findall(RecordText)
+				
 				if VolumeResult:
 					if DEBUG:
 						print("## VOLUMERESULT",VolumeResult,file=sys.stderr)
@@ -242,7 +247,16 @@ def parseESP(recordlist,big_circle_list):
 					else:
 						mls=-100
 						VolumeResult=[-199]
-											
+						
+					if SPRResult:
+						if DEBUG:
+							print("\n## SPR",SPRResult,file=sys.stderr)
+						if 'ng' in SPRResult[0]:
+							spout = SPRResult[0].replace('ng/L','')
+						else:
+							spout = SPRResult[0]
+						SPRdict[Cartnum] = spout
+						
 					if not firstnum: # MOST RECENT
 						firstnum = Cartnum
 						firsttime = Record["unixTime"]
@@ -291,8 +305,9 @@ def parseESP(recordlist,big_circle_list):
 		print("BigCircleList",big_circle_list,file=sys.stderr)
 		print("REDO list",RedoList,file=sys.stderr)
 		print("TIME list",TimeList,file=sys.stderr)	
+		print("SPR Dict",SPRdict,file=sys.stderr)	
 			
-	return ESPL,firstnum,firsttime,big_circle_list,RedoList,TimeList
+	return ESPL,firstnum,firsttime,big_circle_list,RedoList,TimeList,SPRdict
 
 def printLegend(lowerleft):
 	lowerx=lowerleft[0]
@@ -488,13 +503,14 @@ LeakCount = 'na'
 RedoList = []
 mytimes = []
 outlist = []
+
 if (not recovered) or DEBUG:
 	esprecords = getESP(startTime)
 # 	if DEBUG:
 # 		print(esprecords,file=sys.stderr)
 	
 	if esprecords:
-		outlist,mostrecent,lastsample,style_circle_big,RedoList,mytimes  = parseESP(esprecords,style_circle_big)
+		outlist,mostrecent,lastsample,style_circle_big,RedoList,mytimes,sprd  = parseESP(esprecords,style_circle_big)
 		#['r' if i > 50 else 'y' if i > 2 else 'g' for i in x]
 		if DEBUG:
 			print ("\n#OUTLIST ", outlist,file=sys.stderr)
@@ -512,9 +528,15 @@ if (not recovered) or DEBUG:
 
 
 # 		GENERATE LIST OF PERCENTAGES
-		pctlist = ['--X--' if i <10 else '' if i > 90 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
-		for ri in RedoList:
-			pctlist[ri] = 'reuse'
+		if not sprd:
+			pctlist = ['--X--' if i <10 else '' if i > 90 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
+			for ri in RedoList:
+				pctlist[ri] = 'reuse'
+		else:
+			pctlist = ['']*len(outlist)
+		# SPRdict from toxin records.		
+			for spi in sprd:
+				pctlist[spi] = sprd.get(spi)
 		
 		if mostrecent:
 			if DEBUG:
