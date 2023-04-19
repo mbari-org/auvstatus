@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 '''
+v 1.2.3 : Moved SPR string above % pumped
 v 1.2.2 : Added toxin report if SPR is present (replacing % pumped)
 v 1.2.1 : Adding json export of percentages and times
 v 1.2   : import functions from auvstatus instead of repeating them
@@ -85,6 +86,7 @@ def getstrings():
 	string_circle_small = ''
 	string_text_label   = ''
 	string_pct_label    = ''
+	string_spr_label    = ''
 	string_time_label    = ''
 	string_pie          = ''
 	string_line_small   = ''
@@ -108,12 +110,15 @@ def getstrings():
 			string_text_label   += '<text desc="t_label_{ind:02d}" class="st7" text-anchor="middle" transform="translate({xval} {yval})">{ind:02d}</text>\n'.format(ind=ind,st=style_text_label,xval=xval,yval=yval)
 			
 			# Percent labels for incomplete samples - ABOVE the number
+			string_spr_label   += '<text desc="spr_label_{ind:02d}" text-anchor="middle" class="st8 font_size4 fill_darkgray" transform="translate({xval} {yval})">{{{ind}}}</text>\n'.format(ind=ind,xval=xval,yval=yval-9.4)
+			
 			string_pct_label   += '<text desc="pct_label_{ind:02d}" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate({xval} {yval})">{{{ind}}}</text>\n'.format(ind=ind,xval=xval,yval=yval-6)
 			
 			string_time_label   += '<text desc="time_label_{ind:02d}" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate({xval} {yval})">{{{ind}}}</text>\n'.format(ind=ind,xval=xval,yval=yval+5)
 			
 
-	return string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label, string_pct_label, string_time_label
+	return string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label, string_pct_label, string_time_label, string_spr_label
+	
 	
 def getpieval(pct,radius):
 	pi = 3.1416
@@ -207,6 +212,7 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 	RedoList = []
 	DoneList = []
 	SPRdict = {}
+
 	
 	for Record in recordlist:
 		RecordText = Record.get("text","NA")
@@ -254,7 +260,7 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 						if 'ng' in SPRResult[0]:
 							spout = SPRResult[0].replace('ng/L','')
 						else:
-							spout = SPRResult[0]
+							spout = SPRResult[0].upper()
 						SPRdict[Cartnum] = spout
 						
 					if not firstnum: # MOST RECENT
@@ -369,7 +375,11 @@ def writefile(myoutpath,RedoList,ArchiveStr="UPDATED"):
 		else:	
 			outfile.write(string_circle_small.format(*stylelist))
 			outfile.write(string_text_label)
+			if DEBUG:
+				print("PCTLIST:",pctlist)
 			outfile.write(string_pct_label.format(*pctlist))
+			if (sprlist):
+				outfile.write(string_spr_label.format(*sprlist))
 			outfile.write(string_time_label.format(*TimeList))
 
 		extratext = ''
@@ -379,7 +389,8 @@ def writefile(myoutpath,RedoList,ArchiveStr="UPDATED"):
 		     " - " + VEHICLE.upper(),tx=lowerleft[0],ty=lowerleft[1]-2)) # 25 190
 		timestring = dates(now) + " - " +hours(now) + " ({})".format(decimalday(now))
 		outfile.write('<text class="font_helv font_size6" transform="translate({tx} {ty})">{arch}: {upd}</text>'.format(arch=ArchiveStr,upd=timestring,tx=lowerright[0]-80,ty=lowerright[1]-1)) # 175 190
-
+		if sprlist:
+			extratext += "[SPR PRESENT]"
 		# SAMPLE SUMMARY
 		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd} {extra}</text>'.format(upd=GoodCount,tx=lowerright[0]-80,ty=lowerright[1]+7,extra=extratext)) # 175 190
 		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Failed: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-80,ty=lowerright[1]+13)) # 175 190
@@ -443,8 +454,7 @@ now = 1000 * time.mktime(time.localtime())  # (*1000?)
 # VEHICLE IS GLOBAL
 
 startTime = getDeployment()
-
-	
+#TEMPORARY
 
 if not startTime:
 	if DEBUG:
@@ -453,18 +463,17 @@ if not startTime:
 		sys.exit()
 
 recovered = getRecovery(starttime=startTime)
-
 plugged = getPlugged(recovered)
 
-
-	
-
+# TEMPORARY OVERRIDE. REMOVE
+if VEHICLE == 'makai':
+	plugged = False
+	recovered = False
+	startTime='1681494142142'
 
 ##########################################
 # 
 # ESP WIDGET configuration
-
-
 
 nrows = 6
 ncols = 10
@@ -503,7 +512,8 @@ LeakCount = 'na'
 RedoList = []
 mytimes = []
 outlist = []
-
+pctlist = []
+sprlist = []
 if (not recovered) or DEBUG:
 	esprecords = getESP(startTime)
 # 	if DEBUG:
@@ -528,15 +538,14 @@ if (not recovered) or DEBUG:
 
 
 # 		GENERATE LIST OF PERCENTAGES
-		if not sprd:
-			pctlist = ['--X--' if i <10 else '' if i > 90 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
-			for ri in RedoList:
-				pctlist[ri] = 'reuse'
-		else:
-			pctlist = ['']*len(outlist)
+		pctlist = ['--X--' if i <10 else '' if i > 90 else '{inte:02d}%'.format(inte=int(round(i))) for i in outlist]
+		for ri in RedoList:
+			pctlist[ri] = 'reuse'
+		if sprd:
+			sprlist = [''] * (nrows * ncols +1)
 		# SPRdict from toxin records.		
 			for spi in sprd:
-				pctlist[spi] = sprd.get(spi)
+				sprlist[spi] = sprd.get(spi)
 		
 		if mostrecent:
 			if DEBUG:
@@ -550,7 +559,7 @@ if (not recovered) or DEBUG:
 		TimeList = [decimalday(x) for x in mytimes]
 		
 	else:
-		pctlist = [''] * 61
+		pctlist = [''] * (nrows * ncols +1)
 
 
 # for p in range(61):
@@ -559,11 +568,13 @@ if (not recovered) or DEBUG:
 ########################	
 # GENERATE SVG HERE
 
-string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label,string_pct_label,string_time_label = getstrings()
+string_circle_big, string_circle_small, string_line_small, string_pie, string_text_label,string_pct_label,string_time_label,string_spr_label = getstrings()
 
 if DEBUG:
 	print ("\n#PCTLIST ", pctlist,file=sys.stderr)
-# 	print ("\n#string_pct_label ", string_pct_label,file=sys.stderr)
+	print ("\n#string_spr_label \n", string_spr_label,file=sys.stderr)
+	print ("\n#string_pct_label \n", string_pct_label,file=sys.stderr)
+	# print ("\n#new pctlist \n", pctlist,file=sys.stderr)
 # 	print ("\n#string_pct_label ", string_pct_label.format(*pctlist),file=sys.stderr)
 # 	print ("\n#LEGEND ", printLegend(lowerleft),file=sys.stderr)
 
@@ -609,7 +620,7 @@ x="0px" y="0px" viewBox="0 0 300 110" xml:space="preserve">
     </style>
   </defs>
   <rect class="fill_lightgray" x="3.91" width="290" height="80"/> 
-<text class="font_helv font_size9" transform="translate(100 45)">NO ESP MISSION for '''
+  <text class="font_helv font_size9" transform="translate(100 45)">NO ESP MISSION for '''
 
 	with open(OutPath.format(VEHICLE),'w') as outfile:
 		outfile.write(NoDeployString)

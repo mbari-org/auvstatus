@@ -1,6 +1,9 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.21  - Added Argo battery status (low or OK)
+	Version 2.20  - Added freshness label to the depth sparkline
+	Version 2.19  - Use last 7 values to calculate current draw
 	Version 2.18  - Added projection of hours remaining on battery
 	Version 2.17  - Added new NeedComms syntax
 	Version 2.16  - Dynamically adjust max depth for sparkline
@@ -216,6 +219,16 @@ def getGPS(starttime,mylimit="1"):
 		retstring = qString	
 	return retstring
 
+def getArgo(starttime,mylimit="1"):
+	''' extract the most recent GPS entry'''
+	if DEBUG:
+		print("###\n### RUNNING ARGO LIMIT 1 starttime:",starttime, file=sys.stderr)
+	qString = runQuery(event="argoReceive",limit=mylimit,timeafter=starttime)
+	retstring=""
+	if qString:
+		retstring = qString	
+	return retstring
+
 def newGetOldGPS(starttime,mylimit="2"):
 	''' extract the most recent GPS entry'''
 	if DEBUG:
@@ -259,8 +272,8 @@ def getMissionDefaults():
 def getNotes(starttime):
 	'''get notes with #widget in the text'''
 	qString = runQuery(event="note",limit="10",timeafter=starttime)
-	if DEBUG:
-		print("# NOTESTRING FOUND",qString, file=sys.stderr)
+	# if DEBUG:
+	# 	print("# NOTESTRING FOUND",qString, file=sys.stderr)
 	retstring = ''
 	if qString:
 		retstring=qString
@@ -395,15 +408,15 @@ def getDataAsc(starttime,mission):
 		lastlines = list(deque(content))
 		#lastlines = list(deque(content))
 		lastlines.reverse() #in place
-		if DEBUG:
-			print("dimensions of lastlines",len(lastlines), file=sys.stderr)
-			print("# Lastlines (reversed):",lastlines[0:10], file=sys.stderr)
-			for li in lastlines:
-				if "flow" in li:
-					print("#",li, file=sys.stderr)
-		
-		if DEBUG:
-			print("# Lastlines first):",lastlines[0], file=sys.stderr)
+		# if DEBUG:
+		# 	print("dimensions of lastlines",len(lastlines), file=sys.stderr)
+		# 	print("# Lastlines (reversed):",lastlines[0:10], file=sys.stderr)
+		# 	for li in lastlines:
+		# 		if "flow" in li:
+		# 			print("#",li, file=sys.stderr)
+		# 
+		# if DEBUG:
+		# 	print("# Lastlines first):",lastlines[0], file=sys.stderr)
 		# trying to avoid parsing the same part twice
 		# THIS doesn't work even if the first entity is the same
 		if firstlast == lastlines[0]:
@@ -537,7 +550,7 @@ def getNewBattery():
 	volttime= 0.0
 	hoursleft = -999
 	currentlist = []
-	baseline = 75
+	baseline = 1
 
 	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
 	
@@ -551,13 +564,18 @@ def getNewBattery():
 		elif record['name'] == 'battery_charge':
 			amp = record['values'][-1]
 		elif record['name'] == 'average_current':
-			currentlist = record['values'][-3:]
+			currentlist = record['values'][-7:]
+			if DEBUG:
+				print("\n# CURRENT LIST",currentlist, file=sys.stderr)
+
 			if currentlist:
-				avgcurrent = round(sum(currentlist)/(len(currentlist)*1000),1)
+				precisecurrent = sum(currentlist)/(len(currentlist)*1000)
+				avgcurrent = round(precisecurrent,1)
+	
 	if DEBUG:
 		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
 	if amp > 0 and avgcurrent > 0.1:
-		hoursleft = int((amp-baseline)/avgcurrent)
+		hoursleft = int(round((amp-baseline)/precisecurrent,0))
 		
 	return volt,amp,avgcurrent,volttime,hoursleft
 
@@ -572,6 +590,24 @@ def parseGPS(recordlist):
 	site =    (recordlist[0]['fix']['latitude'],recordlist[0]['fix']['longitude'])
 	gpstime = recordlist[0]['unixTime']
 	return site,gpstime
+	
+def parseARGO(recordlist):
+	if DEBUG:
+		print("parseARGO",recordlist, file=sys.stderr)
+	argobatt=False
+	argotime=False
+	'''{"result":[{"eventId":18239361,"vehicleName":"makai","unixTime":1681926395000,"isoTime":"2023-04-19T17:46:35.000Z","eventType":"argoReceive","fix":{"latitude":36.793,"longitude":-121.983,"date":"Wed Apr 19 10:46:35 PDT 2023"},"note":"B","text":"127"}]}'''
+	if not recordlist:
+		return(False,False)
+	else:
+		status =    recordlist[0]['text']
+		if status == "127":
+			argobatt = "Good"
+		elif status == "255":
+			argobatt = "Low"
+		argotime = recordlist[0]['unixTime']
+		return argobatt,gpstime
+
 
 def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	''' h0 362 for near the middle of the vehicle
@@ -621,6 +657,12 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	# removed point count from display
 	# <text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
 	
+	#Timeago in hours
+	if (now-max(xlist)*60000)/(1000*60*60) > 1:
+		agecolor = "st27"
+	else: 
+		agecolor = "st25"
+	
 	polystring = '''<polygon desc="sparkpoly" class="sparkpoly" points="{lp} {ps} {rp}"/>
 	<!-- <polyline desc="sparkline" class="sparkline" points="{ps}"/> -->\n'''.format(lp=lp,ps=pliststring,rp=rp)
 	SVGbg = f'''<rect desc="sparkbox" x="{x0}" y="{y0}" class="sparkline" width="{w}" height="{h}"/>'''
@@ -631,19 +673,28 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.25} {x0+w},{y0+h*.25}"/>
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.50} {x0+w},{y0+h*.50}"/>
 	<polyline desc="sparkline" class="gridline" points="{x0},{y0+h*.75} {x0+w},{y0+h*.75}"/>
+	<polyline desc="minorgrid" class="gridline" points="{x0+w*.125},{y0} {x0+w*.125},{y0+h}"/>
+	<polyline desc="minorgrid" class="gridline" points="{x0+w*.375},{y0} {x0+w*.375},{y0+h}"/>
+	<polyline desc="minorgrid" class="gridline" points="{x0+w*.625},{y0} {x0+w*.625},{y0+h}"/>
+	<polyline desc="minorgrid" class="gridline" points="{x0+w*.875},{y0} {x0+w*.875},{y0+h}"/>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+4})" class="st12 st9 sparktext">{hours(max(xlist)*60000)}</text>
-	<!-- label with depth x time
-	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+2} {y0+1})" class="st12 st9 sparktext">{dep_to_show:n}m x {min_to_show/60:n} h</text> -->
+	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{elapsed(max(xlist)*60000-now)}</text>
+	<!-- 
+	label with depth x time
+	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+2} {y0+1})" class="st12 st9 sparktext">{dep_to_show:n}m x {min_to_show/60:n} h</text> 
+	-->
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.25} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.25)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.50} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.50)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.75} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.75)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-1} {y0+h+5.5})" class="st12 st9 sparktext">{min_to_show/60:n}h</text>
+	<circle desc="spr_is_old" class="{agecolor}" cx="272" cy="168" r="2"/>
 	\n'''
-
-	return SVGbg + polystring + SVGbody
-
-
+		
+	if DEBUG:
+		print("DEPTHAGO hours",(now-max(xlist)*60000)/(1000*60*60),elapsed(max(xlist)*60000-now), file=sys.stderr)
+		
+	return SVGbg  + SVGbody + polystring
   
 
 def parseNotes(recordlist):
@@ -701,8 +752,8 @@ def parseCritical(recordlist):
 			ThrusterServo = Record["unixTime"]
 		if (not CriticalError) and not RecordText.startswith("Could not open") and not Record["name"] == "NAL9602":
 #		  and not "NAL9602" in RecordText and not "Hardware Fault in component" in RecordText:
-			CriticalError = RecordText[:41]
-			if len(RecordText)> 41:
+			CriticalError = RecordText[:36]
+			if len(RecordText)> 36:
 				CriticalError += "..."
 			CriticalTime = Record["unixTime"]
 			if DEBUG:
@@ -746,8 +797,8 @@ def parseFaults(recordlist):
 			ma = re.search("from (\d+) sticks",RT)
 			if not BadBattery > 100:
 				BadBattery=Record["unixTime"]
-			if ma:
-				BadBatteryText ='<text transform="matrix(1 0 0 1 286.0 245)" class="st31 st9 st13" text-anchor="end">{}x</text>'.format(ma.group(1))
+			if ma:  
+				BadBatteryText ='<text transform="matrix(1 0 0 1 286.0 245)" class="st31 st9 st24" text-anchor="end">{}x</text>'.format(ma.group(1))
 		if (not Software) and "software overcurrent" in Record["text"].lower():
 			Software = Record["unixTime"]
 		
@@ -1490,6 +1541,7 @@ def sim():
 	"text_current"        : "na",
 	"text_batteryduration": "na",
 	"text_commago"        : "1h 2m ago",
+	"text_needcomms"      : "45",
 	"text_ampago"         : "2h 34m ago",
 	"text_cellago"        : "2h 3m ago",
 	"text_flowago"        : "12m ago",
@@ -1609,8 +1661,8 @@ mission_defaults = {
 now = 1000 * time.mktime(time.localtime())  # (*1000?)
 
 startTime = getDeployment()   
-
-newdeploy,deployID = getNewDeployment()# reverting to launch instead of start, but getNewDeployment() can be a template for other new queries
+# newdeploy,deployID = getNewDeployment() 
+# reverting to launch instead of start, but getNewDeployment() can be a template for other new queries
 
 if not startTime:
 	if DEBUG:
@@ -1630,6 +1682,7 @@ WaterCritical = False
 WaterFault = False
 newavgcurrent=0
 batteryduration = -999
+argobatt = False
 
 # vehicle not recovered
 if (not recovered) or Opt.anyway or DEBUG:
@@ -1644,7 +1697,9 @@ if (not recovered) or Opt.anyway or DEBUG:
 	oldsite,oldgpstime = parseGPS(newGetOldGPS(startTime,mylimit=2))
 	if DEBUG:
 		print("## PREVIOUS GPS: SITE:",oldsite,oldgpstime, file=sys.stderr)
-
+		
+	argobatt,argotime = parseARGO(getArgo(startTime))
+		
 	deltadist,deltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
 
 # FULL RANGE OF RECORDS
@@ -1888,6 +1943,7 @@ else:   #not opt report
 	"color_cartcircle",
 	"color_scheduled",
 	"color_commago",
+	"color_argo",
 	"color_missionago",
 	"color_leak"]
 
@@ -1915,6 +1971,7 @@ else:   #not opt report
 	"text_batteryduration",
 	"text_ampago",
 	"text_cellago",
+	"text_needcomms",
 	"text_gpsago",
 	"text_logago",	
 	"text_dvlstatus",
@@ -1931,9 +1988,6 @@ else:   #not opt report
 	"text_stationdist","text_currentdist",	"text_criticaltime",
 	"text_leak","text_leakago",
 	"text_criticalerror"
-
-
-
 	]
 	for tname in specialnames:
 		cdd[tname]=''
@@ -1989,7 +2043,7 @@ else:   #not opt report
 
 	# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
 	cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
-
+	cdd["text_needcomms"] = needcomms
 	battsvg=""
 	'''
 <rect desc="cuorange" x="365.5" y="250.8" class="st27" width="4" height="21"/>
@@ -2006,6 +2060,11 @@ else:   #not opt report
 
 	if batteryduration > -998:
 		cdd["text_batteryduration"] = batteryduration
+
+	if argobatt == "Good":
+		cdd["color_argo"]="st25"
+	elif argobatt == "Low":
+		cdd["color_argo"]="st27"
 
 	###
 	###   MISSION OVERVIEW DISPLAY

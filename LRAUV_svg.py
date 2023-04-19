@@ -111,6 +111,9 @@ svgtext = '''
 <circle desc="bat8" class="{color_bat8}" cx="379" cy="241.38" r="4"/>
 </g>
 
+<rect desc="argobattery_back" x="247.3" y="220" class="st32" width="5.4" height="9.4"/>
+<rect desc="argobattery_top"  x="248.7" y="219" class="st32" width="2.4" height="1"/>
+<rect desc="argobattery"      x="247.5" y="220" class="{color_argo}" width="5" height="9"/>
 
 <circle desc="CTD" class="{color_ctd}" cx="544" cy="241" r="4" /> 
 <circle desc="missiondefault"   class="{color_missiondefault}" cx="405" cy="183" r="2"/>
@@ -161,8 +164,9 @@ svgtext = '''
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
-<text desc="text_bearing" transform="matrix(1 0 0 1 596 262.3)" class="st9 st13">{text_bearing}</text>
+<text desc="text_bearing" transform="matrix(1 0 0 1 598 262.3)" class="st9 st13">{text_bearing}</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">{text_thrusttime}</text>
+<text desc="text_needcommstime" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">{text_needcomms} m</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">{text_nextcomm}</text>
 <text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
