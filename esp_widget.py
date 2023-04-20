@@ -110,7 +110,7 @@ def getstrings():
 			string_text_label   += '<text desc="t_label_{ind:02d}" class="st7" text-anchor="middle" transform="translate({xval} {yval})">{ind:02d}</text>\n'.format(ind=ind,st=style_text_label,xval=xval,yval=yval)
 			
 			# Percent labels for incomplete samples - ABOVE the number
-			string_spr_label   += '<text desc="spr_label_{ind:02d}" text-anchor="middle" class="st8 font_size4 fill_darkgray" transform="translate({xval} {yval})">{{{ind}}}</text>\n'.format(ind=ind,xval=xval,yval=yval-9.4)
+			string_spr_label   += '<text desc="spr_label_{ind:02d}" text-anchor="middle" class="st8 font_size5 fill_darkgray" transform="translate({xval} {yval})">{{{ind}}}</text>\n'.format(ind=ind,xval=xval,yval=yval-9.4)
 			
 			string_pct_label   += '<text desc="pct_label_{ind:02d}" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate({xval} {yval})">{{{ind}}}</text>\n'.format(ind=ind,xval=xval,yval=yval-6)
 			

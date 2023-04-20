@@ -514,14 +514,20 @@ def getNewDepth(starttime=1676609209829):
 	# depthl = [-0.993011,0.102385,0.065651,0.117626,0.060571,0.105122,2.669861,17.237305,28.119141,31.023926,30.093750,29.107910,0.071512,0.076593,0.081284,0.126614,0.086754,0.059008,1.560425,40.828125,1.911346,20.146484,1.978973,40.566406,2.295471,40.296875,2.434631,40.497070,1.792938,40.433594,0.143028,0.074247,1.753479,40.653320,14.269775,1.691742,39.653320,1.316193,40.268555,1.810150,18.678711,17.157227,31.187012,30.313477,28.996582,0.170383,0.097305,0.067604,0.130524,0.091835,1.672180,39.883789,1.678436,40.720703,2.512756,3.323242,40.277344,1.808563,40.340820,3.286133,2.399048,12.588135,0.106293,0.089098,0.108639,1.649902,39.648438,10.620605,1.938721,30.812012,0.092224,0.044939,0.150452,0.158268,0.080893,0.059008,0.101604,0.103167,1.726135,40.442383,8.166504,1.699158,40.311523,2.993469,2.450623,34.390625,22.701172,0.234081,0.076202,1.844910,40.644531,34.384766,34.854492,27.496094,30.463867,30.583008,28.158691,0.100822,0.126614,0.150063,0.220406]
 	# millis = [1676497296190,1676497452506,1676497521881,1676497853558,1676497959418,1676497960217,1676498110631,1676498229806,1676498308178,1676498378481,1676498494060,1676500238921,1676500298712,1676500339930,1676500750518,1676501082201,1676501238954,1676501239366,1676501766221,1676501887410,1676502033260,1676502106414,1676502173458,1676502314893,1676502452638,1676502591218,1676502726162,1676502864738,1676503000918,1676503141900,1676503280473,1676503443286,1676503518242,1676503663286,1676503761056,1676503805098,1676503941247,1676504076986,1676504219634,1676504356158,1676504424433,1676504483023,1676504625626,1676504762994,1676506604327,1676506663304,1676506707348,1676507137945,1676507186970,1676507199997,1676507327348,1676507462698,1676507601282,1676507741872,1676507872787,1676507886522,1676508021049,1676508157225,1676508297401,1676508424267,1676508437599,1676508484061,1676508513148,1676508646066,1676508659573,1676508784502,1676508925910,1676509030133,1676509064074,1676509174778,1676509238600,1676509534745,1676510163866,1676510164308,1676510184145,1676510219290,1676510279217,1676510279612,1676510395234,1676510539487,1676510653418,1676510679673,1676510818271,1676510944323,1676510958462,1676511077685,1676511102317,1676511145158,1676511355273,1676511429762,1676511557810,1676511590196,1676511658837,1676511723883,1676511813189,1676513466133,1676513612535,1676513666698,1676513718046,1676513836238,1676513861722]
 	timed = [(x/1000)/60 for x in millis] # in minutes
-
+	nowmin = (now/1000)/60
+	fakedepth = 10
+	padded = False
+	if nowmin - max(timed) > 4:
+		timed = timed + [max(timed),max(timed)+2,nowmin]
+		depthl = depthl + [1,fakedepth,fakedepth]
+		padded = True
+	md = max(timed)
 	if (False):  # TESTING
 		depthl = [1,1,10,10,50,50,100,100,150,150,200,200,250,250,150,150,25,25]
 		millis = [10,20,30,40,50,60,70,80,100,130,150,170,190,200,250,350,400,480]
 		timed = millis
-
-	if (max(timed)-min(timed) > maxdepthseconds-1):
-		md = max(timed)
+	# This list is now padded so the last 3 values are placeholders 
+	if (md - min(timed) > maxdepthseconds-1):		
 		chopt = [x for x in timed if md - x < maxdepthseconds]
 		chopd = depthl[-len(chopt):]   # last n elements
 	else:
@@ -530,7 +536,7 @@ def getNewDepth(starttime=1676609209829):
 	# if DEBUG:
 	# 	for i in range(len(chopt)):
 	# 		print("# Chop",i,chopt[i],hours(60000*chopt[i]), file=sys.stderr)
-	return chopt,chopd
+	return chopt,chopd,padded
 
 def getNewBattery():
 	''' IBIT will show battery thresholds that could be used to determine warning colors'''
@@ -600,17 +606,19 @@ def parseARGO(recordlist):
 	if not recordlist:
 		return(False,False)
 	else:
-		status =    recordlist[0]['text']
+		status =    recordlist[0].get('text','')
 		if status == "127":
 			argobatt = "Good"
 		elif status == "255":
 			argobatt = "Low"
-		argotime = recordlist[0]['unixTime']
+		argotime = recordlist[0].get('unixTime',False)
 		return argobatt,gpstime
 
 
-def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
-	''' h0 362 for near the middle of the vehicle
+def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295):
+	''' 
+	TODO: make orange region from now back to the start of the time
+	h0 362 for near the middle of the vehicle
 	    h0 588 for the lower right corner 
 		can manually calculate the values for data multipliers using the
 		width and desired range of values.
@@ -640,11 +648,20 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	xplist = [(boxr-(xmax-x)/xdiv) for x in xlist]  # move from right to left
 	ytrunc = [y/ydiv if y < dep_to_show else h for y in ylist]
 	yplist = [y0 + y for y in ytrunc]
-	# if DEBUG:
+	
+	if padded:
+		# subplist = xplist[:-3]
+		padplist = xplist[-3:]
+		sublist = xlist[:-3]
+	else:
+		# subplist = xplist
+		sublist = xlist
+# if DEBUG:
 	# 	print("xplist",xplist, file=sys.stderr)
 	# 	print("yplist",yplist, file=sys.stderr)
 	# 	print("ylist",ylist, file=sys.stderr)
-
+	
+	faked=10
 	pliststring = ''
 	for i in range(len(xplist)):
 		pliststring += """{},{} """.format(xplist[i],yplist[i])
@@ -656,12 +673,23 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	# sparkbg for gray box
 	# removed point count from display
 	# <text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
-	
-	#Timeago in hours
-	if (now-max(xlist)*60000)/(1000*60*60) > 1:
+	if (now-max(sublist)*60000)/(1000*60*60) > 1:
 		agecolor = "st27"
+		padcolor = "st27" # padded values if more than an hour: orange
 	else: 
 		agecolor = "st25"
+		padcolor = "st16"  # padded values if recent: Yellow is 12 (or use gray??)
+	
+	# add recent poly in orange, four points.
+	if padded:
+		padpoly = f'''<polyline desc="sparkline" class="{padcolor}" points="{padplist[0]:.7},{y0-0.6} {padplist[0]:.7},{y0+1/ydiv} {padplist[1]:.7},{y0+faked/ydiv} {boxr},{y0+faked/ydiv} {rp}"/>'''
+	else:
+		padpoly = ''
+	#,y0-0.6, boxr,(y0 + 20/ydiv),  max(xplist),(y0 + 20/ydiv),   max(xplist),y0-0.6,
+	if DEBUG:
+		print("### PADPOLY", padpoly,file=sys.stderr)
+	#Timeago in hours
+	
 	
 	polystring = '''<polygon desc="sparkpoly" class="sparkpoly" points="{lp} {ps} {rp}"/>
 	<!-- <polyline desc="sparkline" class="sparkline" points="{ps}"/> -->\n'''.format(lp=lp,ps=pliststring,rp=rp)
@@ -678,8 +706,8 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	<polyline desc="minorgrid" class="gridline" points="{x0+w*.625},{y0} {x0+w*.625},{y0+h}"/>
 	<polyline desc="minorgrid" class="gridline" points="{x0+w*.875},{y0} {x0+w*.875},{y0+h}"/>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>
-	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+4})" class="st12 st9 sparktext">{hours(max(xlist)*60000)}</text>
-	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{elapsed(max(xlist)*60000-now)}</text>
+	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+4})" class="st12 st9 sparktext">{hours(max(sublist)*60000)}</text>
+	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{elapsed(max(sublist)*60000-now)}</text>
 	<!-- 
 	label with depth x time
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+2} {y0+1})" class="st12 st9 sparktext">{dep_to_show:n}m x {min_to_show/60:n} h</text> 
@@ -694,7 +722,7 @@ def addSparkDepth(xlist,ylist,w=120,h=20,x0=594,y0=295):
 	if DEBUG:
 		print("DEPTHAGO hours",(now-max(xlist)*60000)/(1000*60*60),elapsed(max(xlist)*60000-now), file=sys.stderr)
 		
-	return SVGbg  + SVGbody + polystring
+	return SVGbg  + SVGbody + polystring + padpoly
   
 
 def parseNotes(recordlist):
@@ -1683,6 +1711,7 @@ WaterFault = False
 newavgcurrent=0
 batteryduration = -999
 argobatt = False
+padded = False
 
 # vehicle not recovered
 if (not recovered) or Opt.anyway or DEBUG:
@@ -1750,7 +1779,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	
 	newvolt,newamp,newavgcurrent,newvolttime,batteryduration = getNewBattery()
-	depthdepth,depthtime = getNewDepth(startTime)
+	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
 
 
 	if DEBUG:
@@ -1818,6 +1847,7 @@ else:
 	startTime = now
 	missionName = "Out of the water"
 	CTDError = False
+	padded = False
 	
 	
 
@@ -2257,7 +2287,7 @@ else:   #not opt report
 			#x0=308,y0=295)
 			# Takes data from the getNewData function
 			
-			sparktext = addSparkDepth(depthdepth,depthtime,x0=131,y0=166)
+			sparktext = addSparkDepth(depthdepth,depthtime,padded=sparkpad,x0=131,y0=166)
 
 		###
 		###   SAT COMM DISPLAY
