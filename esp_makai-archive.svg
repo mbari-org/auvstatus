@@ -81,9 +81,9 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_big_24" class="stroke_none" cx="109" cy="76" r="12"/>
 <circle desc="c_big_25" class="stroke_none" cx="135" cy="76" r="12"/>
 <circle desc="c_big_26" class="stroke_none" cx="161" cy="76" r="12"/>
-<circle desc="c_big_27" class="stroke_none" cx="187" cy="76" r="12"/>
+<circle desc="c_big_27" class="stroke_purple" cx="187" cy="76" r="12"/>
 <circle desc="c_big_28" class="stroke_none" cx="213" cy="76" r="12"/>
-<circle desc="c_big_29" class="stroke_purple" cx="239" cy="76" r="12"/>
+<circle desc="c_big_29" class="stroke_none" cx="239" cy="76" r="12"/>
 <circle desc="c_big_30" class="stroke_none" cx="265" cy="76" r="12"/>
 <circle desc="c_big_31" class="stroke_blue" cx="31" cy="102" r="12"/>
 <circle desc="c_big_32" class="stroke_none" cx="57" cy="102" r="12"/>
@@ -130,7 +130,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_small_13" class="fill_gray" cx="83" cy="50" r="10"/>
 <circle desc="c_small_14" class="fill_gray" cx="109" cy="50" r="10"/>
 <circle desc="c_small_15" class="fill_gray" cx="135" cy="50" r="10"/>
-<circle desc="c_small_16" class="fill_gray" cx="161" cy="50" r="10"/>
+<circle desc="c_small_16" class="fill_green" cx="161" cy="50" r="10"/>
 <circle desc="c_small_17" class="fill_gray" cx="187" cy="50" r="10"/>
 <circle desc="c_small_18" class="fill_green" cx="213" cy="50" r="10"/>
 <circle desc="c_small_19" class="fill_gray" cx="239" cy="50" r="10"/>
@@ -141,7 +141,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_small_24" class="fill_green" cx="109" cy="76" r="10"/>
 <circle desc="c_small_25" class="fill_gray" cx="135" cy="76" r="10"/>
 <circle desc="c_small_26" class="fill_yellow" cx="161" cy="76" r="10"/>
-<circle desc="c_small_27" class="fill_gray" cx="187" cy="76" r="10"/>
+<circle desc="c_small_27" class="fill_green" cx="187" cy="76" r="10"/>
 <circle desc="c_small_28" class="fill_green" cx="213" cy="76" r="10"/>
 <circle desc="c_small_29" class="fill_green" cx="239" cy="76" r="10"/>
 <circle desc="c_small_30" class="fill_green" cx="265" cy="76" r="10"/>
@@ -321,7 +321,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="spr_label_24" text-anchor="middle" class="st8 font_size5 fill_darkgray" transform="translate(109 68.6)"></text>
 <text desc="spr_label_25" text-anchor="middle" class="st8 font_size5 fill_darkgray" transform="translate(135 68.6)"></text>
 <text desc="spr_label_26" text-anchor="middle" class="st8 font_size5 fill_darkgray" transform="translate(161 68.6)"></text>
-<text desc="spr_label_27" text-anchor="middle" class="st8 font_size5 fill_darkgray" transform="translate(187 68.6)"></text>
+<text desc="spr_label_27" text-anchor="middle" class="st8 font_size5 fill_darkgray" transform="translate(187 68.6)">6.83</text>
 <text desc="spr_label_28" text-anchor="middle" class="st8 font_size5 fill_darkgray" transform="translate(213 68.6)"></text>
 <text desc="spr_label_29" text-anchor="middle" class="st8 font_size5 fill_darkgray" transform="translate(239 68.6)">17.7</text>
 <text desc="spr_label_30" text-anchor="middle" class="st8 font_size5 fill_darkgray" transform="translate(265 68.6)"></text>
@@ -370,7 +370,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_13" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 57)"></text>
 <text desc="time_label_14" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 57)"></text>
 <text desc="time_label_15" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 57)"></text>
-<text desc="time_label_16" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 57)"></text>
+<text desc="time_label_16" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 57)">110.37</text>
 <text desc="time_label_17" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 57)"></text>
 <text desc="time_label_18" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 57)">109.87</text>
 <text desc="time_label_19" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 57)"></text>
@@ -381,7 +381,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_24" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 83)">109.02</text>
 <text desc="time_label_25" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 83)"></text>
 <text desc="time_label_26" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 83)">108.75</text>
-<text desc="time_label_27" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 83)"></text>
+<text desc="time_label_27" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 83)">110.46</text>
 <text desc="time_label_28" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 83)">107.68</text>
 <text desc="time_label_29" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 83)">109.96</text>
 <text desc="time_label_30" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 83)">107.56</text>
@@ -415,7 +415,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_58" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 161)"></text>
 <text desc="time_label_59" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 161)"></text>
 <text desc="time_label_60" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 161)"></text>
-<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 11h 34m ago - MAKAI</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 20Apr23 - 10:40 (110.44)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 26 [SPR PRESENT]</text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 1</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
+<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 1h 34m ago - MAKAI</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 20Apr23 - 12:30 (110.52)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 28 [SPR PRESENT]</text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 1</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
 <circle class="fill_green" cx="30" cy="186" r="6"/>
 <text class="te5 font_size5" transform="translate(23.0 188)">GOOD</text>
 <circle class="fill_yellow" cx="53" cy="186" r="6"/>

@@ -160,18 +160,19 @@ svgtext = '''
 
 <!-- Dynamic values -->
 <text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12">{text_mission}</text>
+<text desc="text_missionago" transform="matrix(1 0 0 1 452 178)" class="st12 st9 sparktext">{text_missionago}</text>
 <text desc="missionsched" transform="matrix(1 0 0 1 409.5 196)" class="st12 st9 st13">{text_scheduled}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
 <text desc="text_bearing" transform="matrix(1 0 0 1 598 262.3)" class="st9 st13">{text_bearing}</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">{text_thrusttime}</text>
-<text desc="text_needcommstime" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">{text_needcomms} m</text>
+<text desc="text_needcommstime" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">{text_needcomms}</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">{text_nextcomm}</text>
 <text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">{text_logtime}</text>
-<text desc="text_logago" transform="matrix(1 0 0 1 185.0 231.2224)" class="st12 st9 st13">{text_logago}</text>
+<text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">{text_logago}</text>
 <text desc="text_cellago" transform="matrix(1 0 0 1 342.0 221.2224)" class="st12 st9 st13">{text_cellago}</text>
 <text desc="text_volts" transform="matrix(1 0 0 1 338.0 257.9931)" class="st9 st10">{text_volts}</text>
 <text desc="text_amps" transform="matrix(1 0 0 1 338.0 270.4917)" class="st9 st10">{text_amps}</text>

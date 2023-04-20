@@ -1171,6 +1171,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	Speed = 0
 	StationLat = False
 	StationLon = False
+	ASAP = False
 	hash = "9x9x9"
 	
 	if DEBUG:
@@ -1210,6 +1211,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				print("## Got CLEAR", file=sys.stderr)
 
 		if Scheduled == False and not Cleared and (RecordText.startswith('got command schedule "run') or RecordText.startswith('got command schedule "load') or RecordText.startswith('got command schedule asap "set')) :
+			if "ASAP" in RecordText.upper():
+				ASAP = True
 			'''got command schedule "run " 3p78c'''
 			if DEBUG:
 				print("## Schedule Record ",RecordText, file=sys.stderr)
@@ -1222,6 +1225,9 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					hash=hash_result.group(1)
 					if DEBUG:
 						print("## Schedule Hash found ",hash, file=sys.stderr)
+			if Scheduled and "ASAP" in RecordText.upper():
+				Scheduled += ' [ASAP]'
+
 			else:
 			#'''got command schedule "run Science/mbts_sci2.xml"'''
 			#	'''got command schedule "load Science/circle_acoustic_contact.xml'''
@@ -1231,6 +1237,9 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				else:
 					'''got command schedule "set circle_acoustic_contact'''
 					Scheduled = RecordText.split('"')[1].split(' ')[1].split('.')[0]
+				if Scheduled and "ASAP" in RecordText.upper():
+					Scheduled += ' [ASAP]'
+
 				if DEBUG:
 					print("## Found Scheduled in else",Scheduled, file=sys.stderr)
 					
@@ -2016,7 +2025,7 @@ else:   #not opt report
 	"svg_current",
 	"text_vehicle","text_lastupdate","text_flowago","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime",
-	"text_leak","text_leakago",
+	"text_leak","text_leakago","text_missionago",
 	"text_criticalerror"
 	]
 	for tname in specialnames:
@@ -2073,7 +2082,7 @@ else:   #not opt report
 
 	# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
 	cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
-	cdd["text_needcomms"] = needcomms
+	cdd["text_needcomms"] = f"{needcomms} min"
 	battsvg=""
 	'''
 <rect desc="cuorange" x="365.5" y="250.8" class="st27" width="4" height="21"/>
@@ -2129,6 +2138,7 @@ else:   #not opt report
 		cdd["color_arrow"]     = 'st18'
 		cdd["color_dirtbox"] = 'st17'   # brown
 		if plugged:
+			cdd["text_missionago"]  = elapsed(plugged - now)
 			cdd["text_mission"]     = "PLUGGED IN " + hours(plugged) + " &#x2022; " + dates(plugged)
 			cdd["color_cart"]       = 'st19'
 			cdd["color_cartcircle"] = 'st20'
@@ -2146,6 +2156,7 @@ else:   #not opt report
 		# CriticalError = False                                                               # unicode bullet
 		if missionName and missionTime:
 			cdd["text_mission"]=missionName + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
+			cdd["text_missionago"] = elapsed(missionTime - now)
 		else:
 			cdd["text_mission"]     = "PENDING " 
 			
@@ -2163,7 +2174,7 @@ else:   #not opt report
 			cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
 			if "/" in Scheduled:
 				Scheduled=Scheduled.split("/")[-1]
-			cdd["color_scheduled"] = ['st27','st25'][Scheduled in mission_defaults]   
+			cdd["color_scheduled"] = ['st27','st25'][Scheduled.replace(' [ASAP]','') in mission_defaults]   
 
 		# MISSION TIMES
 		timetotimeout =  ((missionTime+missionduration*3600*1000)  - now) / (60*1000)
@@ -2466,7 +2477,7 @@ else:   #not opt report
 			with open(Archivename,'w') as archivefile:
 				archivefile.write(json.dumps(cdd))
 				
-			ArchiveImage = False
+			ArchiveImage = True
 			
 			if ArchiveImage:
 				ArchiveImage = "{bas}/archive/auv_{veh}".format(bas=basefilepath,veh=VEHICLE) +  "-"  +  str(roundtime) + ".svg"	
