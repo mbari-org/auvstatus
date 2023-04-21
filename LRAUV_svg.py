@@ -118,7 +118,8 @@ svgtext = '''
 <circle desc="CTD" class="{color_ctd}" cx="544" cy="241" r="4" /> 
 <circle desc="missiondefault"   class="{color_missiondefault}" cx="405" cy="183" r="2"/>
 <circle desc="scheduleddefault" class="{color_scheduled}"      cx="405" cy="193.5" r="1.6"/>
-<circle desc="commoverdue"     class="{color_commago}"        cx="138.5" cy="295.5" r="2"/>
+<circle desc="commoverdue"     class="{color_commago}"         cx="138.5" cy="295.5" r="2"/>
+<circle desc="logoverdue"      class="{color_logago}"          cx="138.5" cy="219" r="2"/>
 <circle desc="missionoverdue"     class="{color_missionago}"     cx="138.5" cy="306" r="2"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="{color_satcomm}" width="24.43" height="11.5"/>
 <rect desc="cell"    x="260.15" y="212.24" class="{color_cell}" width="26.43" height="11.31"/>
@@ -160,7 +161,7 @@ svgtext = '''
 
 <!-- Dynamic values -->
 <text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12">{text_mission}</text>
-<text desc="text_missionago" transform="matrix(1 0 0 1 452 178)" class="st12 st9 sparktext">{text_missionago}</text>
+<text desc="text_missionago" transform="matrix(1 0 0 1 452 177)" class="st12 st9 sparktext">{text_missionago}</text>
 <text desc="missionsched" transform="matrix(1 0 0 1 409.5 196)" class="st12 st9 st13">{text_scheduled}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>

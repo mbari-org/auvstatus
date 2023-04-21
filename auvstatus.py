@@ -63,7 +63,6 @@ def get_options():
 	parser.add_argument("-v", "--vehicle",	default="pontus"  , help="specify vehicle")
 	parser.add_argument("--printhtml",action="store_true"  , help="print auv.html web links")
 	parser.add_argument("-m", "--missions",action="store_true"  , help="spit out mission defaults")
-	parser.add_argument("-s", "--sim",action="store_true"  , help="create a fake example SVG")
 	parser.add_argument("-a", "--anyway",action="store_true"  , help="process even after recovery")
 	parser.add_argument("-i", "--inst",default="mbari"  , help="choose the server (mbari or whoi)")
 	parser.add_argument("Args", nargs='*')
@@ -673,7 +672,7 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295):
 	# sparkbg for gray box
 	# removed point count from display
 	# <text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
-	if (now-max(sublist)*60000)/(1000*60*60) > 1:
+	if (now-max(sublist)*60000)/(1000*60*60) > 1.25:
 		agecolor = "st27"
 		padcolor = "st27" # padded values if more than an hour: orange
 	else: 
@@ -1514,99 +1513,6 @@ def dates(unixtime):
 	else:
 		return "9NaN99"
 
-def sim():
-	cdd={
-	"color_drop"           : "st4",
-	"color_thrust"         : "st4",
-	"color_bat1"           : "st4",
-	"color_bat2"           : "st4",
-	"color_bat3"           : "st4",
-	"color_bat4"           : "st4",
-	"color_bat5"           : "st6",
-	"color_bat6"           : "st6",
-	"color_bat7"           : "st6",
-	"color_bat8"           : "st6",
-	"color_satcomm"        : "st5",
-	"color_cell"           : "st6",
-	"color_gps"            : "st4",
-	"color_amps"           : "st4",
-	"color_volts"          : "st4",
-	"color_ctd"	           : "st3",
-	"color_gf"             : "st6",
-	"color_dvl"            : "st3",
-	"color_bt2"            : "st3",
-	"color_bt1"            : "st3",
-	"color_ubat"           : "st18",
-	"color_flow"           : "st18",
-	"color_sw"             : "st3",
-	"color_wavecolor"      : "st0",
-	"color_dirtbox"        : "st18",
-	"color_missiondefault" : "st25",
-	"color_commago"        : "st5",
-	"color_missionago"     : "st6",
-	"color_arrow"          : "st16",
-	"color_scheduled"      : "st26"
-	
-	}
-	
-
-	cartcolors=["color_bigcable",
-	"color_smallcable",
-	"color_cart",
-	"color_cartcircle"]
-	
-	for cname in cartcolors:
-		cdd[cname]='st18'
-
-	textdict={
-	"text_mission"        : "profile_station - 03:56 • 15Jul15",
-	"text_cell"           : "12:34",
-	"text_sat"            : "01:23",
-	"text_gps"            : "02:46",
-	"text_speed"          : "1.0m/s",
-	"text_nextcomm"       : "12:34",
-	"text_timeout"        : "12:34",
-	"text_amps"           : "234.5",
-	"text_volts"          : "14.5",
-	"text_droptime"       : "",
-	"text_gftime"         : "12:35",
-	"text_gf"             : "0.34",
-	"text_bearing"        : "45°",
-	"text_arrow"		  : "45",
-	"text_thrusttime"     : "2.9km/hr",
-	"text_reckondistance" : "3.2km in 1.2h",
-	"text_current"        : "na",
-	"text_batteryduration": "na",
-	"text_commago"        : "1h 2m ago",
-	"text_needcomms"      : "45",
-	"text_ampago"         : "2h 34m ago",
-	"text_cellago"        : "2h 3m ago",
-	"text_flowago"        : "12m ago",
-	"text_gpsago"         : "1h 59m ago",
-	"text_logago"         : "1d 1h 1m ago",
-	"text_logtime"        : "01:23",
-	"text_vehicle"        : "SIMULON",
-	"text_lastupdate"     : "12:34",
-	"text_arrivestation"  : "12:34 in 1h 12m",
-	"text_stationdist"    : "4.5km",
-	"text_stationdist"    : "1.2km",
-	"text_scheduled"      : "SCHEDULED: keep_station",
-	"text_criticaltime"   : "12:34",
-	"text_criticalerror"   : "SW LEAK"
-	}
-
-
-	cdd = dict(list(cdd.items()) + list(textdict.items()))
-	print("#Saving file auv_sim.svg", file=sys.stderr)
-	SimPath="./auv_sim.svg"
-	with open(SimPath,'w') as outfile:
-		outfile.write(svghead)
-		outfile.write(svgtext.format(**cdd))
-		outfile.write(svgbadbattery)
-		outfile.write(svglabels)
-		outfile.write(svgtail)
-
-# svgDictionary = dict(x.items() + y.items())
 
 ########################################################################
 ##
@@ -1631,11 +1537,6 @@ sparktext = ""
 if Opt.missions:
 	'''utility to show default values for selected missions'''
 	getMissionDefaults()
-	sys.exit("Done")
-
-if Opt.sim:
-	'''print out general svg'''
-	sim()
 	sys.exit("Done")
 
 if Opt.inst == 'whoi':
@@ -1970,7 +1871,7 @@ else:   #not opt report
 	"color_cartcircle",
 	"color_missiondefault" ]
 	for cname in colornames:
-		cdd[cname] = 'st3'
+		cdd[cname] = 'st3' # white fill
 	
 	cdd["color_arrow"] = "st16"
 	cdd["color_ubat"] = "st18"
@@ -1982,6 +1883,7 @@ else:   #not opt report
 	"color_cartcircle",
 	"color_scheduled",
 	"color_commago",
+	"color_logago",
 	"color_argo",
 	"color_missionago",
 	"color_leak"]
@@ -2201,7 +2103,7 @@ else:   #not opt report
 			cdd["color_commago"] = 'st6'
 		else:
 			cdd["color_commago"] = 'st5'
-
+			
 		###
 		###   GPS DISPLAY
 		###
@@ -2307,10 +2209,17 @@ else:   #not opt report
 		cdd["text_commago"] = elapsed(ago_satcomms)
 		cdd["text_sat"] = hours(satcomms)
 
-		ago_log = logtime - now
-		cdd["text_logago"] = elapsed(ago_log)
+		agolog = logtime - now
+		cdd["text_logago"] = elapsed(agolog)
 		cdd["text_logtime"] = hours(logtime)
-
+		
+		logcolor='st4'
+		if (-agolog / (60*60*1000)) > 24: # hours since new log
+			logcolor = 'st5'
+		if (-agolog / (60*60*1000)) > 48:
+			logcolor = 'st6'
+		cdd["color_logago"] = logcolor
+		
 		# more than 13 minutes (underwater) = yellow. Beyond needcomms time by 20 mins: orange
 		satnum=int(4 + 1*(abs(ago_satcomms) > (13*60*1000)) + 1*(abs(ago_satcomms) > ((needcomms+20)*60*1000)) )
 		cdd["color_satcomm"] = "st{}".format(satnum)
