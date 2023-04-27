@@ -689,7 +689,7 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	# add recent poly in orange, four points.
 	if padded:
 		if (not padplist) or (len(padplist)< 2):
-			padpoly = f'''<polyline desc="emptysparkline" class="{padcolor}" points="{x0},{y0-0.6} {x0},{faked/ydiv} {boxr - 1},{y0+faked/ydiv} {boxr},{y0+faked/ydiv} {rp}"/>'''
+			padpoly = f'''<polyline desc="emptysparkline" class="st27" points="{x0},{y0-0.6} {x0},{y0+faked/ydiv} {boxr - 1},{y0+faked/ydiv} {boxr},{y0+faked/ydiv} {rp}"/>'''
 		else:
 			padpoly = f'''<polyline desc="sparkline" class="{padcolor}" points="{padplist[0]:.7},{y0-0.6} {padplist[0]:.7},{y0+1/ydiv} {padplist[1]:.7},{y0+faked/ydiv} {boxr},{y0+faked/ydiv} {rp}"/>'''
 	else:
