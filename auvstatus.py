@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.22  - Added dot for log age. Added [ASAP] to schedule. Extended sparkline.
 	Version 2.21  - Added Argo battery status (low or OK)
 	Version 2.20  - Added freshness label to the depth sparkline
 	Version 2.19  - Use last 7 values to calculate current draw
@@ -418,7 +419,7 @@ def getDataAsc(starttime,mission):
 		# 	print("# Lastlines first):",lastlines[0], file=sys.stderr)
 		# trying to avoid parsing the same part twice
 		# THIS doesn't work even if the first entity is the same
-		if firstlast == lastlines[0]:
+		if lastlines and (firstlast == lastlines[0]):
 			Bailout = True
 			lastlines=[]
 			break
@@ -579,10 +580,14 @@ def getNewBattery():
 	
 	if DEBUG:
 		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
+	batterycolor = "st12"
 	if amp > 0 and avgcurrent > 0.1:
 		hoursleft = int(round((amp-baseline)/precisecurrent,0))
+		if hoursleft < 48:
+			batterycolor = "st31"
+
 		
-	return volt,amp,avgcurrent,volttime,hoursleft
+	return volt,amp,avgcurrent,volttime,hoursleft,batterycolor
 
 def parseGPS(recordlist):
 	if DEBUG:
@@ -614,7 +619,7 @@ def parseARGO(recordlist):
 		return argobatt,gpstime
 
 
-def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295):
+def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mins=60):
 	''' 
 	TODO: make orange region from now back to the start of the time
 	h0 362 for near the middle of the vehicle
@@ -628,7 +633,7 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295):
 	dep_to_show = 40
 	xdiv = min_to_show/w
 	
-
+	
 	boxr = x0+w
 	xmax = max(xlist)
 	ymax = max(ylist)
@@ -672,16 +677,21 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295):
 	# sparkbg for gray box
 	# removed point count from display
 	# <text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
-	if (now-max(sublist)*60000)/(1000*60*60) > 1.25:
+	
+	# changed orange to be 25% more than needcomms
+	if sublist and (now-max(sublist)*60000)/(1000*60*60) > (1.25 * need_comm_mins/60):
 		agecolor = "st27"
 		padcolor = "st27" # padded values if more than an hour: orange
 	else: 
 		agecolor = "st25"
-		padcolor = "st16"  # padded values if recent: Yellow is 12 (or use gray??)
+		padcolor = "st16"  # padded values if recent
 	
 	# add recent poly in orange, four points.
 	if padded:
-		padpoly = f'''<polyline desc="sparkline" class="{padcolor}" points="{padplist[0]:.7},{y0-0.6} {padplist[0]:.7},{y0+1/ydiv} {padplist[1]:.7},{y0+faked/ydiv} {boxr},{y0+faked/ydiv} {rp}"/>'''
+		if (not padplist) or (len(padplist)< 2):
+			padpoly = f'''<polyline desc="emptysparkline" class="{padcolor}" points="{x0},{y0-0.6} {x0},{faked/ydiv} {boxr - 1},{y0+faked/ydiv} {boxr},{y0+faked/ydiv} {rp}"/>'''
+		else:
+			padpoly = f'''<polyline desc="sparkline" class="{padcolor}" points="{padplist[0]:.7},{y0-0.6} {padplist[0]:.7},{y0+1/ydiv} {padplist[1]:.7},{y0+faked/ydiv} {boxr},{y0+faked/ydiv} {rp}"/>'''
 	else:
 		padpoly = ''
 	#,y0-0.6, boxr,(y0 + 20/ydiv),  max(xplist),(y0 + 20/ydiv),   max(xplist),y0-0.6,
@@ -704,24 +714,21 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295):
 	<polyline desc="minorgrid" class="gridline" points="{x0+w*.375},{y0} {x0+w*.375},{y0+h}"/>
 	<polyline desc="minorgrid" class="gridline" points="{x0+w*.625},{y0} {x0+w*.625},{y0+h}"/>
 	<polyline desc="minorgrid" class="gridline" points="{x0+w*.875},{y0} {x0+w*.875},{y0+h}"/>
-	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+4})" class="st12 st9 sparktext">{hours(max(sublist)*60000)}</text>
 	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{elapsed(max(sublist)*60000-now)}</text>
-	<!-- 
-	label with depth x time
-	<text desc="sparknote" transform="matrix(1 0 0 1 {x0+2} {y0+1})" class="st12 st9 sparktext">{dep_to_show:n}m x {min_to_show/60:n} h</text> 
-	-->
+	
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.25} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.25)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.50} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.50)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.75} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.75)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-1} {y0+h+5.5})" class="st12 st9 sparktext">{min_to_show/60:n}h</text>
 	<circle desc="spr_is_old" class="{agecolor}" cx="272" cy="168" r="2"/>
 	\n'''
-		
+	
+	depstr = f'''<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>'''
 	if DEBUG:
 		print("DEPTHAGO hours",(now-max(xlist)*60000)/(1000*60*60),elapsed(max(xlist)*60000-now), file=sys.stderr)
 		
-	return SVGbg  + SVGbody + polystring + padpoly
+	return SVGbg  + SVGbody + polystring + padpoly + depstr
   
 
 def parseNotes(recordlist):
@@ -779,12 +786,13 @@ def parseCritical(recordlist):
 			ThrusterServo = Record["unixTime"]
 		if (not CriticalError) and not RecordText.startswith("Could not open") and not Record["name"] == "NAL9602":
 #		  and not "NAL9602" in RecordText and not "Hardware Fault in component" in RecordText:
-			CriticalError = RecordText[:36]
-			if len(RecordText)> 36:
-				CriticalError += "..."
+			if len(RecordText)> 31:
+				CriticalError = RecordText.replace(" in component","")[:29]
+				if len(CriticalError)>28:
+					CriticalError += "..."
 			CriticalTime = Record["unixTime"]
 			if DEBUG:
-				print(CriticalError, (now-CriticalTime)/3600000, file=sys.stderr)
+				print(RecordText,"\n",CriticalError, (now-CriticalTime)/3600000, file=sys.stderr)
 			if (((now - CriticalTime)/3600000) > 6):
 				CriticalError = ""
 				CriticalTime = False
@@ -1013,6 +1021,7 @@ def parseImptMisc(recordlist):
 		'tethys':True,
 		'daphne':False,
 		'brizo':True,
+		'galene':False,
 		'polaris':True,
 		'proxima':True,
 		'stella':True,
@@ -1127,10 +1136,12 @@ def parseImptMisc(recordlist):
 			''' Changing this to default to ON unless specifically turned off'''
 			
 			RecordText = Record.get("text","NA")
-			
+			'''WetLabsUBAT.loadAtStartup=0 bool'''
 			if  "WetLabsUBAT.loadAtStartup" in RecordText:
 				ubatBool = bool(float(RecordText.replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
 				ubatTime   = Record["unixTime"]
+				if DEBUG:
+					print("## Got UBAT Load at startup", RecordText, file=sys.stderr)
 			
 			elif  "abling UBAT" in RecordText:
 				ubatBool = RecordText.startswith("Enabl")
@@ -1141,10 +1152,11 @@ def parseImptMisc(recordlist):
 				ubatTime   = Record["unixTime"]
 				if DEBUG:
 					print("## Got UBAT ON", RecordText, file=sys.stderr)
-				
-			elif RecordText.startswith("got command restart app") or RecordText.startswith("got command restart system") or RecordText.startswith("got command restart hardware"):
-				ubatBool = True
-				ubatTime   = Record["unixTime"]
+					
+			# Disabling this for now	
+			# elif RecordText.startswith("got command restart app") or RecordText.startswith("got command restart system") or RecordText.startswith("got command restart hardware"):
+			# 	ubatBool = True
+			# 	ubatTime   = Record["unixTime"]
 				
 			ubatStatus = ["st6","st4"][ubatBool]
 	
@@ -1225,7 +1237,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					if DEBUG:
 						print("## Schedule Hash found ",hash, file=sys.stderr)
 			if Scheduled and "ASAP" in RecordText.upper():
-				Scheduled += ' [ASAP]'
+				# Scheduled += ' [ASAP]'
+				Scheduled = ''  # Blanking out schedule if ASAP
 
 			else:
 			#'''got command schedule "run Science/mbts_sci2.xml"'''
@@ -1237,7 +1250,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					'''got command schedule "set circle_acoustic_contact'''
 					Scheduled = RecordText.split('"')[1].split(' ')[1].split('.')[0]
 				if Scheduled and "ASAP" in RecordText.upper():
-					Scheduled += ' [ASAP]'
+					# Scheduled += ' [ASAP]'
+					Scheduled = ''    # Something amiss with the parsing. Blanking schedule if ASAP
 
 				if DEBUG:
 					print("## Found Scheduled in else",Scheduled, file=sys.stderr)
@@ -1288,14 +1302,15 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			'''got command set trackPatchChl_yoyo.NeedCommsTimeInTransit 45.000000'''
-			'''got command set trackPatch_yoyo.NeedCommsTimePatchTracking 120.000000 minute '''
+			'''got command set trackPatch_yoyo.NeedCommsTimePatchTracking 120.000000 minute 
+			NeedCommsTimeVeryLong'''
 			'''NeedCommsTimePatchMapping'''
 			'''NeedCommsTimeMarginPatchTracking'''
 			'''FrontSampling.NeedCommsTimeTransit'''
 			if DEBUG:
 				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 			try:
-				NeedComms = int(float(re.split("NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking ",Record["text"])[1].split(" ")[0]))
+				NeedComms = int(float(re.split("NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsTimeVeryLong ",Record["text"])[1].split(" ")[0]))
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
 					NeedComms = int(float(Record["text"].split("Smear.NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
@@ -1370,21 +1385,21 @@ def makeTrackSVG(Tracking,TrackTime):
 <text desc="text_track" transform="matrix(1 0 0 1 400 303)" class="st12 st9 st13">RANGE: 283m</text>
 <text desc="text_trackago" transform="matrix(1 0 0 1 400 310)" class="st12 st9 st13">18h 48m ago</text>'''
 	
-	BaseText = '''{tr}<text desc="text_track" transform="matrix(1 0 0 1 400 303)" class="st12 st9 st13">RANGE: {ra}m</text>
-<text desc="text_trackago" transform="matrix(1 0 0 1 400 310)" class="st12 st9 st13">{ti}</text>'''
+	BaseText = '''{tr}<text desc="text_track" transform="matrix(1 0 0 1 430 308)" class="st12 st9 st13">RANGE: {ra} m</text>
+<text desc="text_trackago" transform="matrix(1 0 0 1 430 315)" class="st12 st9 st13">{ti}</text>'''
 
 	rangem=Tracking[0]
 	timetext =elapsed(TrackTime[0] - now)
 	if len(Tracking)>1:
 		trend = Tracking[0]-Tracking[1]
 		if abs(trend) < 20:
-			trackshape = '<circle  class="st16" cx="394" cy="304" r="3"/>\n'
+			trackshape = '<circle  class="st16" cx="424" cy="309" r="3"/>\n'
 		elif trend < 0:
-			trackshape = '<polygon class="st25" points="394,308 398,300 390,300 394,308"/>\n'  # "green downarrow"
+			trackshape = '<polygon class="st25" points="424,313 428,305 420,305 424,313"/>\n'  # "green downarrow"
 		else:
-			trackshape = '<polygon class="st27" points="394,300 398,308 390,308 394,300"/>\n'  # orange uparrow
+			trackshape = '<polygon class="st27" points="424,305 428,305 420,313 424,305"/>\n'  # orange uparrow
 	else:
-		trackshape = '<circle  class="st16" cx="394" cy="304" r="3"/>\n'
+		trackshape = '<circle  class="st16" cx="424" cy="309" r="3"/>\n'
 	
 	tracksvg = BaseText.format(tr=trackshape,ra=rangem,ti=timetext)
 	
@@ -1576,6 +1591,7 @@ mission_defaults = {
 	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1.0 },
 	"transit"          : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1.0 },
+	"CircleSample"     : {"MissionTimeout": 2,   "NeedCommsTime":240,  "Speed":1 },
 	"CorkAndScrew"     : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
 	"IsothermDepthSampling"      : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
 	"location_depth_sampling"    : {"MissionTimeout": 168,  "NeedCommsTime":60,  "Speed":1 },
@@ -1688,7 +1704,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
 	
-	newvolt,newamp,newavgcurrent,newvolttime,batteryduration = getNewBattery()
+	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,colorduration = getNewBattery()
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
 
 
@@ -1876,6 +1892,7 @@ else:   #not opt report
 	cdd["color_arrow"] = "st16"
 	cdd["color_ubat"] = "st18"
 	cdd["color_flow"] = "st18"
+	cdd["color_duration"] = "st18"
 	# These are made invisible
 	cartcolors=["color_bigcable",
 	"color_smallcable",
@@ -2001,6 +2018,7 @@ else:   #not opt report
 
 	if batteryduration > -998:
 		cdd["text_batteryduration"] = batteryduration
+		cdd["color_duration"] = colorduration
 
 	if argobatt == "Good":
 		cdd["color_argo"]="st25"
@@ -2094,6 +2112,7 @@ else:   #not opt report
 		# This is typically in minutes
 
 		# CIRCLE NEXT TO COMM TIME in minutes
+		# TODO: Add orange here.
 		timetocomm = int(((commreftime+needcomms*60*1000) -now) / (60*1000))
 		if DEBUG:
 			print("#TIME TO COMM",timetocomm, file=sys.stderr)
@@ -2200,7 +2219,7 @@ else:   #not opt report
 			#x0=308,y0=295)
 			# Takes data from the getNewData function
 			
-			sparktext = addSparkDepth(depthdepth,depthtime,padded=sparkpad,x0=131,y0=166)
+			sparktext = addSparkDepth(depthdepth,depthtime,padded=sparkpad,x0=131,y0=166,need_comm_mins = needcomms)
 
 		###
 		###   SAT COMM DISPLAY
@@ -2305,7 +2324,7 @@ else:   #not opt report
 			cdd["text_dvlstatus"]="OFF"
 		
 		if CriticalError:
-			cdd["text_criticalerror"] = "CRITICAL: "+ CriticalError.replace(" in component","")
+			cdd["text_criticalerror"] = "CRITICAL: "+ CriticalError
 			cdd["text_criticaltime"]  = elapsed(CriticalTime-now)
 			
 		cdd["color_dvl"] = DVLcolor
@@ -2386,10 +2405,12 @@ else:   #not opt report
 			with open(Archivename,'w') as archivefile:
 				archivefile.write(json.dumps(cdd))
 				
-			ArchiveImage = True
+			ArchiveImage = False
 			
 			if ArchiveImage:
 				ArchiveImage = "{bas}/archive/auv_{veh}".format(bas=basefilepath,veh=VEHICLE) +  "-"  +  str(roundtime) + ".svg"	
+				if DEBUG:
+					print("Archiving file:",ArchiveImage,file=sys.stderr)
 				with open(ArchiveImage,'w') as outfile:
 					outfile.write(svghead)
 					outfile.write(svgtext.format(**cdd))

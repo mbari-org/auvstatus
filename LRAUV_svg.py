@@ -80,9 +80,11 @@ svgtext = '''
 <text desc="OtherLabel"    text-anchor="right" transform="matrix(1 0 0 1 245 280)" class="st9 st10">OT</text>
 
 <!-- battery consumption meter -->
-<text desc="text_batteryduration" x="372" y="255"  class="st12 st9 st13">{text_batteryduration}</text>
+<text desc="text_batteryduration" x="372" y="255"  class="{color_duration} st9 st13">{text_batteryduration}</text>
+<text desc="text_durationlabel" x="372" y="260" class="{color_duration} st9 st24">hours</text>
 <rect desc="current"  x="365" y="250" class="st32" width="5" height="22"/>
 <text desc="text_current" x="372" y="267"  class="st12 st9 st13">{text_current}</text>
+
 {svg_current}
 
 
@@ -192,6 +194,10 @@ svgtext = '''
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">{text_dvlstatus}</text>
 <text desc="text_criticalerror" transform="matrix(1 0 0 1 352.0 300)" class="st9 st30 st31">{text_criticalerror}</text>
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13">{text_criticaltime}</text>
+<g><title>Ground Fault: None means not detected. False means no recent scan</title>
+<text transform="matrix(1 0 0 1 485 273)" class="st12 st9 st13">GROUND</text>
+<text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT</text>
+</g>
 
 
 
@@ -206,16 +212,11 @@ svglabels='''
 <text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
 <text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
 <text desc="text_amplabel" x="372" y="272" class="st12 st9 st24">amps</text>
-<text desc="text_durationlabel" x="372" y="260" class="st12 st9 st24">hours</text>
 <text transform="matrix(1 0 0 1 285 300)" class="st12 st9 st13">DROP WEIGHT</text>
 <text transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
 <text desc="" transform="matrix(1 0 0 1 551 244)" class="st9 st10">CTD</text>
 
-<g><title>Ground Fault: None means not detected. False means no recent scan</title>
-<text transform="matrix(1 0 0 1 485 273)" class="st12 st9 st13">GROUND</text>
-<text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT</text>
-</g>
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
 <text transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10">Sat comms</text>
