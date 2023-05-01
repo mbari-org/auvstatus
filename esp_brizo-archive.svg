@@ -56,9 +56,9 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
   </defs>
   <rect class="fill_lightgray" x="3.91" width="290" height="200"/> 
   <circle desc="c_big_01" class="stroke_none" cx="31" cy="24" r="12"/>
-<circle desc="c_big_02" class="stroke_none" cx="57" cy="24" r="12"/>
+<circle desc="c_big_02" class="stroke_purple" cx="57" cy="24" r="12"/>
 <circle desc="c_big_03" class="stroke_none" cx="83" cy="24" r="12"/>
-<circle desc="c_big_04" class="stroke_purple" cx="109" cy="24" r="12"/>
+<circle desc="c_big_04" class="stroke_none" cx="109" cy="24" r="12"/>
 <circle desc="c_big_05" class="stroke_none" cx="135" cy="24" r="12"/>
 <circle desc="c_big_06" class="stroke_none" cx="161" cy="24" r="12"/>
 <circle desc="c_big_07" class="stroke_none" cx="187" cy="24" r="12"/>
@@ -116,8 +116,8 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_big_59" class="stroke_none" cx="239" cy="154" r="12"/>
 <circle desc="c_big_60" class="stroke_none" cx="265" cy="154" r="12"/>
 <circle desc="c_small_01" class="fill_gray" cx="31" cy="24" r="10"/>
-<circle desc="c_small_02" class="fill_gray" cx="57" cy="24" r="10"/>
-<circle desc="c_small_03" class="fill_gray" cx="83" cy="24" r="10"/>
+<circle desc="c_small_02" class="fill_green" cx="57" cy="24" r="10"/>
+<circle desc="c_small_03" class="fill_yellow" cx="83" cy="24" r="10"/>
 <circle desc="c_small_04" class="fill_green" cx="109" cy="24" r="10"/>
 <circle desc="c_small_05" class="fill_yellow" cx="135" cy="24" r="10"/>
 <circle desc="c_small_06" class="fill_green" cx="161" cy="24" r="10"/>
@@ -237,7 +237,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="t_label_60" class="st7" text-anchor="middle" transform="translate(265 156)">60</text>
 <text desc="pct_label_01" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(31 20)"></text>
 <text desc="pct_label_02" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(57 20)"></text>
-<text desc="pct_label_03" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 20)"></text>
+<text desc="pct_label_03" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(83 20)">58%</text>
 <text desc="pct_label_04" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(109 20)"></text>
 <text desc="pct_label_05" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(135 20)">80%</text>
 <text desc="pct_label_06" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(161 20)"></text>
@@ -296,8 +296,8 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="pct_label_59" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(239 150)"></text>
 <text desc="pct_label_60" text-anchor="middle" class="te5 font_size4 fill_purple" transform="translate(265 150)"></text>
 <text desc="time_label_01" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 31)"></text>
-<text desc="time_label_02" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 31)"></text>
-<text desc="time_label_03" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 31)"></text>
+<text desc="time_label_02" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(57 31)">117.45</text>
+<text desc="time_label_03" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(83 31)">117.39</text>
 <text desc="time_label_04" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(109 31)">117.30</text>
 <text desc="time_label_05" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 31)">117.19</text>
 <text desc="time_label_06" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 31)">116.62</text>
@@ -355,7 +355,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_58" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 161)"></text>
 <text desc="time_label_59" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 161)"></text>
 <text desc="time_label_60" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 161)"></text>
-<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 6m ago - BRIZO</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 27Apr23 - 07:14 (117.30)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 25 </text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 0</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
+<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 4h 10m ago - BRIZO</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 27Apr23 - 14:52 (117.62)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 27 </text><text class="te5 font_size5" transform="translate(180 189)">Sample Failed: 0</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
 <circle class="fill_green" cx="30" cy="186" r="6"/>
 <text class="te5 font_size5" transform="translate(23.0 188)">GOOD</text>
 <circle class="fill_yellow" cx="53" cy="186" r="6"/>

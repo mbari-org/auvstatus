@@ -466,10 +466,10 @@ recovered = getRecovery(starttime=startTime)
 plugged = getPlugged(recovered)
 
 # TEMPORARY OVERRIDE. REMOVE
-if VEHICLE == 'makai':
-	plugged = False
-	recovered = False
-	startTime='1681494142142'
+# if VEHICLE == 'makai':
+# 	plugged = False
+# 	recovered = False
+# 	startTime='1681494142142'
 
 ##########################################
 # 

@@ -1013,7 +1013,25 @@ def parseImptMisc(recordlist):
 
 	ReachedWaypoint = False
 	NavigatingTo    = False
-	
+	WaypointName = "Waypoint"
+	RawWaypoints={"C1"    : "-121.847,36.797",
+		"M1"    : "-122.022,36.750",
+		"M2"    : "-122.375999,36.691",
+		"3km"   : "-121.824326,36.806965",
+		"Sta.N" : "-121.9636,36.9026",
+		"Sta.S" : "-121.8934,36.6591",
+		"NEreal" : "-121.900002,36.919998",
+		"NE"    : "-121.9,36.9"}
+	TruncatedWaypoints = {
+  		"-121.85,36.80": "C1"    ,
+  		"-122.02,36.75": "M1"    ,
+  		"-122.38,36.69": "M2"    ,
+  		"-121.82,36.81": "3km"   ,
+  		"-121.96,36.90": "Sta.N" ,
+  		"-121.89,36.65": "Sta.S" ,
+  		"-121.90,36.92": "NE",
+  		"-121.90,36.90": "NE"   
+		}
 	# CONFIGURE DVL config defaults
 	GetDVLStartup = {
 		'makai':True,
@@ -1093,7 +1111,10 @@ def parseImptMisc(recordlist):
 				if DEBUG:
 					print("## Got ReachedWaypoint", StationLat,StationLon, file=sys.stderr)
 				ReachedWaypoint = Record["unixTime"]
-					
+				
+			if StationLat:
+				LookupLL = f"{round(StationLon,2):.2f},{round(StationLat,2):.2f}"
+				WaypointName = TruncatedWaypoints.get(LookupLL,"Station")  # if not found, use "Station"
 			
 		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
@@ -1166,7 +1187,7 @@ def parseImptMisc(recordlist):
 		#	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 		#	FlowTime   = Record["unixTime"]
 
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, CTDonCommand,CTDoffCommand
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand
 	
 
 def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
@@ -1310,10 +1331,10 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			if DEBUG:
 				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 			try:
-				NeedComms = int(float(re.split("NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsTimeVeryLong ",Record["text"])[1].split(" ")[0]))
+				NeedComms = int(float(re.split("NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking ",Record["text"])[1].split(" ")[0]))
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
-					NeedComms = int(float(Record["text"].split("Smear.NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
+					NeedComms = int(float(Record["text"].split("NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
 					if DEBUG:
 						print("#Long NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 				except IndexError:	
@@ -1583,7 +1604,7 @@ mission_defaults = {
 	"profile_station"  : {"MissionTimeout": 4,   "NeedCommsTime":60,  "Speed":1.0 },
 	"portuguese_ledge" : {"MissionTimeout": 4,   "NeedCommsTime":120, "Speed":1.0 },
 	"sci2"             : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1.0 },
-	"sci2_backseat"     : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1.0 },
+	"sci2_backseat"    : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1.0 },
 	"mbts_sci2"        : {"MissionTimeout": 48,  "NeedCommsTime":60,  "Speed":1.0 },
 	"keepstation"      : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45,  "Speed":0.1 },
@@ -1605,7 +1626,8 @@ mission_defaults = {
 	"trackPatchChl_yoyo"         : {"MissionTimeout": 24,  "NeedCommsTime":180, "Speed":1 },
 	"trackPatch_yoyo"            : {"MissionTimeout": 12,  "NeedCommsTime":300, "Speed":1 },
 	"FrontSampling"              : {"MissionTimeout": 12,  "NeedCommsTime":60,  "Speed":1 },
-	"front_sampling"             : {"MissionTimeout": 12,  "NeedCommsTime":60,  "Speed":1 } 
+	"Smear"         		     : {"MissionTimeout": 3,   "NeedCommsTime":60,  "Speed":1 },
+	"front_sampling"             : {"MissionTimeout": 12,  "NeedCommsTime":300,  "Speed":1 } 
 }
 
 #########
@@ -1638,6 +1660,7 @@ newavgcurrent=0
 batteryduration = -999
 argobatt = False
 padded = False
+WaypointName = "Waypoint"
 
 # vehicle not recovered
 if (not recovered) or Opt.anyway or DEBUG:
@@ -1663,7 +1686,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# mission time is off if schedule paused (default) and resumed. Detect this and go back further?
 	missionName,missionTime = parseMission(important)
 	
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,CTDonCommand,CTDoffCommand  = parseImptMisc(important)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand  = parseImptMisc(important)
 	
 	
 	gf,gftime = parseCBIT(gfrecords)
@@ -2149,18 +2172,18 @@ else:   #not opt report
 		###   ARRIVAL ESTIMATE
 		###
 
-
+		cdd["text_waypoint"] = WaypointName
 		if DEBUG and (waypointtime >= 0):
 			print("TIME TO STATION from GPS TIME, not now:",hours(waypointtime),elapsed(waypointtime), file=sys.stderr)
 		if ReachedWaypoint:
-			arrivetext = "Arrived at WP"
+			arrivetext = f"Arrived at {WaypointName}"
 			cdd["text_stationdist"]   = elapsed(waypointtime - now)
 
 		elif (waypointdist) and (waypointtime == -1 or waypointdist < 0.4):
 			if waypointdist:
-				arrivetext = "On Station %.1f km" % waypointdist
+				arrivetext = f"On {WaypointName} %.1f km" % waypointdist
 			else:
-				arrivetext = "On Station" 
+				arrivetext = f"At {WaypointName}" 
 		elif waypointtime == -2:
 			arrivetext = "Nav missing"
 		# Cheating by storing heading in waypointtime if mismatch in function
