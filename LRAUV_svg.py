@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Apr 13 2023 version  -->
+<!-- May 19 2023 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -147,6 +147,10 @@ svgtext = '''
 <circle desc="UBAT" class="{color_ubat}" cx="544" cy="251" r="4" /> 
 <circle desc="flow" class="{color_flow}" cx="544" cy="261" r="4"/>
 <!-- end shapes -->
+
+<!-- High and low side GF arrows -->
+<polygon desc="LowGF" class="{color_lowgf}" points="510,265 514,255 506,255 510,263"/>
+<polygon desc="HighGF" class="{color_highgf}" points="510,255 514,263 506,263 510,255"/>
 
 
 <!-- future <text desc="" transform="matrix(1 0 0 1 557.3993 228.8362)" class="st9 st10">B&amp;T?</text>

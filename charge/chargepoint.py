@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 ''' use -p to print instead of save to file 
     use -f to define an alternative path
+	
+	Version 1.6 : Show unreachable on certain errors
     Version 1.5 : Added notifications for freed-up chargers
     Version 1.1'''
 
@@ -79,21 +81,26 @@ else:
 Username = "c153d01bc218067cb536909438aa48e4581b9c7f0520d1478204543"
 Password = "020968c4856a8fb1b23342856e1bc407"
 
-
+client = False
 wsdl_url = "https://webservices.chargepoint.com/cp_api_5.0.wsdl"
 client = Client(wsdl_url, wsse=UsernameToken(Username, Password))
 
 # Get our whole list of stations:
 # stationData = client.service.getStations({})
 # numStations = len(stationData.stationData)
-
+if not client:
+	sys.exit()
 StatusArray=[]
 for Site in UnitOrder:
-	data = client.service.getStationStatus(ListQuery[Site])
-	d = data.stationData[0]
-	if opt.DEBUG:
-		print(Site, d.stationID, d.Port[0].Status,d.Port[1].Status, file=sys.stderr)
-	StatusArray += [d.Port[0].Status[0],d.Port[1].Status[0]]  # first letter
+	try:
+		data = client.service.getStationStatus(ListQuery[Site])
+		d = data.stationData[0]
+		if opt.DEBUG:
+			print(Site, d.stationID, d.Port[0].Status,d.Port[1].Status, file=sys.stderr)
+		StatusArray += [d.Port[0].Status[0],d.Port[1].Status[0]]  # first letter
+	except zeep.exceptions.Fault:
+		StatusArray += ['U','U']   # Indicate unreachable
+		sys.exit()
 if opt.DEBUG:
 	print("StatusArray",StatusArray, file=sys.stderr)
 

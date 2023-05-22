@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.24  - Added arrow for high-side/low-side GF.
+	Version 2.23  - Lookup table for waypoint names in the Nav projection section
 	Version 2.22  - Added dot for log age. Added [ASAP] to schedule. Extended sparkline.
 	Version 2.21  - Added Argo battery status (low or OK)
 	Version 2.20  - Added freshness label to the depth sparkline
@@ -402,8 +404,8 @@ def getDataAsc(starttime,mission):
 			print("# DATA NewURL",NewURL, file=sys.stderr)
 		datacon = urllib.request.urlopen(NewURL,timeout=5)
 		content =  datacon.read().decode('utf-8').splitlines()
-		if DEBUG:
-			print("# DATA content",content[:10], file=sys.stderr)
+		# if DEBUG:
+		# 	print("# DATA content",content[:10], file=sys.stderr)
 		# pull last X lines from queue. This was causing problems on some missions so increased it
 		lastlines = list(deque(content))
 		#lastlines = list(deque(content))
@@ -505,7 +507,7 @@ def getNewDepth(starttime=1676609209829):
 	# if DEBUG:
 	# 	print("# DEPTH RECORD",record, file=sys.stderr)
 	if not record:
-		return chopt,chopd
+		return chopt,chopd,False
 	depthl = record['values'][:]
 	millis = record['times'][:]
 	if DEBUG:
@@ -563,8 +565,8 @@ def getNewBattery():
 	BattFields = runNewStyleQuery(api="data")
 	for record in BattFields:
 		if record['name'] == 'battery_voltage':
-			if DEBUG:
-				print("# VOLT RECORD",record, file=sys.stderr)
+			# if DEBUG:
+			# 	print("# VOLT RECORD",record, file=sys.stderr)
 			volt = record['values'][-1]
 			volttime = record['times'][-1]
 		elif record['name'] == 'battery_charge':
@@ -619,7 +621,7 @@ def parseARGO(recordlist):
 		return argobatt,gpstime
 
 
-def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mins=60):
+def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mins=60,lastcomm=1684547199000):
 	''' 
 	TODO: make orange region from now back to the start of the time
 	h0 362 for near the middle of the vehicle
@@ -668,7 +670,7 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	faked=10
 	pliststring = ''
 	for i in range(len(xplist)):
-		pliststring += """{},{} """.format(xplist[i],yplist[i])
+		pliststring += f"""{xplist[i]:.5f},{yplist[i]:.5f} """
 	
 	lp = """{},{}""".format(xplist[0],y0-0.6)
 
@@ -682,26 +684,30 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	if sublist and (now-max(sublist)*60000)/(1000*60*60) > (1.25 * need_comm_mins/60):
 		agecolor = "st27"
 		padcolor = "st27" # padded values if more than an hour: orange
-	else: 
+	elif sublist: 
 		agecolor = "st25"
 		padcolor = "st16"  # padded values if recent
-	
+	else: # last records are older than 8 hours
+		sublist = [lastcomm/60000]
+		agecolor = "st27"
+		padcolor = "st27" # padded values if more than an hour: orange
+
 	# add recent poly in orange, four points.
 	if padded:
 		if (not padplist) or (len(padplist)< 2):
 			padpoly = f'''<polyline desc="emptysparkline" class="st27" points="{x0},{y0-0.6} {x0},{y0+faked/ydiv} {boxr - 1},{y0+faked/ydiv} {boxr},{y0+faked/ydiv} {rp}"/>'''
 		else:
-			padpoly = f'''<polyline desc="sparkline" class="{padcolor}" points="{padplist[0]:.7},{y0-0.6} {padplist[0]:.7},{y0+1/ydiv} {padplist[1]:.7},{y0+faked/ydiv} {boxr},{y0+faked/ydiv} {rp}"/>'''
+			padpoly = f'''<polyline desc="sparkline" class="{padcolor}" points="{padplist[0]:.5f},{y0-0.6} {padplist[0]:.5f},{y0+1/ydiv} {padplist[1]:.5f},{y0+faked/ydiv} {boxr},{y0+faked/ydiv} {rp}"/>'''
 	else:
 		padpoly = ''
 	#,y0-0.6, boxr,(y0 + 20/ydiv),  max(xplist),(y0 + 20/ydiv),   max(xplist),y0-0.6,
 	if DEBUG:
 		print("### PADPOLY", padpoly,file=sys.stderr)
+		print("### SUBLINST", sublist,file=sys.stderr)
 	#Timeago in hours
 	
-	
-	polystring = '''<polygon desc="sparkpoly" class="sparkpoly" points="{lp} {ps} {rp}"/>
-	<!-- <polyline desc="sparkline" class="sparkline" points="{ps}"/> -->\n'''.format(lp=lp,ps=pliststring,rp=rp)
+
+	polystring = '''<polygon desc="sparkpoly" class="sparkpoly" points="{lp} {ps} {rp}"/>'''.format(lp=lp,ps=pliststring,rp=rp)
 	SVGbg = f'''<rect desc="sparkbox" x="{x0}" y="{y0}" class="sparkline" width="{w}" height="{h}"/>'''
 	SVGbody=f'''
 	<polyline desc="sparkline" class="gridline" points="{x0+w*.25},{y0} {x0+w*.25},{y0+h}"/>
@@ -721,8 +727,7 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.50} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.50)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.75} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.75)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-1} {y0+h+5.5})" class="st12 st9 sparktext">{min_to_show/60:n}h</text>
-	<circle desc="spr_is_old" class="{agecolor}" cx="272" cy="168" r="2"/>
-	\n'''
+	<circle desc="spr_is_old" class="{agecolor}" cx="272" cy="168" r="2"/>'''
 	
 	depstr = f'''<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>'''
 	if DEBUG:
@@ -834,6 +839,8 @@ def parseFaults(recordlist):
 				BadBattery=Record["unixTime"]
 			if ma:  
 				BadBatteryText ='<text transform="matrix(1 0 0 1 286.0 245)" class="st31 st9 st24" text-anchor="end">{}x</text>'.format(ma.group(1))
+			if DEBUG:
+				print("## BAD STICK REPORT", RT, file=sys.stderr)
 		if (not Software) and "software overcurrent" in Record["text"].lower():
 			Software = Record["unixTime"]
 		
@@ -923,7 +930,8 @@ def parseCBIT(recordlist):
 	'''Use special query for CBIT and GF'''
 	GF = False
 	GFtime = False
-	DVL=False
+	DVL = False
+	GFLow = False
 	
 	'''DVL stuff  Rowe_600.loadAtStartup=1 bool
 	old pontus/tethys command:
@@ -936,26 +944,33 @@ def parseCBIT(recordlist):
 		for Record in recordlist:
 			# if DEBUG:
 			#	print >> sys.stderr, "# GF RECORD",Record
+			RecordText = Record.get("text","NA")
 			if GF == False:
-				if Record.get("text","NA").startswith("Ground fault detected") or Record.get("text","NA").startswith("Low side ground fault detected"):
+				if RecordText.startswith("Ground fault detected") or RecordText.startswith("Low side ground fault detected"):
 					# print "\n####\n",Record["text"]
-					GF = parseGF(Record.get("text","NA"))
+					GF,GF_low = parseGF(RecordText)
+					if "Low side" in RecordText or GF_low:
+						GFLow = True
 					GFtime = Record["unixTime"]
 			
-				elif Record.get("text","NA").startswith("No ground fault"):
+				elif RecordText.startswith("No ground fault"):
 					GF = "OK"
 					GFtime = Record["unixTime"]
 			if DVL == False:
-				if Record.get("text","NA").startswith("Communications Fault in component: RDI_Pathfinder"):
+				if RecordText.startswith("Communications Fault in component: RDI_Pathfinder"):
 					if DEBUG:
 						print("DVL COMM ERROR", file=sys.stderr)
 					#need to find turned off commands.
 	else:
 		GF = "NA"
-	return GF, GFtime		
+	if DEBUG:
+		print(f"GF{GF},GF-LOW:{GFLow}", file=sys.stderr)
+
+	return GF, GFtime,GFLow		
 	
 def parseGF(gfstring):
 	GFlist = []
+	GF_low = False
 	'''multi-line input, find max value after colon
 	mA:
 CHAN A0 (Batt): -0.002926
@@ -972,9 +987,12 @@ Full Scale Calc: 4.765 mA, -1.589 mA
 	for Line in gfstring.split("\n"):
 		if Line.startswith("CHAN") and ":" in Line:
 			GFlist.append(float(Line.split(":")[1]))
+			if "GND" in Line:
+				if float(Line.split(":")[1]) > 0.01:
+					GF_low = True
 	M=[(abs(n), (n>0)-(n<0)) for n in GFlist]
 	chosen = max(M) 
-	return "%.2f" % (chosen[0]*chosen[1])
+	return "%.2f" % (chosen[0]*chosen[1]), GF_low
 
 '''
 Commanded speed may not show up in Important if it is default for mission
@@ -1030,7 +1048,20 @@ def parseImptMisc(recordlist):
   		"-121.96,36.90": "Sta.N" ,
   		"-121.89,36.65": "Sta.S" ,
   		"-121.90,36.92": "NE",
-  		"-121.90,36.90": "NE"   
+  		"-121.90,36.90": "NE",
+		"-121.98,36.81": "Lower Soquel", 
+		"-121.89,36.77": "Krill Shelf",
+		"-121.86,36.82": "N. Spur",
+		"-122.19,36.71" : "MARS",
+		"-122.19,36.72" : "1N",
+		"-122.18,36.71" : "1E",
+		"-122.19,36.70" : "1S",
+		"-122.19,36.71" : "1W",
+		"-122.19,36.73" : "2N",
+		"-122.16,36.71" : "2E",
+		"-122.19,36.69" : "2S",
+		"-122.21,36.71" : "2W",
+		"-121.96,36.87": "Upper Soquel" 
 		}
 	# CONFIGURE DVL config defaults
 	GetDVLStartup = {
@@ -1114,7 +1145,10 @@ def parseImptMisc(recordlist):
 				
 			if StationLat:
 				LookupLL = f"{round(StationLon,2):.2f},{round(StationLat,2):.2f}"
-				WaypointName = TruncatedWaypoints.get(LookupLL,"Station")  # if not found, use "Station"
+				if DEBUG:
+					print("## Looking up Station", LookupLL, file=sys.stderr)
+				
+				WaypointName = TruncatedWaypoints.get(LookupLL,"Station.")  # if not found, use "Station"
 			
 		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
@@ -1153,7 +1187,8 @@ def parseImptMisc(recordlist):
 			
 		'''Change to got command ubat on  got command restart application'''
 		#if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
-		if VEHICLE == "pontus" and ubatTime == False and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec') :
+		if VEHICLE == "pontus" and ubatTime == False:
+			 # and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec' or Record["name"] =='Important') :
 			''' Changing this to default to ON unless specifically turned off'''
 			
 			RecordText = Record.get("text","NA")
@@ -1162,7 +1197,7 @@ def parseImptMisc(recordlist):
 				ubatBool = bool(float(RecordText.replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
 				ubatTime   = Record["unixTime"]
 				if DEBUG:
-					print("## Got UBAT Load at startup", RecordText, file=sys.stderr)
+					print("## Got UBAT Load at startup", RecordText, Record["name"],file=sys.stderr)
 			
 			elif  "abling UBAT" in RecordText:
 				ubatBool = RecordText.startswith("Enabl")
@@ -1418,7 +1453,7 @@ def makeTrackSVG(Tracking,TrackTime):
 		elif trend < 0:
 			trackshape = '<polygon class="st25" points="424,313 428,305 420,305 424,313"/>\n'  # "green downarrow"
 		else:
-			trackshape = '<polygon class="st27" points="424,305 428,305 420,313 424,305"/>\n'  # orange uparrow
+			trackshape = '<polygon class="st27" points="424,305 428,313 420,313 424,305"/>\n'  # orange uparrow
 	else:
 		trackshape = '<circle  class="st16" cx="424" cy="309" r="3"/>\n'
 	
@@ -1566,6 +1601,7 @@ BadBattery = False
 BadBatteryText = ""
 ThrusterServo = False
 dropWeight = False
+gflow=False
 Tracking = []
 TrackTime = []
 sparktext = ""
@@ -1613,6 +1649,7 @@ mission_defaults = {
 	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1.0 },
 	"transit"          : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1.0 },
 	"CircleSample"     : {"MissionTimeout": 2,   "NeedCommsTime":240,  "Speed":1 },
+	"circle_sample"    : {"MissionTimeout": 24,  "NeedCommsTime":240,  "Speed":1 },
 	"CorkAndScrew"     : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
 	"IsothermDepthSampling"      : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
 	"location_depth_sampling"    : {"MissionTimeout": 168,  "NeedCommsTime":60,  "Speed":1 },
@@ -1688,8 +1725,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand  = parseImptMisc(important)
 	
-	
-	gf,gftime = parseCBIT(gfrecords)
+	gf,gftime,gflow = parseCBIT(gfrecords)
 
 	if not logtime:
 		logtime = startTime
@@ -1926,6 +1962,8 @@ else:   #not opt report
 	"color_logago",
 	"color_argo",
 	"color_missionago",
+	"color_lowgf",
+	"color_highgf",
 	"color_leak"]
 
 	for cname in cartcolors:
@@ -1967,7 +2005,7 @@ else:   #not opt report
 	"svg_current",
 	"text_vehicle","text_lastupdate","text_flowago","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime",
-	"text_leak","text_leakago","text_missionago",
+	"text_leak","text_leakago","text_missionago","text_waypoint",
 	"text_criticalerror"
 	]
 	for tname in specialnames:
@@ -1981,12 +2019,10 @@ else:   #not opt report
 	| || (_) | (_| | (_) |
 	 \__\___/ \__,_|\___/ 
 
-	 transparent for vehicle-specific features
+	 
 	 TODO: Warning: Battery Data not active. Expected only when running primaries
 	 Change GPS calculation to look over a longer time scale
-	 add more time ago fields
-	 GO TO SLEEP
- 
+	 
 	 '''
 
 	commreftime = max(cellcomms,satcomms)
@@ -2007,9 +2043,20 @@ else:   #not opt report
 	cdd["color_gf"]= "st{}".format(gfnum)
 	if gf == "NA":
 		cdd["text_gftime"] = "no scan"
+		cdd["color_highgf"]="st18"
+		cdd["color_lowgf"]="st18"
 	else:
 		ago_gftime = gftime - now 
 		cdd["text_gftime"] = elapsed(ago_gftime)
+		if gflow:			
+			cdd["color_highgf"]="st18"
+			cdd["color_lowgf"]="st27"
+			cdd["color_gf"]="st6"
+		elif not recovered:
+			cdd["color_highgf"]="st25"
+			cdd["color_lowgf"]="st18"
+			
+
 		
 	cdd["text_gf"] = gf
 
@@ -2176,7 +2223,7 @@ else:   #not opt report
 		if DEBUG and (waypointtime >= 0):
 			print("TIME TO STATION from GPS TIME, not now:",hours(waypointtime),elapsed(waypointtime), file=sys.stderr)
 		if ReachedWaypoint:
-			arrivetext = f"Arrived at {WaypointName}"
+			arrivetext = f"Arrived: {WaypointName}"
 			cdd["text_stationdist"]   = elapsed(waypointtime - now)
 
 		elif (waypointdist) and (waypointtime == -1 or waypointdist < 0.4):
@@ -2241,8 +2288,11 @@ else:   #not opt report
 			#x0=362,y0=295)
 			#x0=308,y0=295)
 			# Takes data from the getNewData function
-			
-			sparktext = addSparkDepth(depthdepth,depthtime,padded=sparkpad,x0=131,y0=166,need_comm_mins = needcomms)
+			if DEBUG:
+				print("# COMMREFTIME: ", commreftime, file=sys.stderr)
+				print("# NOW: ", now, file=sys.stderr)
+				print("# SPARKINFO: ",depthtime,sparkpad, file=sys.stderr)
+			sparktext = addSparkDepth(depthdepth,depthtime,padded=sparkpad,x0=131,y0=166,need_comm_mins = needcomms,lastcomm=commreftime)
 
 		###
 		###   SAT COMM DISPLAY
