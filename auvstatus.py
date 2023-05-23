@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.24  - Made station Lookup use 3 decimals.
 	Version 2.24  - Added arrow for high-side/low-side GF.
 	Version 2.23  - Lookup table for waypoint names in the Nav projection section
 	Version 2.22  - Added dot for log age. Added [ASAP] to schedule. Extended sparkline.
@@ -1041,32 +1042,33 @@ def parseImptMisc(recordlist):
 		"NEreal" : "-121.900002,36.919998",
 		"NE"    : "-121.9,36.9"}
 	TruncatedWaypoints = {
-  		"-121.85,36.80": "C1"    ,
-  		"-122.02,36.75": "M1"    ,
-  		"-122.38,36.69": "M2"    ,
-  		"-121.82,36.81": "3km"   ,
-  		"-121.96,36.90": "Sta.N" ,
-  		"-121.89,36.65": "Sta.S" ,
-  		"-121.90,36.92": "NE",
-  		"-121.90,36.90": "NE",
-		"-121.98,36.81": "Lower Soquel", 
-		"-121.89,36.77": "Krill Shelf",
-		"-121.86,36.82": "N. Spur",
-		"-122.19,36.71" : "MARS",
-		"-122.19,36.72" : "1N",
-		"-122.18,36.71" : "1E",
-		"-122.19,36.70" : "1S",
-		"-122.19,36.71" : "1W",
-		"-122.19,36.73" : "2N",
-		"-122.16,36.71" : "2E",
-		"-122.19,36.69" : "2S",
-		"-122.21,36.71" : "2W",
-		"-121.96,36.87": "Upper Soquel" 
+  		"36.797,-121.847": "C1"    ,
+  		"36.750,-122.022": "M1"    ,
+  		"36.691,-122.376": "M2"    ,
+  		"36.807,-121.824": "3km"   ,
+  		"36.903,-121.964": "Sta.N" ,
+  		"36.659,-121.893": "Sta.S" ,
+  		"36.920,-121.900": "NE-b",
+  		"36.900,-121.900": "NE",
+		"36.81,-121.98": "Lower Soquel", 
+		"36.77,-121.89": "Krill Shelf",
+		"36.82,-121.86": "N. Spur",
+		"36.712,-122.187" : "MARS",
+		"36.722,-122.187" : "Canon 1N",
+		"36.713,-122.176" : "Canon 1E",
+		"36.704,-122.187" : "Canon 1S",
+		"36.713,-122.198" : "Canon 1W",
+		"36.731,-122.187" : "Canon 2N",
+		"36.713,-122.165" : "Canon 2E",
+		"36.695,-122.187" : "Canon 2S",
+		"36.713,-122.209" : "Canon 2W",
+		"36.87,-121.96" : "Upper Soquel" 
 		}
+
 	# CONFIGURE DVL config defaults
 	GetDVLStartup = {
 		'makai':True,
-		'pontus':True,
+		'pontus':True, 
 		'tethys':True,
 		'daphne':False,
 		'brizo':True,
@@ -1144,7 +1146,7 @@ def parseImptMisc(recordlist):
 				ReachedWaypoint = Record["unixTime"]
 				
 			if StationLat:
-				LookupLL = f"{round(StationLon,2):.2f},{round(StationLat,2):.2f}"
+				LookupLL = f"{round(StationLat,3):.3f},{round(StationLon,3):.3f}"
 				if DEBUG:
 					print("## Looking up Station", LookupLL, file=sys.stderr)
 				
@@ -1644,13 +1646,13 @@ mission_defaults = {
 	"mbts_sci2"        : {"MissionTimeout": 48,  "NeedCommsTime":60,  "Speed":1.0 },
 	"keepstation"      : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"ballast_and_trim" : {"MissionTimeout": 1.5, "NeedCommsTime":45,  "Speed":0.1 },
-	"profile_station_backseat" : {"MissionTimeout": 1, "NeedCommsTime":60,  "Speed":1.0 },
 	"keepstation_3km"  : {"MissionTimeout": 4,   "NeedCommsTime":45,  "Speed":.75 },
 	"transit_3km"      : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1.0 },
 	"transit"          : {"MissionTimeout": 1,   "NeedCommsTime":30,  "Speed":1.0 },
 	"CircleSample"     : {"MissionTimeout": 2,   "NeedCommsTime":240,  "Speed":1 },
 	"circle_sample"    : {"MissionTimeout": 24,  "NeedCommsTime":240,  "Speed":1 },
 	"CorkAndScrew"     : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
+	"profile_station_backseat"   : {"MissionTimeout": 1, "NeedCommsTime":60,  "Speed":1.0 },
 	"IsothermDepthSampling"      : {"MissionTimeout": 20,  "NeedCommsTime":60,  "Speed":1 },
 	"location_depth_sampling"    : {"MissionTimeout": 168,  "NeedCommsTime":60,  "Speed":1 },
 	"LocationDepthSampling"      : {"MissionTimeout": 168,  "NeedCommsTime":60,  "Speed":1 },
@@ -1664,7 +1666,8 @@ mission_defaults = {
 	"trackPatch_yoyo"            : {"MissionTimeout": 12,  "NeedCommsTime":300, "Speed":1 },
 	"FrontSampling"              : {"MissionTimeout": 12,  "NeedCommsTime":60,  "Speed":1 },
 	"Smear"         		     : {"MissionTimeout": 3,   "NeedCommsTime":60,  "Speed":1 },
-	"front_sampling"             : {"MissionTimeout": 12,  "NeedCommsTime":300,  "Speed":1 } 
+	"front_sampling"             : {"MissionTimeout": 12,  "NeedCommsTime":300,  "Speed":1 }, 
+	"sci2_flat_and_level_backseat"    : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1.0 }
 }
 
 #########
@@ -2045,6 +2048,11 @@ else:   #not opt report
 		cdd["text_gftime"] = "no scan"
 		cdd["color_highgf"]="st18"
 		cdd["color_lowgf"]="st18"
+	elif gf == "OK":
+		cdd["color_highgf"]="st18"
+		cdd["color_lowgf"]="st18"
+		ago_gftime = gftime - now 
+		cdd["text_gftime"] = elapsed(ago_gftime)
 	else:
 		ago_gftime = gftime - now 
 		cdd["text_gftime"] = elapsed(ago_gftime)
@@ -2145,7 +2153,10 @@ else:   #not opt report
 		# SWError = False
 		# CriticalError = False                                                               # unicode bullet
 		if missionName and missionTime:
-			cdd["text_mission"]=missionName + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
+			missionNameText = missionName
+			if missionName == "Default":
+				missionNameText = "DEFAULT"
+			cdd["text_mission"]= missionNameText + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
 			cdd["text_missionago"] = elapsed(missionTime - now)
 		else:
 			cdd["text_mission"]     = "PENDING " 
