@@ -205,6 +205,7 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 	mlre    = re.compile(r"Sampled +([\d\.]+)ml")
 	pausere = re.compile(r"after sampling +([\d\.]+)ml")
 	sprre   = re.compile(r"SPRsummary.+,(.+) after")
+	sparere   = re.compile(r"([\d]+) +spares? remain")
 
 
 	firstnum = False
@@ -212,6 +213,7 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 	RedoList = []
 	DoneList = []
 	SPRdict = {}
+	Sparenum = 'na'
 
 	
 	for Record in recordlist:
@@ -219,6 +221,10 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 		Redo = False
 		
 		if "Cartridge" in RecordText:
+			if Sparenum == 'na':
+				SpareResult = sparere.findall(RecordText)
+				if SpareResult:
+					Sparenum = SpareResult[-1]
 			CartResult = cartre.findall(RecordText)	
 			if CartResult:
 				Cartnum = int(CartResult[-1])
@@ -313,7 +319,7 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 		print("TIME list",TimeList,file=sys.stderr)	
 		print("SPR Dict",SPRdict,file=sys.stderr)	
 			
-	return ESPL,firstnum,firsttime,big_circle_list,RedoList,TimeList,SPRdict
+	return ESPL,firstnum,firsttime,big_circle_list,RedoList,TimeList,SPRdict,Sparenum
 
 def printLegend(lowerleft):
 	lowerx=lowerleft[0]
@@ -393,7 +399,9 @@ def writefile(myoutpath,RedoList,ArchiveStr="UPDATED"):
 			extratext += "[SPR PRESENT]"
 		# SAMPLE SUMMARY
 		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Good Samples: {upd} {extra}</text>'.format(upd=GoodCount,tx=lowerright[0]-80,ty=lowerright[1]+7,extra=extratext)) # 175 190
-		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Sample Failed: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-80,ty=lowerright[1]+13)) # 175 190
+		outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Samples Failed: {upd}</text>'.format(upd=LeakCount,tx=lowerright[0]-80,ty=lowerright[1]+13)) # 175 190
+		if not(sparesleft == 'na'):
+			outfile.write('<text class="te5 font_size5" transform="translate({tx} {ty})">Spares Left: {upd}</text>'.format(upd=sparesleft,tx=lowerright[0]-25,ty=lowerright[1]+13)) # 175 190
 		outfile.write('<text class="te5 st5 font_size5" transform="translate({tx} {ty})">(Samples count down from high to low)</text>'.format(upd=LeakCount,tx=lowerright[0]-81,ty=lowerright[1]+19.5)) # 175 190
 		outfile.write(printLegend(lowerleft))
 
@@ -520,10 +528,12 @@ if (not recovered) or DEBUG:
 # 		print(esprecords,file=sys.stderr)
 	
 	if esprecords:
-		outlist,mostrecent,lastsample,style_circle_big,RedoList,mytimes,sprd  = parseESP(esprecords,style_circle_big)
+		outlist,mostrecent,lastsample,style_circle_big,RedoList,mytimes,sprd,sparesleft  = parseESP(esprecords,style_circle_big)
 		#['r' if i > 50 else 'y' if i > 2 else 'g' for i in x]
 		if DEBUG:
 			print ("\n#OUTLIST ", outlist,file=sys.stderr)
+			print ("\n#SPARES: ", sparesleft,file=sys.stderr)
+			
 		stylelist = \
 		['fill_gray' if i > 500 \
 		else 'fill_green' if i > 90  \
@@ -572,8 +582,8 @@ string_circle_big, string_circle_small, string_line_small, string_pie, string_te
 
 if DEBUG:
 	print ("\n#PCTLIST ", pctlist,file=sys.stderr)
-	print ("\n#string_spr_label \n", string_spr_label,file=sys.stderr)
-	print ("\n#string_pct_label \n", string_pct_label,file=sys.stderr)
+#	print ("\n#string_spr_label \n", string_spr_label,file=sys.stderr)
+#	print ("\n#string_pct_label \n", string_pct_label,file=sys.stderr)
 	# print ("\n#new pctlist \n", pctlist,file=sys.stderr)
 # 	print ("\n#string_pct_label ", string_pct_label.format(*pctlist),file=sys.stderr)
 # 	print ("\n#LEGEND ", printLegend(lowerleft),file=sys.stderr)
