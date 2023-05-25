@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.25  - Added rudimentary camera indicator for Galene.
 	Version 2.24  - Made station Lookup use 3 decimals.
 	Version 2.24  - Added arrow for high-side/low-side GF.
 	Version 2.23  - Lookup table for waypoint names in the Nav projection section
@@ -52,7 +53,7 @@ import json
 import math
 import re
 from collections import deque
-from LRAUV_svg import svgtext,svghead,svgpontus,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote   # define the svg text?
 from config_auv import servername, basefilepath
 import ssl
 
@@ -1967,6 +1968,8 @@ else:   #not opt report
 	"color_missionago",
 	"color_lowgf",
 	"color_highgf",
+	"color_camerabody",
+	"color_cameralens",
 	"color_leak"]
 
 	for cname in cartcolors:
@@ -2004,11 +2007,12 @@ else:   #not opt report
 		cdd[tname]='na'
 	cdd["text_arrow"]='90'
 	# these should persist after recovery
+	#These are made blank
 	specialnames=[
 	"svg_current",
 	"text_vehicle","text_lastupdate","text_flowago","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime",
-	"text_leak","text_leakago","text_missionago","text_waypoint",
+	"text_leak","text_leakago","text_missionago","text_cameraago","text_waypoint",
 	"text_criticalerror"
 	]
 	for tname in specialnames:
@@ -2286,9 +2290,19 @@ else:   #not opt report
 		else:
 			cdd["color_ubat"] = 'st18'
 			cdd["color_flow"] = 'st18'
-	
-		# ubatTime TO ADD?
+			
+		if VEHICLE == 'galene':
+			cdd["color_cameralens"] = "st3"
+			if 'backseat' in missionName.lower():
+				cdd["text_cameraago"] = "ON " # + cdd["text_missionago"]
+				cdd["color_camerabody"] = "st4"
+			else:
+				cdd["color_camerabody"] = "st3"
+				cdd["text_cameraago"] = "OFF " # + cdd["text_missionago"]
 
+				
+		# ubatTime TO ADD?
+		
 
 		###
 		###   SPARKLINE for DEPTH DISPLAY
@@ -2472,6 +2486,8 @@ else:   #not opt report
 				outfile.write(svglabels)
 				if VEHICLE=="pontus":
 					outfile.write(svgpontus)
+				if VEHICLE=="galene":
+					outfile.write(svggalene)
 			outfile.write(svgtail)
 			
 		#adding JSON version of cdd state dictionary

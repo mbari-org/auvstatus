@@ -148,6 +148,13 @@ svgtext = '''
 <circle desc="flow" class="{color_flow}" cx="544" cy="261" r="4"/>
 <!-- end shapes -->
 
+<!--galene camera specific -->
+<!--Use this to put the timeago below the label 
+<text desc="text_cameraago" transform="matrix(1 0 0 1 539 274)" class="st12 st9 st13">{text_cameraago}</text> -->
+<text desc="text_cameraago" transform="matrix(1 0 0 1 558 258)" class="st12 st9 st13">{text_cameraago}</text>
+<rect desc="CameraBody" class="{color_camerabody}"    x="540"  y="250" width="16" height="10"/>
+<circle desc="CameraLens" class="{color_cameralens}" cx="548" cy="255" r="3"/>
+
 <!-- High and low side GF arrows -->
 <polygon desc="LowGF" class="{color_lowgf}" points="510,265 514,255 506,255 510,263"/>
 <polygon desc="HighGF" class="{color_highgf}" points="510,255 514,263 506,263 510,255"/>
@@ -247,6 +254,11 @@ svgpontus='''
 <!-- vehicle-specific shapes -->
 <text desc="" transform="matrix(1 0 0 1 551.3628 254.5)" class="st9 st10">UBAT</text>
 <text desc="" transform="matrix(1 0 0 1 551.3628 264.5)" class="st9 st10">Flow</text>
+'''
+
+svggalene='''
+<!--galene camera specific -->
+<text transform="matrix(1 0 0 1 539 268)" class="st12 st9 st13">CAMERA</text>
 '''
 
 svgwaterleak='''<!--water leak-->
