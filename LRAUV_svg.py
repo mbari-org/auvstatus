@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- May 19 2023 version  -->
+<!-- June 4 2023 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -31,6 +31,7 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st25{fill:#5AC1A4;stroke:none; } <!--Green No Stroke -->
 	.st26{fill:#FFE850;stroke:none; } <!--Yellow No Stroke -->
 	.st27{fill:#EF9D30;stroke:none; } <!--Orange No Stroke -->	
+	.stwhite{fill:#FFFFFF;stroke:none; } <!--White No Stroke -->	
 	.st28{fill:#333333; } <!-- DarkGray Fill-->
 	.st30{font-size:8px;} 
 	.st31{fill:#B4372D;} <!-- Maroon text-->
@@ -168,14 +169,13 @@ svgtext = '''
 <g desc="arrow" transform="rotate (-90,604.94,259.74), rotate({text_arrow},605,259.74)">
     <rect x="594.14" y="256.24" class="st16" width="11.73" height="7"/>
     <g>
-        <polygon class="st16" points="618.22,259.74 600.81,266.86 604.94,259.74 600.81,252.63       "/>
+        <polygon class="st16" points="618.22,259.74 600.81,266.86 604.94,259.74 600.81,252.63"/>
     </g>
 </g>
 
-<!-- Dynamic values -->
 <text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12">{text_mission}</text>
 <text desc="text_missionago" transform="matrix(1 0 0 1 452 177)" class="st12 st9 sparktext">{text_missionago}</text>
-<text desc="missionsched" transform="matrix(1 0 0 1 409.5 196)" class="st12 st9 st13">{text_scheduled}</text>
+<text desc="missionsched" transform="matrix(1 0 0 1 460 196)" class="st12 st9 st13">{text_scheduled}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
@@ -195,7 +195,7 @@ svgtext = '''
 <text desc="text_gftime" transform="matrix(1 0 0 1 479.3629 250)" class="st12 st9 st13">{text_gftime}</text>
 <text desc="text_gpsago" transform="matrix(1 0 0 1 481 226.5)" class="st12 st9 st13">{text_gpsago}</text>
 <text desc="text_gf" transform="matrix(1 0 0 1 482 262.4973)" class="st9 st10">{text_gf}</text>
-<text desc="text_arrive" transform="matrix(1 0 0 1 580 222)" class="st12 st9 st24">Arrive {text_waypoint}</text>
+<text desc="text_arrive" transform="matrix(1 0 0 1 580 222)" class="st12 st9 st24">{text_waypoint}</text>
 <text desc="text_speed" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">{text_speed}<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
@@ -206,6 +206,7 @@ svgtext = '''
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">{text_dvlstatus}</text>
 <text desc="text_criticalerror" transform="matrix(1 0 0 1 352.0 300)" class="st9 st30 st31">{text_criticalerror}</text>
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13">{text_criticaltime}</text>
+{text_pauseshape}
 <g><title>Ground Fault: None means not detected. False means no recent scan</title>
 <text transform="matrix(1 0 0 1 485 273)" class="st12 st9 st13">GROUND</text>
 <text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT</text>

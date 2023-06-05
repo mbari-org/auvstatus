@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	Version 2.27  - Add Schedule Pause indicator (untested)
+	Version 2.26  - Maybe fixed a lastlines empty parsing bug around 431
 	Version 2.25  - Added rudimentary camera indicator for Galene.
 	Version 2.24  - Made station Lookup use 3 decimals.
 	Version 2.24  - Added arrow for high-side/low-side GF.
@@ -427,8 +429,13 @@ def getDataAsc(starttime,mission):
 			Bailout = True
 			lastlines=[]
 			break
-		else:
+		elif lastlines:
 			firstlast = lastlines[0]
+		else: # not lastlines
+			Bailout = True
+			lastlines=[]
+			break
+			
 
 		for nextline in lastlines:
 #			if DEBUG:
@@ -1014,7 +1021,10 @@ def parseImptMisc(recordlist):
 	ubatStatus = "st3"
 	ubatTime = False
 	ubatBool = True
-
+	
+	NeedSched = True
+	Paused = True
+	
 	FlowRate = False
 	FlowTime = False
 	
@@ -1099,7 +1109,7 @@ def parseImptMisc(recordlist):
 			configSet AMEcho.loadAtStartup 0 bool
 '''
 		## RELOCATED (Duplicated) from parseMission
-		RecordText = Record["text"]
+		RecordText = Record.get("text","NA")
 		# if not ReachedWaypoint and StationLon == False and RecordText.startswith("got command set") and (".Lon " in RecordText or ".Longitude" in RecordText or ".CenterLongitude" in RecordText):
 		#	if "itude" in RecordText:
 		#		StationLon = RecordText.split("itude ")[1]
@@ -1117,6 +1127,18 @@ def parseImptMisc(recordlist):
 		#	StationLat = float(StationLat.split(" ")[0])
 		#	if DEBUG:
 		#		print >> sys.stderr, "## Got Lat from ImptMisc", StationLat
+		
+		
+		# got command schedule resume 
+		# Can also have a Fault: Scheduling is paused
+		# also Scheduling was paused by a command
+		if NeedSched:
+			if "got command schedule resume" in RecordText:
+				Paused = False
+				NeedSched = False
+			elif bool(re.search('stop|got command schedule pause|restart |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText):
+				Paused = True
+				NeedSched = False
 		
 		# This will only parse the most recent event in the queue between Reached or Nav
 		if not NavigatingTo and not ReachedWaypoint: 
@@ -1193,8 +1215,6 @@ def parseImptMisc(recordlist):
 		if VEHICLE == "pontus" and ubatTime == False:
 			 # and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec' or Record["name"] =='Important') :
 			''' Changing this to default to ON unless specifically turned off'''
-			
-			RecordText = Record.get("text","NA")
 			'''WetLabsUBAT.loadAtStartup=0 bool'''
 			if  "WetLabsUBAT.loadAtStartup" in RecordText:
 				ubatBool = bool(float(RecordText.replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
@@ -1225,7 +1245,7 @@ def parseImptMisc(recordlist):
 		#	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 		#	FlowTime   = Record["unixTime"]
 
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused
 	
 
 def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
@@ -1701,7 +1721,9 @@ newavgcurrent=0
 batteryduration = -999
 argobatt = False
 padded = False
+Paused = True
 WaypointName = "Waypoint"
+
 
 # vehicle not recovered
 if (not recovered) or Opt.anyway or DEBUG:
@@ -1727,7 +1749,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# mission time is off if schedule paused (default) and resumed. Detect this and go back further?
 	missionName,missionTime = parseMission(important)
 	
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand  = parseImptMisc(important)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand,Paused  = parseImptMisc(important)
 	
 	gf,gftime,gflow = parseCBIT(gfrecords)
 
@@ -1837,6 +1859,7 @@ else:
 	missionName = "Out of the water"
 	CTDError = False
 	padded = False
+	
 	
 	
 
@@ -2000,6 +2023,7 @@ else:   #not opt report
 	"text_gpsago",
 	"text_logago",	
 	"text_dvlstatus",
+	"text_pauseshape",
 	"text_logtime"
  ]
 	
@@ -2020,6 +2044,7 @@ else:   #not opt report
 	
 
 	'''
+	
 	 _            _       
 	| |_ ___   __| | ___  
 	| __/ _ \ / _` |/ _ \ 
@@ -2107,6 +2132,19 @@ else:   #not opt report
 	elif argobatt == "Low":
 		cdd["color_argo"]="st27"
 
+	if not recovered:
+		if Paused:
+			cdd["text_pauseshape"] = '''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
+	<rect x="450" y="189" class="st27" width="8.2" height="8.2"/>
+	<rect x="452" y="190.6" width="1.3" height="5"/>
+	<rect x="455" y="190.6" width="1.3" height="5"/>
+	'''
+		else:
+			cdd["text_pauseshape"] ='''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
+	<rect x="450" y="189" class="st25" width="8.2" height="8.2"/> 
+	<polygon class="stwhite" points="452,190 452,196 456.5,193"/>'''
+
+		
 	###
 	###   MISSION OVERVIEW DISPLAY
 	###
@@ -2176,7 +2214,7 @@ else:   #not opt report
 			cdd["color_thrust"] = 'st5'
 				
 		if Scheduled:
-			cdd["text_scheduled"] = "SCHEDULED: "+ Scheduled
+			cdd["text_scheduled"] = Scheduled
 			if "/" in Scheduled:
 				Scheduled=Scheduled.split("/")[-1]
 			cdd["color_scheduled"] = ['st27','st25'][Scheduled.replace(' [ASAP]','') in mission_defaults]   
@@ -2234,7 +2272,7 @@ else:   #not opt report
 		###   ARRIVAL ESTIMATE
 		###
 
-		cdd["text_waypoint"] = WaypointName
+		cdd["text_waypoint"] = "Arrive at " + WaypointName
 		if DEBUG and (waypointtime >= 0):
 			print("TIME TO STATION from GPS TIME, not now:",hours(waypointtime),elapsed(waypointtime), file=sys.stderr)
 		if ReachedWaypoint:
