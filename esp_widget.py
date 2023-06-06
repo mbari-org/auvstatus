@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 '''
+v 1.2.4 : Added spares left indicator
 v 1.2.3 : Moved SPR string above % pumped
 v 1.2.2 : Added toxin report if SPR is present (replacing % pumped)
 v 1.2.1 : Adding json export of percentages and times
@@ -517,6 +518,7 @@ if Opt.lines:
 # PARSE RECORDS and SET FORMAT HERE
 GoodCount = 'na'
 LeakCount = 'na'
+sparesleft= 'na'
 RedoList = []
 mytimes = []
 outlist = []
