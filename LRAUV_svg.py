@@ -157,7 +157,7 @@ svgtext = '''
 <circle desc="CameraLens" class="{color_cameralens}" cx="548" cy="255" r="3"/>
 
 <!-- High and low side GF arrows -->
-<polygon desc="LowGF" class="{color_lowgf}" points="510,265 514,255 506,255 510,263"/>
+<polygon desc="LowGF" class="{color_lowgf}" points="510,263 514,255 506,255 510,263"/>
 <polygon desc="HighGF" class="{color_highgf}" points="510,255 514,263 506,263 510,255"/>
 
 

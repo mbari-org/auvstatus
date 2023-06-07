@@ -690,6 +690,8 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	# <text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
 	
 	# changed orange to be 25% more than needcomms
+	if DEBUG:
+		print("### SPARK TIME (minutes?)", (now-max(sublist)*60000)/(1000*60*60),file=sys.stderr)
 	if sublist and (now-max(sublist)*60000)/(1000*60*60) > (1.25 * need_comm_mins/60):
 		agecolor = "st27"
 		padcolor = "st27" # padded values if more than an hour: orange
@@ -1133,11 +1135,13 @@ def parseImptMisc(recordlist):
 		# Can also have a Fault: Scheduling is paused
 		# also Scheduling was paused by a command
 		if NeedSched:
-			if "got command schedule resume" in RecordText:
+			if "got command schedule resume" in RecordText or "Scheduling is resumed" in RecordText:
 				Paused = False
+				PauseTime = Record["unixTime"]
 				NeedSched = False
 			elif bool(re.search('stop|got command schedule pause|restart |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText):
 				Paused = True
+				PauseTime = Record["unixTime"]
 				NeedSched = False
 		
 		# This will only parse the most recent event in the queue between Reached or Nav
@@ -1722,6 +1726,7 @@ batteryduration = -999
 argobatt = False
 padded = False
 Paused = True
+PauseTime = False
 WaypointName = "Waypoint"
 
 
@@ -1859,6 +1864,7 @@ else:
 	missionName = "Out of the water"
 	CTDError = False
 	padded = False
+	PauseTime=False
 	
 	
 	
@@ -2131,18 +2137,6 @@ else:   #not opt report
 		cdd["color_argo"]="st25"
 	elif argobatt == "Low":
 		cdd["color_argo"]="st27"
-
-	if not recovered:
-		if Paused:
-			cdd["text_pauseshape"] = '''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
-	<rect x="450" y="189" class="st27" width="8.2" height="8.2"/>
-	<rect x="452" y="190.6" width="1.3" height="5"/>
-	<rect x="455" y="190.6" width="1.3" height="5"/>
-	'''
-		else:
-			cdd["text_pauseshape"] ='''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
-	<rect x="450" y="189" class="st25" width="8.2" height="8.2"/> 
-	<polygon class="stwhite" points="452,190 452,196 456.5,193"/>'''
 
 		
 	###
@@ -2462,7 +2456,7 @@ else:   #not opt report
 		if CriticalError:
 			cdd["text_criticalerror"] = "CRITICAL: "+ CriticalError
 			cdd["text_criticaltime"]  = elapsed(CriticalTime-now)
-			
+		
 		cdd["color_dvl"] = DVLcolor
 		
 		if (WaterCritical):
@@ -2475,6 +2469,22 @@ else:   #not opt report
 			cdd["text_leak"] = "AUX LEAK: "
 			cdd["text_leakago"] = elapsed(WaterFault-now)
 		
+		
+		# If there was a critical since the last schedule pause or schedule resume event, 
+		# then the schedule is effectively paused.
+		
+		if Paused or (PauseTime < CriticalTime):
+			cdd["text_pauseshape"] = '''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
+	<rect x="450" y="189" class="st27" width="8.2" height="8.2"/>
+	<rect x="452" y="190.6" width="1.3" height="5"/>
+	<rect x="455" y="190.6" width="1.3" height="5"/>
+	'''
+		else:
+			cdd["text_pauseshape"] ='''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
+	<rect x="450" y="189" class="st25" width="8.2" height="8.2"/> 
+	<polygon class="stwhite" points="452,190 452,196 456.5,193"/>'''
+
+
 		if DEBUG:
 			print("#Speed and textspeed ", speed, cdd["text_speed"], file=sys.stderr)
 		if (ThrusterServo>100) and ((now - ThrusterServo)/3600000 < 4):
