@@ -501,19 +501,48 @@ def getNewUBATFlow(starttime):
 		flow=999
 		flowtime=""
 	return flow,flowtime
-	
+
+def ampToCat(val):
+	'''convert piscivore current draw to number of cameras'''
+	cat = False
+	ival = int(val)
+	'''for piscivore, convert raw current to category'''
+	if ival <=20:
+		cat = 0
+	elif ival < 65:
+		cat = 1
+	elif ival > 200:
+		cat = 3
+	elif ival > 65:
+		cat = 2
+	return cat
+		
 def getNewCameraPower(starttime):	
+	nowcat=-999
+	origtime = False
+	nowpowtime = False
 	'''Returns the most recent power consumption for the piscivore cameras'''
 	'''PowerOnly.component_avgCurrent_loadControl'''
 	'''https://okeanids.mbari.org/TethysDash/api/data/PowerOnly.component_avgCurrent_loadControl?vehicle=pontus&from=0&maxlen=2'''
-	record = runNewStyleQuery(api="data/PowerOnly.component_avgCurrent_loadControl",extrastring="&from=0&maxlen=1")
-	if record:
-		flow = record['values'][-1]
-		flowtime = record['times'][-1]
+	record = runNewStyleQuery(api="data/PowerOnly.component_avgCurrent_loadControl",extrastring="")
+	if record and nowcat < -998:
+		nowcat = ampToCat(record['values'][-1])
+		nowpowtime = record['times'][-1]
+		# -1 to 15, 16-65, 66-125
+		for v,t in zip(record['values'][::-1],record['times'][::-1]):
+			tc = ampToCat(v)
+			if tc == nowcat:
+				nowpowtime = t
+			else:
+				break
+		if DEBUG:
+			print("# record",record['values'], file=sys.stderr)
+			# print("# ORIGTIME",elapsed(origtime - now), file=sys.stderr)
+			print("# FIRST TIME",elapsed(nowpowtime - now), file=sys.stderr)
 	else:
-		flow=999
-		flowtime=""
-	return flow,flowtime
+		nowpow=999
+		nowpowtime=False
+	return nowcat,nowpowtime
 	
 def getNewDepth(starttime=1676609209829):
 	'''https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=pontus&maxlen=200
@@ -599,19 +628,19 @@ def getNewBattery():
 				volttime = record['times'][-1]
 			elif record['name'] == 'battery_charge':
 				amp = record['values'][-1]
-			elif record['name'] == 'average_current':
-				currentlist = record['values'][-7:]
-				if DEBUG:
-					print("\n# CURRENT LIST",currentlist, file=sys.stderr)
-	
-				if currentlist:
-					precisecurrent = sum(currentlist)/(len(currentlist)*1000)
-					avgcurrent = round(precisecurrent,1)
-			elif record['name'] == 'PowerOnly.component_avgCurrent_loadControl':
-				cameracurrent = record['values'][-1]
-				cameratime = record['times'][-1]
-				if DEBUG:
-					print("\n# PISCIVORE CURRENT",cameracurrent, file=sys.stderr)
+	# 		elif record['name'] == 'average_current':
+	# 			currentlist = record['values'][-7:]
+	# 			if DEBUG:
+	# 				print("\n# CURRENT LIST",currentlist, file=sys.stderr)
+	# 
+	# 			if currentlist:
+	# 				precisecurrent = sum(currentlist)/(len(currentlist)*1000)
+	# 				avgcurrent = round(precisecurrent,1)
+	# 		elif record['name'] == 'PowerOnly.component_avgCurrent_loadControl':
+	# 			cameracurrent = record['values'][-1]
+	# 			cameratime = record['times'][-1]
+	# 			if DEBUG:
+	# 				print("\n# PISCIVORE CURRENT",cameracurrent, file=sys.stderr)
 	if DEBUG:
 		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
 	batterycolor = "st12"
@@ -621,7 +650,7 @@ def getNewBattery():
 			batterycolor = "st31"
 
 		
-	return volt,amp,avgcurrent,volttime,hoursleft,batterycolor,cameracurrent,cameratime
+	return volt,amp,avgcurrent,volttime,hoursleft,batterycolor
 
 def parseGPS(recordlist):
 	if DEBUG:
@@ -1756,6 +1785,8 @@ newavgcurrent=0
 batteryduration = -999
 cameracurrent = -999
 cameratime = False
+camcat = -999
+camchangetime = False
 argobatt = False
 padded = False
 Paused = True
@@ -1827,9 +1858,10 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
 	
-	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,colorduration,cameracurrent,cameratime = getNewBattery()
+	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,colorduration = getNewBattery()
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
-
+	if VEHICLE == "pontus":
+		camcat,camchangetime = getNewCameraPower(startTime)
 
 	if DEBUG:
 		print("# DURATION and timeout start", missionduration,timeoutstart, file=sys.stderr)
@@ -2358,21 +2390,43 @@ else:   #not opt report
 			# parse piscivore camera
 			'''{text_camago}{color_cam1}{color_cam2} 2=gray, 3 white, 4 green 6 orange 11 dark gray'''
 			# cameracurrent = 55
-			if (cameracurrent < 998) and (cameracurrent > -1):
-				if cameratime:
-					cdd["text_camago"] = elapsed(cameratime-now)
+			# if current is -999 then no data were acquired
+		# 	if (cameracurrent < 998) and (cameracurrent > -1):
+		# 		if cameratime:
+		# 			cdd["text_camago"] = elapsed(cameratime-now)
+		# 		else:
+		# 			cdd["text_camago"]=""	
+		# 
+		# 		if ((65 < cameracurrent) and (cameracurrent < 250)): # two cameras on
+		# 			cdd["color_cam1"]= 'st4'
+		# 			cdd["color_cam2"]= 'st4'
+		# 		elif (15 < cameracurrent):  # (one camera on)
+		# 			cdd["color_cam1"]= 'st4'
+		# 			cdd["color_cam2"]= 'st11'
+		# 		else:  # no cameras on
+		# 			cdd["color_cam1"]= 'st11'
+		# 			cdd["color_cam2"]= 'st11'
+					
+			if (camcat < 998) and (camcat > -1):
+				if camchangetime:
+					cdd["text_camago"] = elapsed(camchangetime-now)
 				else:
 					cdd["text_camago"]=""	
 		
-				if ((65 < cameracurrent) and (cameracurrent < 200)): # two cameras on
+				if (camcat == 2): # two cameras on
 					cdd["color_cam1"]= 'st4'
 					cdd["color_cam2"]= 'st4'
-				elif (15 < cameracurrent):  # (one camera on)
+				elif (camcat == 1):  # (one camera on)
 					cdd["color_cam1"]= 'st4'
 					cdd["color_cam2"]= 'st11'
-				else:  # no cameras on
+				elif camcat == 0:  # no cameras on
 					cdd["color_cam1"]= 'st11'
 					cdd["color_cam2"]= 'st11'
+				elif camcat == 3: # current > 200
+					cdd["color_cam1"]= 'st6'
+					cdd["color_cam2"]= 'st6'
+					
+
 			else: 
 				cdd["text_camago"] = ""
 				cdd["color_cam1"] = "st3"
@@ -2594,11 +2648,12 @@ else:   #not opt report
 				outfile.write(svglabels)
 				if VEHICLE=="pontus":
 					outfile.write(svgpontus)
-					outfile.write(svgpiscivore.format(
-						color_cam1 = cdd["color_cam1"],
-						color_cam2 = cdd["color_cam2"],
-						text_camago = cdd["text_camago"] )
-					)
+					if (camcat < 998) and (camcat > -1):
+						outfile.write(svgpiscivore.format(
+							color_cam1 = cdd["color_cam1"],
+							color_cam2 = cdd["color_cam2"],
+							text_camago = cdd["text_camago"] )
+						)
 
 				if VEHICLE=="galene":
 					outfile.write(svggalene)
