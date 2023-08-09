@@ -82,8 +82,8 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_big_25" class="stroke_none" cx="135" cy="76" r="12"/>
 <circle desc="c_big_26" class="stroke_none" cx="161" cy="76" r="12"/>
 <circle desc="c_big_27" class="stroke_none" cx="187" cy="76" r="12"/>
-<circle desc="c_big_28" class="stroke_none" cx="213" cy="76" r="12"/>
-<circle desc="c_big_29" class="stroke_purple" cx="239" cy="76" r="12"/>
+<circle desc="c_big_28" class="stroke_purple" cx="213" cy="76" r="12"/>
+<circle desc="c_big_29" class="stroke_none" cx="239" cy="76" r="12"/>
 <circle desc="c_big_30" class="stroke_none" cx="265" cy="76" r="12"/>
 <circle desc="c_big_31" class="stroke_none" cx="31" cy="102" r="12"/>
 <circle desc="c_big_32" class="stroke_none" cx="57" cy="102" r="12"/>
@@ -142,7 +142,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <circle desc="c_small_25" class="fill_gray" cx="135" cy="76" r="10"/>
 <circle desc="c_small_26" class="fill_gray" cx="161" cy="76" r="10"/>
 <circle desc="c_small_27" class="fill_gray" cx="187" cy="76" r="10"/>
-<circle desc="c_small_28" class="fill_gray" cx="213" cy="76" r="10"/>
+<circle desc="c_small_28" class="fill_green" cx="213" cy="76" r="10"/>
 <circle desc="c_small_29" class="fill_yellow" cx="239" cy="76" r="10"/>
 <circle desc="c_small_30" class="fill_green" cx="265" cy="76" r="10"/>
 <circle desc="c_small_31" class="fill_green" cx="31" cy="102" r="10"/>
@@ -322,7 +322,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_25" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(135 83)"></text>
 <text desc="time_label_26" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(161 83)"></text>
 <text desc="time_label_27" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(187 83)"></text>
-<text desc="time_label_28" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 83)"></text>
+<text desc="time_label_28" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 83)">221.50</text>
 <text desc="time_label_29" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 83)">221.41</text>
 <text desc="time_label_30" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 83)">221.37</text>
 <text desc="time_label_31" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(31 109)">221.05</text>
@@ -355,7 +355,7 @@ x="0px" y="0px" viewBox="0 0 300 210" xml:space="preserve">
 <text desc="time_label_58" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(213 161)"></text>
 <text desc="time_label_59" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(239 161)"></text>
 <text desc="time_label_60" text-anchor="middle" class="te5 font_size4 fill_darkgray" transform="translate(265 161)"></text>
-<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 50m ago - MAKAI</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 09Aug23 - 10:40 (221.44)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 4 + 2 reused</text><text class="te5 font_size5" transform="translate(180 189)">Samples Failed: 6</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
+<text class="font_helv font_size7" transform="translate(26 174)">Last Sample: 15m ago - MAKAI</text><text class="font_helv font_size6" transform="translate(180 175)">ARCHIVED: 09Aug23 - 12:12 (221.51)</text><text class="te5 font_size5" transform="translate(180 183)">Good Samples: 4 + 2 reused</text><text class="te5 font_size5" transform="translate(180 189)">Samples Failed: 6</text><text class="te5 st5 font_size5" transform="translate(179 195.5)">(Samples count down from high to low)</text>
 <circle class="fill_green" cx="30" cy="186" r="6"/>
 <text class="te5 font_size5" transform="translate(23.0 188)">GOOD</text>
 <circle class="fill_yellow" cx="53" cy="186" r="6"/>

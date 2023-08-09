@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+    v 2.3   - Added piscivore camera status widget
 	v 2.28  - If Critical since the last schedule resume, then consider schedule paused
 	v 2.27  - Add Schedule Pause indicator (untested)
 	v 2.26  - Maybe fixed a lastlines empty parsing bug around 431
@@ -628,15 +629,15 @@ def getNewBattery():
 				volttime = record['times'][-1]
 			elif record['name'] == 'battery_charge':
 				amp = record['values'][-1]
-	# 		elif record['name'] == 'average_current':
-	# 			currentlist = record['values'][-7:]
-	# 			if DEBUG:
-	# 				print("\n# CURRENT LIST",currentlist, file=sys.stderr)
-	# 
-	# 			if currentlist:
-	# 				precisecurrent = sum(currentlist)/(len(currentlist)*1000)
-	# 				avgcurrent = round(precisecurrent,1)
-	# 		elif record['name'] == 'PowerOnly.component_avgCurrent_loadControl':
+			elif record['name'] == 'average_current':
+				currentlist = record['values'][-7:]
+				if DEBUG:
+					print("\n# CURRENT LIST",currentlist, file=sys.stderr)
+	
+				if currentlist:
+					precisecurrent = sum(currentlist)/(len(currentlist)*1000)
+					avgcurrent = round(precisecurrent,1)
+			# elif record['name'] == 'PowerOnly.component_avgCurrent_loadControl':
 	# 			cameracurrent = record['values'][-1]
 	# 			cameratime = record['times'][-1]
 	# 			if DEBUG:
