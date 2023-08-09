@@ -244,7 +244,7 @@ svgbadbattery='''<g><title>Bad battery cell detected</title>
 	<circle desc="badbatteryspot" class="st28" cx="349" cy="241.38" r="2"/>
 	<circle desc="badbatteryspot" class="st28" cx="369" cy="241.38" r="2"/>
 	<text transform="matrix(1 0 0 1 286.0 242)" class="st12 st9 st13">BAD</text>
-	<text transform="matrix(1 0 0 1 286.0 249)" class="st12 st9 st13">CELL</text>
+	<text transform="matrix(1 0 0 1 286.0 249)" class="st12 st9 st13">BATT</text>
 	{badcelltext}
 </g>	
 '''
@@ -284,6 +284,13 @@ svgstickynote = '''<rect desc="stickyrect" x="409" y="166" class="st33" width="1
 <text desc="stickyago" transform="matrix(1 0 0 1 591.0 176)" class="st9 st24 st12">{text_noteago}</text>
 <text desc="noteago"   transform="matrix(1 0 0 1 591.0 171)" class="st9 st24 st12">#note</text>'''
 
+svgpiscivore = '''<rect desc="camera"     x="218" y="235" class="st2" width="20" height="10"/>
+<text desc="text_camago" text-anchor="end" transform="matrix(1 0 0 1 214 241)" class="st12 st9 st13">{text_camago}</text>
+<circle desc="cam1" class="{color_cam1}" cx="225" cy="240" r="3"/>
+<circle desc="cam2" class="{color_cam2}" cx="233" cy="240" r="3"/>
+<ellipse desc="cameraellipse"   cx="218" cy="240" class="st3" rx="2" ry="5"/>
+<text transform="matrix(1 0 0 1 219 233)" class="st12 st9 st13">PISC</text>
+'''
 
 
 svgerrorhead =  '''<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" 

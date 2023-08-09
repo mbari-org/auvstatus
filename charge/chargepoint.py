@@ -101,6 +101,9 @@ for Site in UnitOrder:
 	except zeep.exceptions.Fault:
 		StatusArray += ['U','U']   # Indicate unreachable
 		sys.exit()
+	except NameError:
+		StatusArray += ['U','U']   # Indicate unreachable
+		sys.exit()
 if opt.DEBUG:
 	print("StatusArray",StatusArray, file=sys.stderr)
 

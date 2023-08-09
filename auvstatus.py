@@ -1,45 +1,46 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-	Version 2.27  - Add Schedule Pause indicator (untested)
-	Version 2.26  - Maybe fixed a lastlines empty parsing bug around 431
-	Version 2.25  - Added rudimentary camera indicator for Galene.
-	Version 2.24  - Made station Lookup use 3 decimals.
-	Version 2.24  - Added arrow for high-side/low-side GF.
-	Version 2.23  - Lookup table for waypoint names in the Nav projection section
-	Version 2.22  - Added dot for log age. Added [ASAP] to schedule. Extended sparkline.
-	Version 2.21  - Added Argo battery status (low or OK)
-	Version 2.20  - Added freshness label to the depth sparkline
-	Version 2.19  - Use last 7 values to calculate current draw
-	Version 2.18  - Added projection of hours remaining on battery
-	Version 2.17  - Added new NeedComms syntax
-	Version 2.16  - Dynamically adjust max depth for sparkline
-	Version 2.15  - Improved retrieval of Depth Data for full record
-	Version 2.14  - New style query for Depth Data. Changed GPS query to limit 2
-	Version 2.13  - Reformatted and relocated sparkline
-	Version 2.12  - In progress sparkline for depth
-	Version 2.11  - Fixed data decoding from ASCII retrieve
-	Version 2.1   - Updated to Python 3
-	Version 2.03  - Fixed pontus-specific UBAT formatting
-	Version 2.02  - Adding #sticky note functionality
-	Version 2.01  - Missing variable initialization in recovered vehicle
-	Version 2.0   - Implemented config file
-	Version 1.96  - Starting to incorporate config file. Removed email function
-	Version 1.95a - Implemented over threshold
-	Version 1.94  - Added indicator for failure to communicate with CTD
-	Version 1.93  - Added battery discharge rate meter indicator
-	Version 1.92  - Added report for number of bad battery sticks
-	Version 1.91  - In progress, Adding new Data parsing
-	Version 1.9   - Fixed Navigating to Parsing
-	Version 1.8   - Added Motor Lock Fault parsing
-	Version 1.7   - Minor enhancements
-	Version 1.6   - Updated needcomms parsing
-	Version 1.5   - Updated default mission list
-	Version 1.4   - Bumping version number after misc changes.
-	Version 1.3   - Streamlined code so it doesn't download data for recovered vehicles
-	Version 1.2   - making UBAT pontus-specific (move to svg["pontus"] for more vehicles)
-	Version 1.1   - adding cart
-	Version 1.0   - works for pontus
+	v 2.28  - If Critical since the last schedule resume, then consider schedule paused
+	v 2.27  - Add Schedule Pause indicator (untested)
+	v 2.26  - Maybe fixed a lastlines empty parsing bug around 431
+	v 2.25  - Added rudimentary camera indicator for Galene.
+	v 2.24  - Made station Lookup use 3 decimals.
+	v 2.24  - Added arrow for high-side/low-side GF.
+	v 2.23  - Lookup table for waypoint names in the Nav projection section
+	v 2.22  - Added dot for log age. Added [ASAP] to schedule. Extended sparkline.
+	v 2.21  - Added Argo battery status (low or OK)
+	v 2.20  - Added freshness label to the depth sparkline
+	v 2.19  - Use last 7 values to calculate current draw
+	v 2.18  - Added projection of hours remaining on battery
+	v 2.17  - Added new NeedComms syntax
+	v 2.16  - Dynamically adjust max depth for sparkline
+	v 2.15  - Improved retrieval of Depth Data for full record
+	v 2.14  - New style query for Depth Data. Changed GPS query to limit 2
+	v 2.13  - Reformatted and relocated sparkline
+	v 2.12  - In progress sparkline for depth
+	v 2.11  - Fixed data decoding from ASCII retrieve
+	v 2.1   - Updated to Python 3
+	v 2.03  - Fixed pontus-specific UBAT formatting
+	v 2.02  - Adding #sticky note functionality
+	v 2.01  - Missing variable initialization in recovered vehicle
+	v 2.0   - Implemented config file
+	v 1.96  - Starting to incorporate config file. Removed email function
+	v 1.95a - Implemented over threshold
+	v 1.94  - Added indicator for failure to communicate with CTD
+	v 1.93  - Added battery discharge rate meter indicator
+	v 1.92  - Added report for number of bad battery sticks
+	v 1.91  - In progress, Adding new Data parsing
+	v 1.9   - Fixed Navigating to Parsing
+	v 1.8   - Added Motor Lock Fault parsing
+	v 1.7   - Minor enhancements
+	v 1.6   - Updated needcomms parsing
+	v 1.5   - Updated default mission list
+	v 1.4   - Bumping version number after misc changes.
+	v 1.3   - Streamlined code so it doesn't download data for recovered vehicles
+	v 1.2   - making UBAT pontus-specific (move to svg["pontus"] for more vehicles)
+	v 1.1   - adding cart
+	v 1.0   - works for pontus
 	
 	Usage: auvstatus.py -v pontus -r  (see a summary of reports)
 	       auvstatus.py -v pontus > pontusfile.svg  (save svg display)
@@ -55,7 +56,7 @@ import json
 import math
 import re
 from collections import deque
-from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote,svgpiscivore   # define the svg text?
 from config_auv import servername, basefilepath
 import ssl
 
@@ -487,8 +488,10 @@ def getDataAsc(starttime,mission):
 			print("#> Complete tracking:",Tracking, TrackTime, elapsed(TrackTime[0] - now), file=sys.stderr)
 
 	return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
+	
 def getNewUBATFlow(starttime):	
 	'''Returns the most recent flow rate from the UBAT sensor'''
+	'''PowerOnly.component_avgCurrent_loadControl'''
 	'''https://okeanids.mbari.org/TethysDash/api/data/WetLabsUBAT.flow_rate?vehicle=pontus&from=0&maxlen=2'''
 	record = runNewStyleQuery(api="data/WetLabsUBAT.flow_rate",extrastring="&from=0&maxlen=1")
 	if record:
@@ -497,8 +500,21 @@ def getNewUBATFlow(starttime):
 	else:
 		flow=999
 		flowtime=""
-
 	return flow,flowtime
+	
+def getNewCameraPower(starttime):	
+	'''Returns the most recent power consumption for the piscivore cameras'''
+	'''PowerOnly.component_avgCurrent_loadControl'''
+	'''https://okeanids.mbari.org/TethysDash/api/data/PowerOnly.component_avgCurrent_loadControl?vehicle=pontus&from=0&maxlen=2'''
+	record = runNewStyleQuery(api="data/PowerOnly.component_avgCurrent_loadControl",extrastring="&from=0&maxlen=1")
+	if record:
+		flow = record['values'][-1]
+		flowtime = record['times'][-1]
+	else:
+		flow=999
+		flowtime=""
+	return flow,flowtime
+	
 def getNewDepth(starttime=1676609209829):
 	'''https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=pontus&maxlen=200
 	   https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=triton&maxlen=2&from=1676609209829
@@ -568,27 +584,34 @@ def getNewBattery():
 	hoursleft = -999
 	currentlist = []
 	baseline = 1
+	cameracurrent=-999
+	cameratime = 0
 
 	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
 	
 	BattFields = runNewStyleQuery(api="data")
-	for record in BattFields:
-		if record['name'] == 'battery_voltage':
-			# if DEBUG:
-			# 	print("# VOLT RECORD",record, file=sys.stderr)
-			volt = record['values'][-1]
-			volttime = record['times'][-1]
-		elif record['name'] == 'battery_charge':
-			amp = record['values'][-1]
-		elif record['name'] == 'average_current':
-			currentlist = record['values'][-7:]
-			if DEBUG:
-				print("\n# CURRENT LIST",currentlist, file=sys.stderr)
-
-			if currentlist:
-				precisecurrent = sum(currentlist)/(len(currentlist)*1000)
-				avgcurrent = round(precisecurrent,1)
+	if BattFields:
+		for record in BattFields:
+			if record['name'] == 'battery_voltage':
+				# if DEBUG:
+				# 	print("# VOLT RECORD",record, file=sys.stderr)
+				volt = record['values'][-1]
+				volttime = record['times'][-1]
+			elif record['name'] == 'battery_charge':
+				amp = record['values'][-1]
+			elif record['name'] == 'average_current':
+				currentlist = record['values'][-7:]
+				if DEBUG:
+					print("\n# CURRENT LIST",currentlist, file=sys.stderr)
 	
+				if currentlist:
+					precisecurrent = sum(currentlist)/(len(currentlist)*1000)
+					avgcurrent = round(precisecurrent,1)
+			elif record['name'] == 'PowerOnly.component_avgCurrent_loadControl':
+				cameracurrent = record['values'][-1]
+				cameratime = record['times'][-1]
+				if DEBUG:
+					print("\n# PISCIVORE CURRENT",cameracurrent, file=sys.stderr)
 	if DEBUG:
 		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
 	batterycolor = "st12"
@@ -598,7 +621,7 @@ def getNewBattery():
 			batterycolor = "st31"
 
 		
-	return volt,amp,avgcurrent,volttime,hoursleft,batterycolor
+	return volt,amp,avgcurrent,volttime,hoursleft,batterycolor,cameracurrent,cameratime
 
 def parseGPS(recordlist):
 	if DEBUG:
@@ -712,9 +735,9 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	else:
 		padpoly = ''
 	#,y0-0.6, boxr,(y0 + 20/ydiv),  max(xplist),(y0 + 20/ydiv),   max(xplist),y0-0.6,
-	if DEBUG:
-		print("### PADPOLY", padpoly,file=sys.stderr)
-		print("### SUBLINST", sublist,file=sys.stderr)
+	# if DEBUG:
+	# 	print("### PADPOLY", padpoly,file=sys.stderr)
+	# 	print("### SUBLIST", sublist,file=sys.stderr)
 	#Timeago in hours
 	
 
@@ -974,10 +997,12 @@ def parseCBIT(recordlist):
 					#need to find turned off commands.
 	else:
 		GF = "NA"
+	if GF == False:
+		GF = "NA"
 	if DEBUG:
 		print(f"GF{GF},GF-LOW:{GFLow}", file=sys.stderr)
 
-	return GF, GFtime,GFLow		
+	return GF,GFtime,GFLow		
 	
 def parseGF(gfstring):
 	GFlist = []
@@ -1056,6 +1081,7 @@ def parseImptMisc(recordlist):
 		"NE"    : "-121.9,36.9"}
 	TruncatedWaypoints = {
   		"36.797,-121.847": "C1"    ,
+  		"36.797,-121.850": "C1 profile",
   		"36.750,-122.022": "M1"    ,
   		"36.691,-122.376": "M2"    ,
   		"36.807,-121.824": "3km"   ,
@@ -1211,7 +1237,7 @@ def parseImptMisc(recordlist):
 			if CTD_command:
 				CTDonCommand = Record["unixTime"]
 			else:
-				CTDoffCommand = Record["unixTime"]
+				CTDoffCommand = Record["unixTime"] 
 	
 			
 		'''Change to got command ubat on  got command restart application'''
@@ -1220,12 +1246,12 @@ def parseImptMisc(recordlist):
 			 # and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec' or Record["name"] =='Important') :
 			''' Changing this to default to ON unless specifically turned off'''
 			'''WetLabsUBAT.loadAtStartup=0 bool'''
-			if  "WetLabsUBAT.loadAtStartup" in RecordText:
-				ubatBool = bool(float(RecordText.replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
-				ubatTime   = Record["unixTime"]
+			if  "WetLabsUBAT.loadAtStartup" in RecordText and not "loadAtStartup (bool)" in RecordText:
 				if DEBUG:
 					print("## Got UBAT Load at startup", RecordText, Record["name"],file=sys.stderr)
-			
+				ubatBool = bool(float(RecordText.replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))			
+				ubatTime   = Record["unixTime"]
+				
 			elif  "abling UBAT" in RecordText:
 				ubatBool = RecordText.startswith("Enabl")
 				ubatTime   = Record["unixTime"]
@@ -1298,12 +1324,17 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			TimeoutStart    = Record["unixTime"]
 			
 			"esp samples have 3h timeout"
-
+		if DEBUG and "sched" in Record["text"]:
+			print("\n#\n# MISSION: found Scheduled mission", Record["text"],Record["name"],"\n#\n#",file=sys.stderr)
 		if RecordText.startswith("Started mission") or RecordText.startswith('got command schedule clear'):
 			Cleared = True
 			if DEBUG:
 				print("## Got CLEAR", file=sys.stderr)
+				
+		# Mission Request - sched 20230609T11
+		# sched 20230609T11 "load Science/profile_station.xml;
 
+		
 		if Scheduled == False and not Cleared and (RecordText.startswith('got command schedule "run') or RecordText.startswith('got command schedule "load') or RecordText.startswith('got command schedule asap "set')) :
 			if "ASAP" in RecordText.upper():
 				ASAP = True
@@ -1320,8 +1351,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					if DEBUG:
 						print("## Schedule Hash found ",hash, file=sys.stderr)
 			if Scheduled and "ASAP" in RecordText.upper():
-				# Scheduled += ' [ASAP]'
-				Scheduled = ''  # Blanking out schedule if ASAP
+				Scheduled += ' [ASAP]'
+				# Scheduled = ''  # Blanking out schedule if ASAP
 
 			else:
 			#'''got command schedule "run Science/mbts_sci2.xml"'''
@@ -1333,8 +1364,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					'''got command schedule "set circle_acoustic_contact'''
 					Scheduled = RecordText.split('"')[1].split(' ')[1].split('.')[0]
 				if Scheduled and "ASAP" in RecordText.upper():
-					# Scheduled += ' [ASAP]'
-					Scheduled = ''    # Something amiss with the parsing. Blanking schedule if ASAP
+					Scheduled += ' [ASAP]'
+					#Scheduled = ''    # Something amiss with the parsing. Blanking schedule if ASAP
 
 				if DEBUG:
 					print("## Found Scheduled in else",Scheduled, file=sys.stderr)
@@ -1723,6 +1754,8 @@ WaterCritical = False
 WaterFault = False
 newavgcurrent=0
 batteryduration = -999
+cameracurrent = -999
+cameratime = False
 argobatt = False
 padded = False
 Paused = True
@@ -1794,7 +1827,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
 	
-	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,colorduration = getNewBattery()
+	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,colorduration,cameracurrent,cameratime = getNewBattery()
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
 
 
@@ -1999,7 +2032,9 @@ else:   #not opt report
 	"color_highgf",
 	"color_camerabody",
 	"color_cameralens",
-	"color_leak"]
+	"color_leak",
+	"color_cam1",
+	"color_cam2"]
 
 	for cname in cartcolors:
 		cdd[cname]='st18'
@@ -2043,7 +2078,7 @@ else:   #not opt report
 	"text_vehicle","text_lastupdate","text_flowago","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime",
 	"text_leak","text_leakago","text_missionago","text_cameraago","text_waypoint",
-	"text_criticalerror"
+	"text_criticalerror","text_camago"
 	]
 	for tname in specialnames:
 		cdd[tname]=''
@@ -2319,6 +2354,30 @@ else:   #not opt report
 				cdd["text_flowago"]=""
 
 			cdd["color_ubat"] = ubatStatus
+			
+			# parse piscivore camera
+			'''{text_camago}{color_cam1}{color_cam2} 2=gray, 3 white, 4 green 6 orange 11 dark gray'''
+			# cameracurrent = 55
+			if (cameracurrent < 998) and (cameracurrent > -1):
+				if cameratime:
+					cdd["text_camago"] = elapsed(cameratime-now)
+				else:
+					cdd["text_camago"]=""	
+		
+				if ((65 < cameracurrent) and (cameracurrent < 200)): # two cameras on
+					cdd["color_cam1"]= 'st4'
+					cdd["color_cam2"]= 'st4'
+				elif (15 < cameracurrent):  # (one camera on)
+					cdd["color_cam1"]= 'st4'
+					cdd["color_cam2"]= 'st11'
+				else:  # no cameras on
+					cdd["color_cam1"]= 'st11'
+					cdd["color_cam2"]= 'st11'
+			else: 
+				cdd["text_camago"] = ""
+				cdd["color_cam1"] = "st3"
+				cdd["color_cam2"] = "st3"
+
 		else:
 			cdd["color_ubat"] = 'st18'
 			cdd["color_flow"] = 'st18'
@@ -2331,7 +2390,6 @@ else:   #not opt report
 			else:
 				cdd["color_camerabody"] = "st3"
 				cdd["text_cameraago"] = "OFF " # + cdd["text_missionago"]
-
 				
 		# ubatTime TO ADD?
 		
@@ -2348,7 +2406,7 @@ else:   #not opt report
 			if DEBUG:
 				print("# COMMREFTIME: ", commreftime, file=sys.stderr)
 				print("# NOW: ", now, file=sys.stderr)
-				print("# SPARKINFO: ",depthtime,sparkpad, file=sys.stderr)
+				#print("# SPARKINFO: ",depthtime,sparkpad, file=sys.stderr)
 			sparktext = addSparkDepth(depthdepth,depthtime,padded=sparkpad,x0=131,y0=166,need_comm_mins = needcomms,lastcomm=commreftime)
 
 		###
@@ -2456,6 +2514,8 @@ else:   #not opt report
 		if CriticalError:
 			cdd["text_criticalerror"] = "CRITICAL: "+ CriticalError
 			cdd["text_criticaltime"]  = elapsed(CriticalTime-now)
+		else:
+			CriticalTime = 0
 		
 		cdd["color_dvl"] = DVLcolor
 		
@@ -2534,6 +2594,12 @@ else:   #not opt report
 				outfile.write(svglabels)
 				if VEHICLE=="pontus":
 					outfile.write(svgpontus)
+					outfile.write(svgpiscivore.format(
+						color_cam1 = cdd["color_cam1"],
+						color_cam2 = cdd["color_cam2"],
+						text_camago = cdd["text_camago"] )
+					)
+
 				if VEHICLE=="galene":
 					outfile.write(svggalene)
 			outfile.write(svgtail)
