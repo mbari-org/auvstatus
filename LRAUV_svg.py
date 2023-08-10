@@ -286,12 +286,11 @@ svgstickynote = '''<rect desc="stickyrect" x="409" y="166" class="st33" width="1
 
 svgpiscivore = '''<rect desc="camera"     x="218" y="235" class="st2" width="20" height="10"/>
 <text desc="text_camago" text-anchor="end" transform="matrix(1 0 0 1 214 241)" class="st12 st9 st13">{text_camago}</text>
-<circle desc="cam1" class="{color_cam1}" cx="225" cy="240" r="3"/>
-<circle desc="cam2" class="{color_cam2}" cx="233" cy="240" r="3"/>
-<ellipse desc="cameraellipse"   cx="218" cy="240" class="st3" rx="2" ry="5"/>
+<circle desc="cam1" class="{color_cam1}" cx="224" cy="240" r="3"/>
+<circle desc="cam2" class="{color_cam2}" cx="232" cy="240" r="3"/>
 <text transform="matrix(1 0 0 1 219 233)" class="st12 st9 st13">PISC</text>
 '''
-
+# <ellipse desc="cameraellipse"   cx="218" cy="240" class="st3" rx="2" ry="5"/>
 
 svgerrorhead =  '''<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" 
 	id="Layer_1" width="514" height="156" viewbox = "0 0 514 156" xml:space="preserve">

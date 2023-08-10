@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+    v 2.31  - Adjusting range for piscivore camera current-to-status
     v 2.3   - Added piscivore camera status widget
 	v 2.28  - If Critical since the last schedule resume, then consider schedule paused
 	v 2.27  - Add Schedule Pause indicator (untested)
@@ -505,16 +506,17 @@ def getNewUBATFlow(starttime):
 
 def ampToCat(val):
 	'''convert piscivore current draw to number of cameras'''
+	'''each camera draws 100, not 50, so upping ranges'''
 	cat = False
 	ival = int(val)
 	'''for piscivore, convert raw current to category'''
-	if ival <=20:
+	if ival <=30:
 		cat = 0
-	elif ival < 65:
+	elif ival < 125:
 		cat = 1
-	elif ival > 200:
+	elif ival > 250:
 		cat = 3
-	elif ival > 65:
+	elif ival > 125:
 		cat = 2
 	return cat
 		
@@ -1183,8 +1185,8 @@ def parseImptMisc(recordlist):
 		#	else:
 		#		StationLat = RecordText.split(".Lat ")[1]
 		#	StationLat = float(StationLat.split(" ")[0])
-		#	if DEBUG:
-		#		print >> sys.stderr, "## Got Lat from ImptMisc", StationLat
+		
+		
 		
 		
 		# got command schedule resume 
@@ -1195,6 +1197,8 @@ def parseImptMisc(recordlist):
 				Paused = False
 				PauseTime = Record["unixTime"]
 				NeedSched = False
+				if DEBUG:
+					print("## Got SCHEDULE RESUME", elapsed(now-PauseTime), file=sys.stderr)
 			elif bool(re.search('stop|got command schedule pause|restart |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText):
 				Paused = True
 				PauseTime = Record["unixTime"]
@@ -2390,23 +2394,6 @@ else:   #not opt report
 			
 			# parse piscivore camera
 			'''{text_camago}{color_cam1}{color_cam2} 2=gray, 3 white, 4 green 6 orange 11 dark gray'''
-			# cameracurrent = 55
-			# if current is -999 then no data were acquired
-		# 	if (cameracurrent < 998) and (cameracurrent > -1):
-		# 		if cameratime:
-		# 			cdd["text_camago"] = elapsed(cameratime-now)
-		# 		else:
-		# 			cdd["text_camago"]=""	
-		# 
-		# 		if ((65 < cameracurrent) and (cameracurrent < 250)): # two cameras on
-		# 			cdd["color_cam1"]= 'st4'
-		# 			cdd["color_cam2"]= 'st4'
-		# 		elif (15 < cameracurrent):  # (one camera on)
-		# 			cdd["color_cam1"]= 'st4'
-		# 			cdd["color_cam2"]= 'st11'
-		# 		else:  # no cameras on
-		# 			cdd["color_cam1"]= 'st11'
-		# 			cdd["color_cam2"]= 'st11'
 					
 			if (camcat < 998) and (camcat > -1):
 				if camchangetime:
@@ -2419,13 +2406,13 @@ else:   #not opt report
 					cdd["color_cam2"]= 'st4'
 				elif (camcat == 1):  # (one camera on)
 					cdd["color_cam1"]= 'st4'
-					cdd["color_cam2"]= 'st11'
+					cdd["color_cam2"]= 'st6'
 				elif camcat == 0:  # no cameras on
-					cdd["color_cam1"]= 'st11'
-					cdd["color_cam2"]= 'st11'
-				elif camcat == 3: # current > 200
 					cdd["color_cam1"]= 'st6'
 					cdd["color_cam2"]= 'st6'
+				elif camcat == 3: # current > 200
+					cdd["color_cam1"]= 'st11'
+					cdd["color_cam2"]= 'st11'
 					
 
 			else: 
