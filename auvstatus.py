@@ -1,9 +1,10 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.32  - Don't stop schedule on ESP stop messages
     v 2.31  - Adjusting range for piscivore camera current-to-status
     v 2.3   - Added piscivore camera status widget
-	v 2.28  - If Critical since the last schedule resume, then consider schedule paused
+	v 2.28  - If Critical since last schedule resume, then schedule = paused
 	v 2.27  - Add Schedule Pause indicator (untested)
 	v 2.26  - Maybe fixed a lastlines empty parsing bug around 431
 	v 2.25  - Added rudimentary camera indicator for Galene.
@@ -1199,7 +1200,7 @@ def parseImptMisc(recordlist):
 				NeedSched = False
 				if DEBUG:
 					print("## Got SCHEDULE RESUME", elapsed(now-PauseTime), file=sys.stderr)
-			elif bool(re.search('stop|got command schedule pause|restart |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText):
+			elif bool(re.search('stop|got command schedule pause|restart |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText) and not ('ESP' in RecordText):
 				Paused = True
 				PauseTime = Record["unixTime"]
 				NeedSched = False
