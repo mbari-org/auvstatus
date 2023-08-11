@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-	v 2.32  - Don't stop schedule on ESP stop messages
+	v 2.33  - Make Sat comm label red if last comm more than an hour overdue
+	v 2.32  - Don't pause schedule on ESP stop messages
     v 2.31  - Adjusting range for piscivore camera current-to-status
     v 2.3   - Added piscivore camera status widget
 	v 2.28  - If Critical since last schedule resume, then schedule = paused
@@ -2460,14 +2461,6 @@ else:   #not opt report
 		cdd["text_commago"] = elapsed(ago_satcomms)
 		cdd["text_sat"] = hours(satcomms)
 		
-		satcommtextcolor = ""
-		# minutes since satcomms
-		if (-ago_satcomms / (60*1000)) > (needcomms+60): 
-			# 60 minutes past needcomms
-			satcommtextcolor = 'st31'
-	
-		cdd["color_satcommstext"]=satcommtextcolor
-
 		agolog = logtime - now
 		cdd["text_logago"] = elapsed(agolog)
 		cdd["text_logtime"] = hours(logtime)
@@ -2482,6 +2475,7 @@ else:   #not opt report
 		# more than 13 minutes (underwater) = yellow. Beyond needcomms time by 20 mins: orange
 		satnum=int(4 + 1*(abs(ago_satcomms) > (13*60*1000)) + 1*(abs(ago_satcomms) > ((needcomms+20)*60*1000)) )
 		cdd["color_satcomm"] = "st{}".format(satnum)
+		
 
 		###
 		###   CELL COMM DISPLAY
@@ -2493,6 +2487,14 @@ else:   #not opt report
 
 		cellnum=int(4 + 1*(abs(ago_cellcomms) > (10*60*1000)) + 1*(abs(ago_cellcomms) > ((needcomms+45)*60*1000)) )
 		cdd["color_cell"] = "st{}".format(cellnum)
+	
+		satcommtextcolor = ""
+		# minutes since satcomms
+		if (-ago_satcomms / (60*1000)) > (needcomms+60) and (-ago_cellcomms / (60*1000)) > (needcomms+60): 
+			# 60 minutes past needcomms
+			satcommtextcolor = 'st31'
+		cdd["color_satcommstext"]=satcommtextcolor
+
 	
 		### BATTERY INFO
 	
