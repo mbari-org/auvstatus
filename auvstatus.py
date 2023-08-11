@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.35  - Make Next comm label red if more than an hour overdue
 	v 2.34  - Report piscivore cam amps instead of generic label
 	v 2.33  - Make Sat comm label red if last comm more than an hour overdue
 	v 2.32  - Don't pause schedule on ESP stop messages
@@ -2061,6 +2062,7 @@ else:   #not opt report
 	cdd["color_flow"] = "st18"
 	cdd["color_duration"] = "st18"
 	cdd["color_satcommstext"]="st18" # no color = black
+	cdd["color_nextcommstext"]="st18"
 	# These are made invisible
 	cartcolors=["color_bigcable",
 	"color_smallcable",
@@ -2498,8 +2500,16 @@ else:   #not opt report
 			# 60 minutes past needcomms
 			satcommtextcolor = 'st31'
 		cdd["color_satcommstext"]=satcommtextcolor
+		
+		nextcommtextcolor = ""
+		#commreftime = ms of last comm
+		commoverdue = (commreftime+needcomms*60*1000) - now
+		if -commoverdue / (60*1000) > 60:
+			nextcommtextcolor = 'st31'
+		if DEBUG:
+			print("COMM-OVERDUE: " ,commoverdue/(60*1000), file=sys.stderr)
 
-	
+		cdd["color_nextcommstext"] = nextcommtextcolor # no color = black
 		### BATTERY INFO
 	
 		cdd["color_wavecolor"] = 'st0'
