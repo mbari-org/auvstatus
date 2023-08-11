@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- June 4 2023 version  -->
+<!-- Aug 11 2023 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -289,7 +289,7 @@ svgpiscivore = '''<rect desc="camera"     x="218" y="235" class="st2" width="20"
 <text desc="text_camago" text-anchor="end" transform="matrix(1 0 0 1 214 241)" class="st12 st9 st13">{text_camago}</text>
 <circle desc="cam1" class="{color_cam1}" cx="224" cy="240" r="3"/>
 <circle desc="cam2" class="{color_cam2}" cx="232" cy="240" r="3"/>
-<text transform="matrix(1 0 0 1 219 233)" class="st12 st9 st13">PISC</text>
+<text desc="text_piscamp" text-anchor="end" transform="matrix(1 0 0 1 238 233)" class="st12 st9 st13">{text_piscamp}</text>
 '''
 # <ellipse desc="cameraellipse"   cx="218" cy="240" class="st3" rx="2" ry="5"/>
 

@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.34  - Report piscivore cam amps instead of generic label
 	v 2.33  - Make Sat comm label red if last comm more than an hour overdue
 	v 2.32  - Don't pause schedule on ESP stop messages
     v 2.31  - Adjusting range for piscivore camera current-to-status
@@ -530,8 +531,9 @@ def getNewCameraPower(starttime):
 	'''PowerOnly.component_avgCurrent_loadControl'''
 	'''https://okeanids.mbari.org/TethysDash/api/data/PowerOnly.component_avgCurrent_loadControl?vehicle=pontus&from=0&maxlen=2'''
 	record = runNewStyleQuery(api="data/PowerOnly.component_avgCurrent_loadControl",extrastring="")
-	if record and nowcat < -998:
+	if record and nowcat < -998: #nowcat check not needed because no loop
 		nowcat = ampToCat(record['values'][-1])
+		nowpow = "{}".format(int(record['values'][-1])) + "ma"
 		nowpowtime = record['times'][-1]
 		# -1 to 15, 16-65, 66-125
 		for v,t in zip(record['values'][::-1],record['times'][::-1]):
@@ -545,9 +547,9 @@ def getNewCameraPower(starttime):
 			# print("# ORIGTIME",elapsed(origtime - now), file=sys.stderr)
 			print("# FIRST TIME",elapsed(nowpowtime - now), file=sys.stderr)
 	else:
-		nowpow=999
+		nowpow="PISC"
 		nowpowtime=False
-	return nowcat,nowpowtime
+	return nowcat,nowpowtime,nowpow
 	
 def getNewDepth(starttime=1676609209829):
 	'''https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=pontus&maxlen=200
@@ -1796,6 +1798,7 @@ camcat = -999
 camchangetime = False
 argobatt = False
 padded = False
+pisctext = ""
 Paused = True
 PauseTime = False
 WaypointName = "Waypoint"
@@ -1868,7 +1871,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,colorduration = getNewBattery()
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
 	if VEHICLE == "pontus":
-		camcat,camchangetime = getNewCameraPower(startTime)
+		camcat,camchangetime,pisctext = getNewCameraPower(startTime)
 
 	if DEBUG:
 		print("# DURATION and timeout start", missionduration,timeoutstart, file=sys.stderr)
@@ -2118,7 +2121,7 @@ else:   #not opt report
 	"text_vehicle","text_lastupdate","text_flowago","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime",
 	"text_leak","text_leakago","text_missionago","text_cameraago","text_waypoint",
-	"text_criticalerror","text_camago"
+	"text_criticalerror","text_camago","text_piscamp"
 	]
 	for tname in specialnames:
 		cdd[tname]=''
@@ -2394,7 +2397,8 @@ else:   #not opt report
 				cdd["text_flowago"]=""
 
 			cdd["color_ubat"] = ubatStatus
-			
+			cdd["text_piscamp"]=pisctext
+
 			# parse piscivore camera
 			'''{text_camago}{color_cam1}{color_cam2} 2=gray, 3 white, 4 green 6 orange 11 dark gray'''
 					
@@ -2650,9 +2654,10 @@ else:   #not opt report
 					outfile.write(svgpontus)
 					if (camcat < 998) and (camcat > -1):
 						outfile.write(svgpiscivore.format(
-							color_cam1 = cdd["color_cam1"],
-							color_cam2 = cdd["color_cam2"],
-							text_camago = cdd["text_camago"] )
+							color_cam1  = cdd["color_cam1"],
+							color_cam2  = cdd["color_cam2"],
+							text_camago = cdd["text_camago"], 
+							text_piscamp= cdd["text_piscamp"])
 						)
 
 				if VEHICLE=="galene":
