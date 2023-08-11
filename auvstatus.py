@@ -2056,6 +2056,7 @@ else:   #not opt report
 	cdd["color_ubat"] = "st18"
 	cdd["color_flow"] = "st18"
 	cdd["color_duration"] = "st18"
+	cdd["color_satcommstext"]="st18" # no color = black
 	# These are made invisible
 	cartcolors=["color_bigcable",
 	"color_smallcable",
@@ -2407,13 +2408,13 @@ else:   #not opt report
 					cdd["color_cam2"]= 'st4'
 				elif (camcat == 1):  # (one camera on)
 					cdd["color_cam1"]= 'st4'
-					cdd["color_cam2"]= 'st6'
+					cdd["color_cam2"]= 'st11'
 				elif camcat == 0:  # no cameras on
-					cdd["color_cam1"]= 'st6'
-					cdd["color_cam2"]= 'st6'
-				elif camcat == 3: # current > 200
 					cdd["color_cam1"]= 'st11'
 					cdd["color_cam2"]= 'st11'
+				elif camcat == 3: # current > 200
+					cdd["color_cam1"]= 'st6'
+					cdd["color_cam2"]= 'st6'
 					
 
 			else: 
@@ -2458,6 +2459,14 @@ else:   #not opt report
 		ago_satcomms = satcomms - now 
 		cdd["text_commago"] = elapsed(ago_satcomms)
 		cdd["text_sat"] = hours(satcomms)
+		
+		satcommtextcolor = ""
+		# minutes since satcomms
+		if (-ago_satcomms / (60*1000)) > (needcomms+60): 
+			# 60 minutes past needcomms
+			satcommtextcolor = 'st31'
+	
+		cdd["color_satcommstext"]=satcommtextcolor
 
 		agolog = logtime - now
 		cdd["text_logago"] = elapsed(agolog)

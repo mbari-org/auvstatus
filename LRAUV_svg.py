@@ -206,6 +206,8 @@ svgtext = '''
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">{text_dvlstatus}</text>
 <text desc="text_criticalerror" transform="matrix(1 0 0 1 352.0 300)" class="st9 st30 st31">{text_criticalerror}</text>
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13">{text_criticaltime}</text>
+<text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10 {color_satcommstext}">Sat comms</text>
+
 {text_pauseshape}
 <g><title>Ground Fault: None means not detected. False means no recent scan</title>
 <text transform="matrix(1 0 0 1 485 273)" class="st12 st9 st13">GROUND</text>
@@ -232,7 +234,6 @@ svglabels='''
 
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
-<text transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10">Sat comms</text>
 <text transform="matrix(1 0 0 1 291.6499 221.6039)" class="st9 st10">Cell comms</text>
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
