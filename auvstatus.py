@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.36  - Added another overthreshold scenario
 	v 2.35  - Make Next comm label red if more than an hour overdue
 	v 2.34  - Report piscivore cam amps instead of generic label
 	v 2.33  - Make Sat comm label red if last comm more than an hour overdue
@@ -169,10 +170,12 @@ def runNewStyleQuery(api="",extrastring=""):
 		return result
 	except urllib.error.HTTPError or ssl.SSLError:
 		if ssl.SSLError:
-			print("# QUERY TIMEOUT:",URL, file=sys.stderr)
+			if not "PowerOnly" in URL:
+				print("# QUERY TIMEOUT:",URL, file=sys.stderr)
+				handleURLerror()
 		else:
 			print("# FAILURE IN QUERY:",URL, file=sys.stderr)
-		handleURLerror()
+			handleURLerror()
 		return None	
 
 def getDeployment():
@@ -529,8 +532,8 @@ def getNewCameraPower(starttime):
 	origtime = False
 	nowpowtime = False
 	'''Returns the most recent power consumption for the piscivore cameras'''
-	'''PowerOnly.component_avgCurrent_loadControl'''
-	'''https://okeanids.mbari.org/TethysDash/api/data/PowerOnly.component_avgCurrent_loadControl?vehicle=pontus&from=0&maxlen=2'''
+	'''PowerOnly.component_avgCurrent_loadControl''' 
+	'''https://okeanids.mbari.org/TethysDash/api/data/PowerOnly.component_avgCurrent_loadControl?vehicle=pontus'''
 	record = runNewStyleQuery(api="data/PowerOnly.component_avgCurrent_loadControl",extrastring="")
 	if record and nowcat < -998: #nowcat check not needed because no loop
 		nowcat = ampToCat(record['values'][-1])
@@ -912,15 +915,18 @@ def parseFaults(recordlist):
 				BadBatteryText ='<text transform="matrix(1 0 0 1 286.0 245)" class="st31 st9 st24" text-anchor="end">{}x</text>'.format(ma.group(1))
 			if DEBUG:
 				print("## BAD STICK REPORT", RT, file=sys.stderr)
-		if (not Software) and "software overcurrent" in Record["text"].lower():
+		if (not Software) and "software overcurrent" in RT.lower():
 			Software = Record["unixTime"]
 		
-		if (not Overload) and "overload error" in Record["text"].lower():
+		if (not Overload) and "overload error" in RT.lower():
 			Overload = Record["unixTime"]
 		
-		if (not Hardware) and ("thruster uart error" in Record["text"].lower()):
+		if (not Hardware) and ("thruster uart error" in RT.lower()):
 			Hardware = Record["unixTime"]
-		
+			
+		if (not Overload) and ("hardware overcurrent shutdown" in RT.lower()):
+			Overload = Record["unixTime"]
+			
 		if (not CTDError) and ("Failed to acquire real or simulated CTD" in Record["text"]):
 			CTDError = Record["unixTime"]
 			
