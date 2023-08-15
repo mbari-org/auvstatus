@@ -3,6 +3,7 @@
 ''' use -p to print instead of save to file 
     use -f to define an alternative path
 	
+	Version 1.7 : Improve zeep exception handling.
 	Version 1.6 : Show unreachable on certain errors
     Version 1.5 : Added notifications for freed-up chargers
     Version 1.1'''
@@ -14,6 +15,7 @@ import os
 from zeep import xsd
 from zeep import Client
 from zeep.wsse.username import UsernameToken
+from zeep.exceptions import Fault as zeepFault
 
 
 def get_options():
@@ -98,12 +100,12 @@ for Site in UnitOrder:
 		if opt.DEBUG:
 			print(Site, d.stationID, d.Port[0].Status,d.Port[1].Status, file=sys.stderr)
 		StatusArray += [d.Port[0].Status[0],d.Port[1].Status[0]]  # first letter
-	except zeep.exceptions.Fault:
+	except zeepFault:
 		StatusArray += ['U','U']   # Indicate unreachable
-		sys.exit()
+		sys.exit("## Site Unreachable")
 	except NameError:
 		StatusArray += ['U','U']   # Indicate unreachable
-		sys.exit()
+		sys.exit("## zeep NameError")
 if opt.DEBUG:
 	print("StatusArray",StatusArray, file=sys.stderr)
 
