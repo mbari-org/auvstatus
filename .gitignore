@@ -1,0 +1,12 @@
+*.pyc
+*.json
+*.bak
+*.svg
+*.csv
+!*archive.svg
+!legend.svg
+charge/startcharge.csv
+.nova
+*.gif
+*-archive
+older_examples
