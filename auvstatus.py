@@ -1,13 +1,13 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-	v 2.36  - Added another overthreshold scenario
+	v 2.36  - Added another overthreshold scenario (migrated to github)
 	v 2.35  - Make Next comm label red if more than an hour overdue
 	v 2.34  - Report piscivore cam amps instead of generic label
 	v 2.33  - Make Sat comm label red if last comm more than an hour overdue
 	v 2.32  - Don't pause schedule on ESP stop messages
-    v 2.31  - Adjusting range for piscivore camera current-to-status
-    v 2.3   - Added piscivore camera status widget
+        v 2.31  - Adjusting range for piscivore camera current-to-status
+        v 2.3   - Added piscivore camera status widget
 	v 2.28  - If Critical since last schedule resume, then schedule = paused
 	v 2.27  - Add Schedule Pause indicator (untested)
 	v 2.26  - Maybe fixed a lastlines empty parsing bug around 431
