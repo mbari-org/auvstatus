@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-	v 2.36  - Added another overthreshold scenario
+	v 2.36  - Added another overthreshold scenario (migrated to github)
 	v 2.35  - Make Next comm label red if more than an hour overdue
 	v 2.34  - Report piscivore cam amps instead of generic label
 	v 2.33  - Make Sat comm label red if last comm more than an hour overdue
