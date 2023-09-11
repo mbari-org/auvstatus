@@ -6,6 +6,7 @@
 !*archive.svg
 !legend.svg
 charge/startcharge.csv
+startcharge.csv
 .nova
 *.gif
 *-archive
