@@ -38,7 +38,7 @@ def sendMessage(MessageText="EV Status"):
 
 
 	# PCfB Stuff
-	me = 'steve@jellywatch.org'
+	me = ''
 	port = 587
 	lasthord = settings.pa
 	mailhost = 'smtp.dreamhost.com'
@@ -102,7 +102,7 @@ for Site in UnitOrder:
 		StatusArray += [d.Port[0].Status[0],d.Port[1].Status[0]]  # first letter
 	except zeepFault:
 		StatusArray += ['U','U']   # Indicate unreachable
-		sys.exit("## Site Unreachable")
+		print("## Unit unreachable",Site,file=sys.stderr)
 	except NameError:
 		StatusArray += ['U','U']   # Indicate unreachable
 		sys.exit("## zeep NameError")
@@ -161,11 +161,11 @@ DurationList = [""] * 7
 AnyNowOpen = int(6 in StyleList)   # True if open, false if all full
 AnyWereOpen = int(OldTimes[8])
 
-if ((not AnyWereOpen) and AnyNowOpen):
-	sendMessage("Charger now OPEN: " + TimeString)
-	
-if (AnyWereOpen and not(AnyNowOpen)):
-	sendMessage("Chargers FULL: " + TimeString)
+# if ((not AnyWereOpen) and AnyNowOpen):
+# 	sendMessage("Charger now OPEN: " + TimeString)
+# 	
+# if (AnyWereOpen and not(AnyNowOpen)):
+# 	sendMessage("Chargers FULL: " + TimeString)
 	
 if opt.DEBUG:
 	print("AnyWereOpen ",AnyWereOpen, file=sys.stderr)
