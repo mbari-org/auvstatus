@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.37  - Schedule is NOT paused upon boot-up or restart
 	v 2.36  - Added another overthreshold scenario (migrated to github)
 	v 2.35  - Make Next comm label red if more than an hour overdue
 	v 2.34  - Report piscivore cam amps instead of generic label
@@ -1093,7 +1094,7 @@ def parseImptMisc(recordlist):
 	ubatBool = True
 	
 	NeedSched = True
-	Paused = True
+	Paused = False
 	
 	FlowRate = False
 	FlowTime = False
@@ -1210,7 +1211,7 @@ def parseImptMisc(recordlist):
 				NeedSched = False
 				if DEBUG:
 					print("## Got SCHEDULE RESUME", elapsed(now-PauseTime), file=sys.stderr)
-			elif bool(re.search('stop|got command schedule pause|restart |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText) and not ('ESP' in RecordText):
+			elif bool(re.search('stop|got command schedule pause |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText) and not ('ESP' in RecordText):
 				Paused = True
 				PauseTime = Record["unixTime"]
 				NeedSched = False
