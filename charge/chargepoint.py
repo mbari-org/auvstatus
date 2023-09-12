@@ -136,8 +136,8 @@ if opt.DEBUG:
 
 TimeString = time.strftime('%H:%M', time.localtime())
 
-if opt.DEBUG:
-	sendMessage("Test Message " + TimeString)
+# if opt.DEBUG:
+# 	sendMessage("Test Message " + TimeString)
 
 # TODO: Implementing a log that tracked duration of INUSE events (instead of querying). Write start time to text file at first transition?
 
