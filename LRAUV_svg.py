@@ -208,6 +208,7 @@ svgtext = '''
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13">{text_criticaltime}</text>
 <text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10 {color_satcommstext}">Sat comms</text>
 <text desc="text_nextcomms" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 {color_nextcommstext}">NextComm:</text>
+<text desc="text_version" transform="matrix(1 0 0 1 620 316)" text-anchor="right" class="st12 st9 st24">{text_version}</text>
 
 
 {text_pauseshape}

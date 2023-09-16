@@ -1,14 +1,15 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-	v 2.37  - Schedule is NOT paused upon boot-up or restart
+	v 2.38  - Increased URL timeout to 8s. Added schedule debug code. Display version 
+	v 2.37  - Schedule is NOT paused upon boot-up or restart. Added mission default
 	v 2.36  - Added another overthreshold scenario (migrated to github)
 	v 2.35  - Make Next comm label red if more than an hour overdue
 	v 2.34  - Report piscivore cam amps instead of generic label
 	v 2.33  - Make Sat comm label red if last comm more than an hour overdue
 	v 2.32  - Don't pause schedule on ESP stop messages
-        v 2.31  - Adjusting range for piscivore camera current-to-status
-        v 2.3   - Added piscivore camera status widget
+    v 2.31  - Adjusting range for piscivore camera current-to-status
+    v 2.3   - Added piscivore camera status widget
 	v 2.28  - If Critical since last schedule resume, then schedule = paused
 	v 2.27  - Add Schedule Pause indicator (untested)
 	v 2.26  - Maybe fixed a lastlines empty parsing bug around 431
@@ -66,6 +67,7 @@ import re
 from collections import deque
 from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote,svgpiscivore   # define the svg text?
 from config_auv import servername, basefilepath
+
 import ssl
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -125,7 +127,7 @@ def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 		print("### QUERY:",URL, file=sys.stderr)
 
 	try:
-		connection = urllib.request.urlopen(URL,timeout=5)		
+		connection = urllib.request.urlopen(URL,timeout=8)		
 		if connection:
 			raw = connection.read()
 			structured = json.loads(raw)
@@ -161,7 +163,7 @@ def runNewStyleQuery(api="",extrastring=""):
 		print("### NEW QUERY:",URL, file=sys.stderr)
 
 	try:
-		connection = urllib.request.urlopen(URL,timeout=5)		
+		connection = urllib.request.urlopen(URL,timeout=8)		
 		if connection:
 			datastream = connection.read()
 			result = unpackJSON(datastream)
@@ -267,7 +269,7 @@ def getMissionDefaults():
 		URL = "https://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)
 		print("\n#===========================\n",mission, "\n", file=sys.stderr)
 		try:
-			connection = urllib.request.urlopen(URL,timeout=5)
+			connection = urllib.request.urlopen(URL,timeout=8)
 			if connection: # here?
 				raw = connection.read()
 				structured = json.loads(raw)
@@ -396,9 +398,13 @@ def getDataAsc(starttime,mission):
 
 	record = runQuery(event="dataProcessed",limit="3",timeafter=starttime)
 	
-	for checkpath in record:
-		allpaths.append(checkpath['path'])
-		
+	if record:
+		for checkpath in record:
+			allpaths.append(checkpath['path'])
+	else:
+		print("# No dataProcessed Path found", file=sys.stderr)
+		return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
+			
 	if (len(allpaths) ==3):   # get three most recent
 		if allpaths[0]==allpaths[1]:   # if first two are the same, drop second
 			z=allpaths.pop(1)
@@ -417,7 +423,7 @@ def getDataAsc(starttime,mission):
 		NewURL = DataURL.format(ser=servername,vehicle=VEHICLE,extrapath=extrapath)
 		if DEBUG:
 			print("# DATA NewURL",NewURL, file=sys.stderr)
-		datacon = urllib.request.urlopen(NewURL,timeout=5)
+		datacon = urllib.request.urlopen(NewURL,timeout=8)
 		content =  datacon.read().decode('utf-8').splitlines()
 		# if DEBUG:
 		# 	print("# DATA content",content[:10], file=sys.stderr)
@@ -1205,7 +1211,8 @@ def parseImptMisc(recordlist):
 		# Can also have a Fault: Scheduling is paused
 		# also Scheduling was paused by a command
 		if NeedSched:
-			if "got command schedule resume" in RecordText or "Scheduling is resumed" in RecordText:
+			if bool(re.search('got command schedule resume|got command restart application|scheduling is resumed',RecordText.lower())):
+			# if "got command schedule resume" in RecordText or "Scheduling is resumed" in RecordText:
 				Paused = False
 				PauseTime = Record["unixTime"]
 				NeedSched = False
@@ -1389,6 +1396,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				print("## Schedule Record ",RecordText, file=sys.stderr)
 
 			if RecordText.startswith('got command schedule "run"') or RecordText.startswith('got command schedule "run "'):
+				if DEBUG:
+					print("## SCHEDULE: Looking for Hash ",VEHICLE,"-",RecordText, file=sys.stderr)
 				hashre = re.compile(r'got command schedule "run ?" (\w+)')
 				'''got command schedule "run " 3p78c '''
 				hash_result = hashre.search(RecordText)
@@ -1408,7 +1417,10 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					Scheduled = Record["text"].split("/")[1].split('.')[0]
 				else:
 					'''got command schedule "set circle_acoustic_contact'''
-					Scheduled = RecordText.split('"')[1].split(' ')[1].split('.')[0]
+					try:
+						Scheduled = RecordText.split('"')[1].split(' ')[1].split('.')[0]
+					except IndexError:
+						print("## failed to parse schedule:",VEHICLE, RecordText, file=sys.stderr)
 				if Scheduled and "ASAP" in RecordText.upper():
 					Scheduled += ' [ASAP]'
 					#Scheduled = ''    # Something amiss with the parsing. Blanking schedule if ASAP
@@ -1769,6 +1781,7 @@ mission_defaults = {
 	"FrontSampling"              : {"MissionTimeout": 12,  "NeedCommsTime":60,  "Speed":1 },
 	"Smear"         		     : {"MissionTimeout": 3,   "NeedCommsTime":60,  "Speed":1 },
 	"front_sampling"             : {"MissionTimeout": 12,  "NeedCommsTime":300,  "Speed":1 }, 
+	"sci2_flat_and_level"        : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1.0 },
 	"sci2_flat_and_level_backseat"    : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1.0 }
 }
 
@@ -2149,7 +2162,9 @@ else:   #not opt report
 	 Change GPS calculation to look over a longer time scale
 	 
 	 '''
-
+	versionnumber = __doc__.split('v')[1].split("-")[0].strip()
+	cdd["text_version"]="v"+versionnumber
+	
 	commreftime = max(cellcomms,satcomms)
 
 	now = time.time() * 1000  # localtime in unix
