@@ -2,6 +2,7 @@
 *.json
 *.bak
 *.svg
+*.png
 *.csv
 !*archive.svg
 !legend.svg
