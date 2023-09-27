@@ -654,11 +654,11 @@ def getNewBattery():
 				if currentlist:
 					precisecurrent = sum(currentlist)/(len(currentlist)*1000)
 					avgcurrent = round(precisecurrent,1)
-			# elif record['name'] == 'PowerOnly.component_avgCurrent_loadControl':
-	# 			cameracurrent = record['values'][-1]
-	# 			cameratime = record['times'][-1]
-	# 			if DEBUG:
-	# 				print("\n# PISCIVORE CURRENT",cameracurrent, file=sys.stderr)
+			elif record['name'] == 'PowerOnly.component_avgCurrent_loadControl':
+				cameracurrent = record['values'][-1]
+				cameratime = record['times'][-1]
+				if DEBUG:
+					print("\n# PISCIVORE CURRENT",cameracurrent, file=sys.stderr)
 	if DEBUG:
 		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
 	batterycolor = "st12"
