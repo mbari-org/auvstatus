@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-	v 2.38  - Increased URL timeout to 8s. Added schedule debug code. Display version 
+	v 2.39  - Added piscivore camera debug info
+	v 2.38  - Increased URL timeout to 8s. Display version on widget
 	v 2.37  - Schedule is NOT paused upon boot-up or restart. Added mission default
 	v 2.36  - Added another overthreshold scenario (migrated to github)
 	v 2.35  - Make Next comm label red if more than an hour overdue
