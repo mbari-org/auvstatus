@@ -654,11 +654,12 @@ def getNewBattery():
 				if currentlist:
 					precisecurrent = sum(currentlist)/(len(currentlist)*1000)
 					avgcurrent = round(precisecurrent,1)
-			elif record['name'] == 'PowerOnly.component_avgCurrent_loadControl':
-				cameracurrent = record['values'][-1]
-				cameratime = record['times'][-1]
-				if DEBUG:
-					print("\n# PISCIVORE CURRENT",cameracurrent, file=sys.stderr)
+			# Is this used or replaced by getNewCameraPower?
+			# elif record['name'] == 'PowerOnly.component_avgCurrent_loadControl':
+			# 	cameracurrent = record['values'][-1]
+			# 	cameratime = record['times'][-1]
+			# 	if DEBUG:
+			# 		print("\n# PISCIVORE CURRENT",cameracurrent, file=sys.stderr)
 	if DEBUG:
 		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
 	batterycolor = "st12"
@@ -1893,6 +1894,8 @@ if (not recovered) or Opt.anyway or DEBUG:
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
 	if VEHICLE == "pontus":
 		camcat,camchangetime,pisctext = getNewCameraPower(startTime)
+		if DEBUG:
+			print("## PISCIVORE STATS:",camcat,camchangetime,pisctext, file=sys.stderr)
 
 	if DEBUG:
 		print("# DURATION and timeout start", missionduration,timeoutstart, file=sys.stderr)
