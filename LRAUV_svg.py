@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Aug 11 2023 version  -->
+<!-- Oct 2 2023 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -209,7 +209,8 @@ svgtext = '''
 <text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10 {color_satcommstext}">Sat comms</text>
 <text desc="text_nextcomms" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 {color_nextcommstext}">NextComm:</text>
 <text desc="text_version" transform="matrix(1 0 0 1 620 316)" text-anchor="right" class="st12 st9 st24">{text_version}</text>
-
+<text desc="text_thresh_volt" x="310" y="258" text-anchor="end" class="{color_voltthresh} st9 st13">{text_voltthresh}</text>
+<text desc="text_thresh_amph" x="304.5" y="270" text-anchor="end"  class="{color_ampthresh} st9 st13">{text_ampthresh}</text>
 
 {text_pauseshape}
 <g><title>Ground Fault: None means not detected. False means no recent scan</title>
@@ -227,8 +228,10 @@ svglabels='''
 <!-- create new variable for these -->
 <text desc="reckoned_label" transform="matrix(1 0 0 1 592 286)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
-<text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
-<text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
+
+<text transform="matrix(1 0 0 1 334 258.2642)" text-anchor="end" class="st9 st10">Volts:</text>
+<text transform="matrix(1 0 0 1 334 270.4165)" text-anchor="end" class="st9 st10">AmpH:</text>
+
 <text desc="text_amplabel" x="372" y="272" class="st12 st9 st24">amps</text>
 <text transform="matrix(1 0 0 1 285 300)" class="st12 st9 st13">DROP WEIGHT</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
