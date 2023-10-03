@@ -2455,14 +2455,14 @@ else:   #not opt report
 			cdd["color_ubat"] = 'st18'
 			cdd["color_flow"] = 'st18'
 			
-		if VEHICLE == 'galene':
-			cdd["color_cameralens"] = "st3"
-			if 'backseat' in missionName.lower():
-				cdd["text_cameraago"] = "ON " # + cdd["text_missionago"]
-				cdd["color_camerabody"] = "st4"
-			else:
-				cdd["color_camerabody"] = "st3"
-				cdd["text_cameraago"] = "OFF " # + cdd["text_missionago"]
+		# if VEHICLE == 'galene':
+		# 	cdd["color_cameralens"] = "st3"
+		# 	if 'backseat' in missionName.lower():
+		# 		cdd["text_cameraago"] = "ON " # + cdd["text_missionago"]
+		# 		cdd["color_camerabody"] = "st4"
+		# 	else:
+		# 		cdd["color_camerabody"] = "st3"
+		# 		cdd["text_cameraago"] = "OFF " # + cdd["text_missionago"]
 				
 		# ubatTime TO ADD?
 		
