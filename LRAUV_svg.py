@@ -76,9 +76,9 @@ svgtext = '''
 <polygon class="st3" points="255.42,235.44 244.05,237.4 244.8,189.82 255.99,186.82 "/>
 
 <!-- add new overcurrent lights -->
-<text desc="HardwareLabel" text-anchor="right" transform="matrix(1 0 0 1 245 254)" class="st9 st10">HW</text>
-<text desc="SoftwareLabel" text-anchor="right" transform="matrix(1 0 0 1 245 267)" class="st9 st10">SW</text>
-<text desc="OtherLabel"    text-anchor="right" transform="matrix(1 0 0 1 245 280)" class="st9 st10">OT</text>
+<text desc="HardwareLabel" text-anchor="end" transform="matrix(1 0 0 1 260 254)" class="st9 st10">HW</text>
+<text desc="SoftwareLabel" text-anchor="end" transform="matrix(1 0 0 1 260 267)" class="st9 st10">SW</text>
+<text desc="OtherLabel"    text-anchor="end" transform="matrix(1 0 0 1 260 280)" class="st9 st10">OT</text>
 
 <!-- battery consumption meter -->
 <text desc="text_batteryduration" x="372" y="255"  class="{color_duration} st9 st13">{text_batteryduration}</text>
@@ -208,7 +208,7 @@ svgtext = '''
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13">{text_criticaltime}</text>
 <text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10 {color_satcommstext}">Sat comms</text>
 <text desc="text_nextcomms" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 {color_nextcommstext}">NextComm:</text>
-<text desc="text_version" transform="matrix(1 0 0 1 620 316)" text-anchor="right" class="st12 st9 st24">{text_version}</text>
+<text desc="text_version" transform="matrix(1 0 0 1 638 316)" text-anchor="end" class="st12 st9 st24">{text_version}</text>
 <text desc="text_thresh_volt" x="310" y="258" text-anchor="end" class="{color_voltthresh} st9 st13">{text_voltthresh}</text>
 <text desc="text_thresh_amph" x="304.5" y="270" text-anchor="end"  class="{color_ampthresh} st9 st13">{text_ampthresh}</text>
 
