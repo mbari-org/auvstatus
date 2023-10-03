@@ -1940,7 +1940,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 		if DEBUG:
 			print("\n## Second GPS RECORD NOT OLD ENOUGH. Trying again", file=sys.stderr)
 
-		oldsite,oldgpstime = parseGPS(newGetOldGPS(startTime,mylimit=4))
+		oldsite,oldgpstime = parseGPS(newGetOldGPS(startTime,mylimit=3))
 		if DEBUG:
 			print("## GOT SECOND OLDER GPS:", oldsite,oldgpstime, file=sys.stderr)
 		
@@ -2248,7 +2248,7 @@ else:   #not opt report
 	cdd["text_arrow"]='90'
 
 	# These need to be updated with the correct default thresholds
-	cdd["text_voltthresh"]='14.5'
+	cdd["text_voltthresh"]='13.7'
 	cdd["text_ampthresh"]='50'
 	
 	# these should persist after recovery
