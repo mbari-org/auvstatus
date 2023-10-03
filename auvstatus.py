@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.42  - If two GPS fixes are too close together (30 mins), get an older one
 	v 2.41  - Adding volt and amp battery threshold display
 	v 2.40  - Working on recovering dead reckon data
 	v 2.39  - Added piscivore camera debug info
@@ -258,7 +259,8 @@ def newGetOldGPS(starttime,mylimit="2"):
 	qString = runQuery(event="gpsFix",limit=mylimit,timeafter=starttime)
 	retstring=""
 	if qString and len(qString) > 1:
-		retstring = [qString[1]]
+		# CHANGING FROM [1] to [-1] to allow getting older records
+		retstring = [qString[-1]]
 		if DEBUG:
 			print ("###\n### NEW OLD GPS:",retstring, file=sys.stderr)
 	return retstring
@@ -582,8 +584,8 @@ def getNewLatLon(starttime=1676609209829):
 	rec_lat = runNewStyleQuery(api="data/latitude_fix",extrastring=f"&maxlen=400&from={starttime}")
 	rec_lon = runNewStyleQuery(api="data/longitude_fix",extrastring=f"&maxlen=400&from={starttime}")
 	
-	if DEBUG:
-		print("# LATLON",rec_lat,rec_lon, file=sys.stderr)
+	# if DEBUG:
+	# 	print("# LATLON",rec_lat,rec_lon, file=sys.stderr)
 	if not rec_lat:
 		return choplat,choplon,False
 	
@@ -604,11 +606,11 @@ def getNewLatLon(starttime=1676609209829):
 		# distance(site,gpstime,oldsite,oldgpstime)
 		bearinglist.append( (mill[i],) + distance( (lat[i+1],lon[i+1]),mill[i+1],(lat[i],lon[i]),mill[i]) )
 		
-	for z in bearinglist:
-		print(z[0],z[3],z[4], file=sys.stderr)
+	# for z in bearinglist:
+	# 	print(z[0],z[3],z[4], file=sys.stderr)
 
-	for k in cdd:
-		print(f"{k};{cdd.get(k)}", file=sys.stderr)
+	# for k in cdd:
+	# 	print(f"{k};{cdd.get(k)}", file=sys.stderr)
 
 	
 	# depthl = [-0.993011,0.102385,0.065651,0.117626,0.060571,0.105122,2.669861,17.237305,28.119141,31.023926,30.093750,29.107910,0.071512,0.076593,0.081284,0.126614,0.086754,0.059008,1.560425,40.828125,1.911346,20.146484,1.978973,40.566406,2.295471,40.296875,2.434631,40.497070,1.792938,40.433594,0.143028,0.074247,1.753479,40.653320,14.269775,1.691742,39.653320,1.316193,40.268555,1.810150,18.678711,17.157227,31.187012,30.313477,28.996582,0.170383,0.097305,0.067604,0.130524,0.091835,1.672180,39.883789,1.678436,40.720703,2.512756,3.323242,40.277344,1.808563,40.340820,3.286133,2.399048,12.588135,0.106293,0.089098,0.108639,1.649902,39.648438,10.620605,1.938721,30.812012,0.092224,0.044939,0.150452,0.158268,0.080893,0.059008,0.101604,0.103167,1.726135,40.442383,8.166504,1.699158,40.311523,2.993469,2.450623,34.390625,22.701172,0.234081,0.076202,1.844910,40.644531,34.384766,34.854492,27.496094,30.463867,30.583008,28.158691,0.100822,0.126614,0.150063,0.220406]
@@ -1929,8 +1931,18 @@ if (not recovered) or Opt.anyway or DEBUG:
 		print("## GPS: SITE:",site,gpstime, file=sys.stderr)
 
 	oldsite,oldgpstime = parseGPS(newGetOldGPS(startTime,mylimit=2))
+
 	if DEBUG:
-		print("## PREVIOUS GPS: SITE:",oldsite,oldgpstime, file=sys.stderr)
+		print("## FIRST OLD GPS: SITE:",oldsite,oldgpstime, file=sys.stderr)
+
+	if gpstime - oldgpstime < (60*1000*(30)):  # less than 30 minutes difference (make this relative to needcomms)
+		# Go back for another GPS fix
+		if DEBUG:
+			print("\n## Second GPS RECORD NOT OLD ENOUGH. Trying again", file=sys.stderr)
+
+		oldsite,oldgpstime = parseGPS(newGetOldGPS(startTime,mylimit=4))
+		if DEBUG:
+			print("## GOT SECOND OLDER GPS:", oldsite,oldgpstime, file=sys.stderr)
 		
 	argobatt,argotime = parseARGO(getArgo(startTime))
 		
@@ -2560,7 +2572,8 @@ else:   #not opt report
 		else:
 			cdd["color_ubat"] = 'st18'
 			cdd["color_flow"] = 'st18'
-			
+		
+		# THIS camera is not being used anymore
 		# if VEHICLE == 'galene':
 		# 	cdd["color_cameralens"] = "st3"
 		# 	if 'backseat' in missionName.lower():
