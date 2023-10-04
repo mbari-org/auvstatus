@@ -2181,11 +2181,9 @@ else:   #not opt report
 	"color_hw",
 	"color_ot",
 	"color_cartcircle",
-	"color_ampthresh",
-	"color_voltthresh",
 	"color_missiondefault" ]
 	for cname in colornames:
-		cdd[cname] = 'st3' # white fill
+		cdd[cname] = 'st3' # white fill black stroke
 	
 	cdd["color_arrow"] = "st16"
 	cdd["color_ubat"] = "st18"
@@ -2193,6 +2191,9 @@ else:   #not opt report
 	cdd["color_duration"] = "st18"
 	cdd["color_satcommstext"]="st18" # no color = black
 	cdd["color_nextcommstext"]="st18"
+	cdd["color_ampthresh"] = "st12"
+	cdd["color_voltthresh"] = "st12"
+	
 	# These are made invisible
 	cartcolors=["color_bigcable",
 	"color_smallcable",
