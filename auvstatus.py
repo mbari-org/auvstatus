@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.43  - Some light formatting
 	v 2.42  - If two GPS fixes are too close together (30 mins), get an older one
 	v 2.41  - Adding volt and amp battery threshold display
 	v 2.40  - Working on recovering dead reckon data
@@ -2191,8 +2192,9 @@ else:   #not opt report
 	cdd["color_duration"] = "st18"
 	cdd["color_satcommstext"]="st18" # no color = black
 	cdd["color_nextcommstext"]="st18"
-	cdd["color_ampthresh"] = "st12"
-	cdd["color_voltthresh"] = "st12"
+
+	cdd["color_ampthresh"] = "st18"  # start invisible
+	cdd["color_voltthresh"] = "st18"
 	
 	# These are made invisible
 	cartcolors=["color_bigcable",
@@ -2693,6 +2695,9 @@ else:   #not opt report
 		#
 		# Find battery thresholds for critical errors
 		#
+		cdd["color_ampthresh"] = "st12"
+		cdd["color_voltthresh"] = "st12"
+
 		if Ampthreshnum:
 			cdd["text_ampthresh"] = f"{Ampthreshnum}"
 			cdd["color_ampthresh"] = ['st12','st31'][amphr - Ampthreshnum < 5]

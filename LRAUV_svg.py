@@ -179,7 +179,7 @@ svgtext = '''
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
-<text desc="text_bearing" transform="matrix(1 0 0 1 598 262.3)" class="st9 st13">{text_bearing}</text>
+<text desc="text_bearing" transform="matrix(1 0 0 1 605 262.3)" text-anchor="middle" class="st9 st13">{text_bearing}</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">{text_thrusttime}</text>
 <text desc="text_needcommstime" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">{text_needcomms}</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">{text_nextcomm}</text>
@@ -197,7 +197,7 @@ svgtext = '''
 <text desc="text_gf" transform="matrix(1 0 0 1 482 262.4973)" class="st9 st10">{text_gf}</text>
 <text desc="text_arrive" transform="matrix(1 0 0 1 580 222)" class="st12 st9 st24">{text_waypoint}</text>
 <text desc="text_speed" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">{text_speed}<title>Speed estimated from last two GPS fixes</title></text>
-<text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">{text_vehicle}</text>
+<text desc="text_vehicle" transform="matrix(1 0 0 1 419 254.7336)" text-anchor="middle" class="st14 st15">{text_vehicle}</text>
 <text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">{text_lastupdate}</text>
 <text desc="reckoned_detail" transform="matrix(1 0 0 1 592 293)" class="st12 st9 st24">{text_reckondistance}</text>
 <text desc="text_arrivestation" transform="matrix(1 0 0 1 581 230)" class="st9 st13">{text_arrivestation}</text>
