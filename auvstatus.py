@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.44  - Added parsing of environmental critical
 	v 2.43  - Some light formatting
 	v 2.42  - If two GPS fixes are too close together (30 mins), get an older one
 	v 2.41  - Adding volt and amp battery threshold display
@@ -178,7 +179,9 @@ def runNewStyleQuery(api="",extrastring=""):
 		return result
 	except urllib.error.HTTPError or ssl.SSLError:
 		if ssl.SSLError:
-			if not "PowerOnly" in URL:
+			if DEBUG:
+				print("\n### HTTP ERROR:",URL, file=sys.stderr)
+			if not "PowerOnly" in URL and not "data/depth" in URL:
 				print("# QUERY TIMEOUT:",URL, file=sys.stderr)
 				handleURLerror()
 		else:
@@ -925,6 +928,7 @@ def parseCritical(recordlist):
 	CriticalError = ""
 	CriticalTime  = False
 	Water         = False
+	Envir         = False
 	
 	# if DEBUG:
 	#	print "### Start Recordlist"
@@ -946,10 +950,15 @@ def parseCritical(recordlist):
 		if RecordText.startswith("WATER DETECTED"):
 			Water = Record["unixTime"]
 			
+		elif "environmental failure" in RecordText.lower():
+			Envir = Record["unixTime"]
+			
 		if "burnwire activated" in RecordText.lower():
 			Drop = Record["unixTime"]
+			
 		if (not ThrusterServo) and ("ThrusterServo" in RecordText and "Hardware Fault" in RecordText):
 			ThrusterServo = Record["unixTime"]
+			
 		if (not CriticalError) and not RecordText.startswith("Could not open") and not Record["name"] == "NAL9602":
 #		  and not "NAL9602" in RecordText and not "Hardware Fault in component" in RecordText:
 			if len(RecordText)> 31:
@@ -958,13 +967,16 @@ def parseCritical(recordlist):
 					CriticalError += "..."
 			CriticalTime = Record["unixTime"]
 			if DEBUG:
-				print(RecordText,"\n",CriticalError, (now-CriticalTime)/3600000, file=sys.stderr)
+				print("FOUND CRITICAL",RecordText,"\n",CriticalError, (now-CriticalTime)/3600000, file=sys.stderr)
 			if (((now - CriticalTime)/3600000) > 6):
 				CriticalError = ""
 				CriticalTime = False
+				if DEBUG:
+					print("CRITICAL older than 6 HOURS\n    ##>",RecordText,"\n",CriticalError,
+					     file=sys.stderr)
 			
 		# if Record["name"]=="CBIT" and Record.get("text","NA").startswith("LAST"):
-	return Drop, ThrusterServo, CriticalError, CriticalTime, Water
+	return Drop, ThrusterServo, CriticalError, CriticalTime, Water, Envir
 
 def parseFaults(recordlist):
 	'''https://okeanids.mbari.org/TethysDash/api/events?vehicles=brizo&eventTypes=logFault&from=1591731032512
@@ -1002,7 +1014,7 @@ def parseFaults(recordlist):
 				BadBatteryText ='<text transform="matrix(1 0 0 1 286.0 245)" class="st31 st9 st24" text-anchor="end">{}x</text>'.format(ma.group(1))
 			if DEBUG:
 				print("## BAD STICK REPORT", RT, file=sys.stderr)
-		if (not Software) and "software overcurrent" in RT.lower():
+		if (not Software) and "software overcurrent" in RT.lower() or "data fault in component" in RT.lower():
 			Software = Record["unixTime"]
 		
 		if (not Overload) and "overload error" in RT.lower():
@@ -1940,8 +1952,9 @@ if (not recovered) or Opt.anyway or DEBUG:
 		# Go back for another GPS fix
 		if DEBUG:
 			print("\n## Second GPS RECORD NOT OLD ENOUGH. Trying again", file=sys.stderr)
-
-		oldsite,oldgpstime = parseGPS(newGetOldGPS(startTime,mylimit=3))
+			
+		# Change this back when Carlos fix gets incorporated
+		oldsite,oldgpstime = parseGPS(newGetOldGPS(startTime,mylimit=4))
 		if DEBUG:
 			print("## GOT SECOND OLDER GPS:", oldsite,oldgpstime, file=sys.stderr)
 		
@@ -2020,10 +2033,11 @@ if (not recovered) or Opt.anyway or DEBUG:
 		needcomms = 60  #default
 	
 	CriticalError=False
+	EnvirCritical=False
 	if (critical):
 		if DEBUG:
 			print("# Starting CRITICAL parse  ", file=sys.stderr)
-		dropWeight,ThrusterServo,CriticalError,CriticalTime,WaterCritical = parseCritical(critical)
+		dropWeight,ThrusterServo,CriticalError,CriticalTime,WaterCritical,EnvirCritical = parseCritical(critical)
 
 	DVLError=False
 	BadBattery=False
@@ -2749,6 +2763,11 @@ else:   #not opt report
 			cdd["color_leak"] = "stleak2"
 			cdd["text_leak"] = "CRITICAL LEAK: "
 			cdd["text_leakago"] = elapsed(WaterCritical-now)
+			
+		elif (EnvirCritical):
+			cdd["color_leak"] = "stleak2"
+			cdd["text_leak"] = "ENVIRON. FAIL: "
+			cdd["text_leakago"] = elapsed(EnvirCritical-now)
 
 		elif (WaterFault):
 			cdd["color_leak"] = "stleak1"
