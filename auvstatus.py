@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.46  - Accounted for age of battery update in calculating Amps remaining
 	v 2.45  - YASD - Yet another speed definition ApproachSpeedNotFirstTime
 	v 2.44  - Added parsing of environmental critical
 	v 2.43  - Some light formatting
@@ -747,7 +748,18 @@ def getNewBattery():
 		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
 	batterycolor = "st12"
 	if amp > 0 and avgcurrent > 0.1:
-		hoursleft = int(round((amp-baseline)/precisecurrent,0))
+		now = 1000 * time.mktime(time.localtime())
+		hourssincebatt = abs((volttime-now) / (60*60*1000))
+		timeinhours = ((amp-baseline)/precisecurrent)
+		hoursleft = int(round(timeinhours-hourssincebatt,0))
+		if DEBUG:
+			print("\n# RAW BATTERY HOURS:",timeinhours, file=sys.stderr)
+			print(  "# HOURS SINCE BATT :",hourssincebatt, file=sys.stderr)
+			print(  "# BATT HOURS REMAIN:",hoursleft, file=sys.stderr)
+
+		# should subtract additional time since battery reported
+
+		# cdd["text_ampago"] = elapsed(batttime-now)
 		if hoursleft < 48:
 			batterycolor = "st31"
 
@@ -1581,19 +1593,20 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				print("## Got Lat from mission", StationLat, file=sys.stderr)
 		
 		## PARSE NEED COMMS Assumes MINUTES
-		if NeedComms == False and (Record["name"]=="CommandLine" or Record["name"]=="CommandExec") and RecordText.startswith("got command") and not "chedule" in RecordText and ".NeedCommsTime" in RecordText:
+		if NeedComms == False and (Record["name"]=="CommandLine" or Record["name"]=="CommandExec") and RecordText.startswith("got command") and not "chedule" in RecordText and (".NeedCommsTime" in RecordText or "NeedCommsMaxWait" in RecordText):
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			'''got command set trackPatchChl_yoyo.NeedCommsTimeInTransit 45.000000'''
 			'''got command set trackPatch_yoyo.NeedCommsTimePatchTracking 120.000000 minute 
-			NeedCommsTimeVeryLong'''
+			NeedCommsTimeVeryLong
+			NeedCommsMaxWait'''
 			'''NeedCommsTimePatchMapping'''
 			'''NeedCommsTimeMarginPatchTracking'''
 			'''FrontSampling.NeedCommsTimeTransit'''
 			if DEBUG:
 				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 			try:
-				NeedComms = int(float(re.split("NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking ",Record["text"])[1].split(" ")[0]))
+				NeedComms = int(float(re.split("NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait ",Record["text"])[1].split(" ")[0]))
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
 					NeedComms = int(float(Record["text"].split("NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
@@ -2702,14 +2715,15 @@ else:   #not opt report
 
 		if volt > 0:
 			cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range 360-170
+			# Changed to be more relevant to 13.7 v
 			cdd["color_volts"] = "st{}".format(voltnum)
-			cdd["color_bat1"] = ['st4',LowBattColor][volt < 13.7]
-			cdd["color_bat2"] = ['st4',LowBattColor][volt < 14.1]
-			cdd["color_bat3"] = ['st4',LowBattColor][volt < 14.5]
-			cdd["color_bat4"] = ['st4',LowBattColor][volt < 14.9]
-			cdd["color_bat5"] = ['st4',LowBattColor][volt < 15.3]
-			cdd["color_bat6"] = ['st4',LowBattColor][volt < 15.7]
-			cdd["color_bat7"] = ['st4',LowBattColor][volt < 16.1]
+			cdd["color_bat1"] = ['st4',LowBattColor][volt < 13.0]
+			cdd["color_bat2"] = ['st4',LowBattColor][volt < 13.71]
+			cdd["color_bat3"] = ['st4',LowBattColor][volt < 14.0]
+			cdd["color_bat4"] = ['st4',LowBattColor][volt < 14.5]
+			cdd["color_bat5"] = ['st4',LowBattColor][volt < 15.0]
+			cdd["color_bat6"] = ['st4',LowBattColor][volt < 15.5]
+			cdd["color_bat7"] = ['st4',LowBattColor][volt < 16.0]
 			cdd["color_bat8"] = ['st4',LowBattColor][volt < 16.5]
 
 		#
