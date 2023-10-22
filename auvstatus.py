@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.45  - YASD - Yet another speed definition ApproachSpeedNotFirstTime
 	v 2.44  - Added parsing of environmental critical
 	v 2.43  - Some light formatting
 	v 2.42  - If two GPS fixes are too close together (30 mins), get an older one
@@ -991,6 +992,8 @@ def parseFaults(recordlist):
 	MotorLock = False
 	WaterFault    = False
 	CTDError = False
+	# Do we parse this:
+	# LCB fault: LCB Watchdog Reset. Hardware Overcurrent Shutdown. Current Limiter Activated
 	# if DEBUG:
 	#	print "### Start Recordlist"
 	#	print recordlist
@@ -1325,7 +1328,7 @@ def parseImptMisc(recordlist):
 				NeedSched = False
 				if DEBUG:
 					print("## Got SCHEDULE RESUME", elapsed(now-PauseTime), file=sys.stderr)
-			elif bool(re.search('stop|got command schedule pause |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText) and not ('ESP' in RecordText):
+			elif bool(re.search('got command stop|got command schedule pause |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText) and not ('ESP' in RecordText):
 				Paused = True
 				PauseTime = Record["unixTime"]
 				NeedSched = False
@@ -1608,9 +1611,12 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 		## PARSE UBAT (make vehicle-specific
 		## PARSE SPEED # THis used to be ".Speed"
+		## .ApproachSpeedNotFirstTime
 		if Speed == 0 and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec')  and ("set" in RecordText) and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText or "ApproachSpeed" in RecordText or ".Speed " in RecordText) and RecordText.startswith("got"):
 			if (".SpeedTransit" in RecordText):
 				Speed = "%.2f" % (float(Record["text"].split(".SpeedTransit")[1].strip().split(" ")[0]))
+			elif (".ApproachSpeedNotFirstTime" in RecordText):
+				Speed = "%.2f" % (float(Record["text"].split(".ApproachSpeedNotFirstTime")[1].strip().split(" ")[0]))
 			elif (".ApproachSpeed" in RecordText):
 				Speed = "%.2f" % (float(Record["text"].split(".ApproachSpeed")[1].strip().split(" ")[0]))
 			elif (".Speed" in RecordText):
