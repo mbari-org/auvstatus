@@ -389,6 +389,7 @@ def getDataAsc(starttime,mission):
 	'''https://okeanids.mbari.org/TethysDash/data/pontus/realtime/sbdlogs/2020/202003/20200303T074113/shore.csv
 	2020/202003/20200303T074113
 	
+	With Ahi: 2023-10-25T01:52:45.597Z,1698198765.597 Unknown==>platform_battery_voltage=15.262939 V
 	look for platform_battery_charge or platform_battery_voltage
 	
 	WetLabsUBAT.flow_rate=0.333607 l/s
@@ -468,7 +469,7 @@ def getDataAsc(starttime,mission):
 		for nextline in lastlines:
 #			if DEBUG:
 #				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
-			if "platform_battery_" in nextline:
+			if "platform_battery_" in nextline and not('BPC1' in nextline):
 				fields = nextline.split("=")
 				
 				if (volt==0) and "voltage" in nextline:
