@@ -408,24 +408,28 @@ def getDataAsc(starttime,mission):
 	allpaths =[]
 	NeedTracking = True
 
-	record = runQuery(event="dataProcessed",limit="3",timeafter=starttime)
+	record = runQuery(event="dataProcessed",limit="10",timeafter=starttime)
 	
 	if record:
 		for checkpath in record:
-			allpaths.append(checkpath['path'])
+			if not (checkpath['path'] in allpaths):
+				allpaths.append(checkpath['path'])
+		if DEBUG:
+			print("# Found (allpaths) Data Path", allpaths,file=sys.stderr)
 	else:
 		print("# No dataProcessed Path found", file=sys.stderr)
 		return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
-			
-	if (len(allpaths) ==3):   # get three most recent
-		if allpaths[0]==allpaths[1]:   # if first two are the same, drop second
-			z=allpaths.pop(1)
-		else:            # otherwise drop last one
-			z=allpaths.pop(2)
+	
+	#moving duplicate checking above		
+	# if (len(allpaths) ==3):   # get three most recent
+	# 	if allpaths[0]==allpaths[1]:   # if first two are the same, drop second
+	# 		z=allpaths.pop(1)
+	# 	else:            # otherwise drop last one
+	# 		z=allpaths.pop(2)
 	
 	firstlast = 0		
 	
-	for pathpart in allpaths:
+	for pathpart in allpaths[:2]:
 		volt = 0
 		amp  = 0
 		volttime=0
@@ -434,7 +438,7 @@ def getDataAsc(starttime,mission):
 		extrapath = pathpart
 		NewURL = DataURL.format(ser=servername,vehicle=VEHICLE,extrapath=extrapath)
 		if DEBUG:
-			print("# DATA NewURL",NewURL, file=sys.stderr)
+			print("# DATA ASC URL",NewURL, file=sys.stderr)
 		datacon = urllib.request.urlopen(NewURL,timeout=8)
 		content =  datacon.read().decode('utf-8').splitlines()
 		# if DEBUG:
@@ -469,15 +473,30 @@ def getDataAsc(starttime,mission):
 		for nextline in lastlines:
 #			if DEBUG:
 #				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
-			if "platform_battery_" in nextline and not('BPC1' in nextline):
-				fields = nextline.split("=")
+			if "platform_battery_" in nextline:
+				if not('BPC1' in nextline):
+					fields = nextline.split("=")	
+					if (volt==0) and ("voltage" in nextline) and (VEHICLE!='ahi'):
+						if DEBUG:
+							print("# Found Data Battery Voltage",fields[2:], file=sys.stderr)
+						volt     = float(fields[3].split(" ")[0])
+						# in seconds not MS
+					if amp == 0 and "charge" in nextline:
+						if DEBUG:
+							print("# Found Data Battery Charge",fields[2:], file=sys.stderr)
+						amp      = float(fields[3].split(" ")[0])
+						volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  
+				else:
+					# VEHICLE=='ahi' and "voltage" in nextline: # Use BPC1
+					fields = nextline.split('>')[1].split("=")
+					if (volt==0) and ("voltage" in nextline) and (VEHICLE=='ahi'):
+						if DEBUG:
+							print("\n# Found AHI Data Battery Voltage",fields, file=sys.stderr)
+						volt     = float(fields[1].split(" ")[0])
+						volttime = int(float(nextline.split('>')[0].split(',')[1].split(" ")[0])*1000)  
 				
-				if (volt==0) and "voltage" in nextline:
-#				if "voltage" in nextline:
-					volt     = float(fields[3].split(" ")[0])
-					volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  # in seconds not MS
-				if amp == 0 and "charge" in nextline:
-					amp      = float(fields[3].split(" ")[0])
+
+				
 			if VEHICLE == 'pontus':
 				''' Fault  UBAT flow rate is below the specified threshold of 0.05 l/s.   WetLabsUBAT'''
 				'''WetLabsUBAT.flow_rate=0.333607 l/s'''
@@ -725,12 +744,14 @@ def getNewBattery():
 	if BattFields:
 		for record in BattFields:
 			if record['name'] == 'battery_voltage':
-				# if DEBUG:
-				# 	print("# VOLT RECORD",record, file=sys.stderr)
+				if DEBUG:
+					print("# NEW STYLE VOLT RECORD",record, file=sys.stderr)
 				volt = record['values'][-1]
-				volttime = record['times'][-1]
 			elif record['name'] == 'battery_charge':
 				amp = record['values'][-1]
+				volttime = record['times'][-1]
+				if DEBUG:
+					print("# NEW STYLE AMP RECORD",record, file=sys.stderr)
 			elif record['name'] == 'average_current':
 				currentlist = record['values'][-7:]
 				if DEBUG:
@@ -1910,6 +1931,8 @@ mission_defaults = {
 	"Smear"         		     : {"MissionTimeout": 3,   "NeedCommsTime":60,  "Speed":1 },
 	"front_sampling"             : {"MissionTimeout": 12,  "NeedCommsTime":300,  "Speed":1 }, 
 	"sci2_flat_and_level"        : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1.0 },
+	#WHOI Mission
+	"altitudeServo_approach_backseat_poweronly": {"MissionTimeout": 6,   "NeedCommsTime":180,  "Speed":1.0 },
 	"sci2_flat_and_level_backseat"    : {"MissionTimeout": 2,   "NeedCommsTime":60,  "Speed":1.0 }
 }
 
@@ -2043,9 +2066,12 @@ if (not recovered) or Opt.anyway or DEBUG:
 
 	#this is volt, amp, time
 	volt,amphr,batttime,flowdat,flowtime,Tracking,TrackTime = getDataAsc(startTime,missionName)
-	volt=newvolt
-	amphr=newamp
-	batttime=newvolttime
+	# COMMENTED this out to get battery data from the old data-file method instead of new API
+	if VEHICLE!='ahi' and newvolt>0:
+		volt=newvolt
+	if newamp>0:
+		amphr=newamp
+		batttime=newvolttime
 
 	satcomms,cellcomms = parseComms(getComms(startTime))
 
