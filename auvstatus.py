@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.47  - Implemented API-based retrieval of default values (lightly tested)
 	v 2.46  - Accounted for age of battery update in calculating Amps remaining
 	v 2.45  - YASD - Yet another speed definition ApproachSpeedNotFirstTime
 	v 2.44  - Added parsing of environmental critical
@@ -89,6 +90,7 @@ def get_options():
 	parser.add_argument("-v", "--vehicle",	default="pontus"  , help="specify vehicle")
 	parser.add_argument("--printhtml",action="store_true"  , help="print auv.html web links")
 	parser.add_argument("-m", "--missions",action="store_true"  , help="spit out mission defaults")
+	parser.add_argument("--newmissions",action="store_true"  , help="test new mission defaults")
 	parser.add_argument("-a", "--anyway",action="store_true"  , help="process even after recovery")
 	parser.add_argument("-i", "--inst",default="mbari"  , help="choose the server (mbari or whoi)")
 	parser.add_argument("Args", nargs='*')
@@ -272,6 +274,8 @@ def newGetOldGPS(starttime,mylimit="2"):
 	return retstring
 
 def getMissionDefaults():
+	'''https://okeanids.mbari.org/TethysDash/api/commands/script?path=Science/altitudeServo_approach_backseat_poweronly.tl'''
+	'''{"description":"Maximum duration of mission","name":"MissionTimeout","unit":"hour","value":"12"},{"description":"How often to surface for commumications","name":"NeedCommsTime","unit":"minute","value":"180"},'''
 	'''MBARI specific Utility script. Not routinely used. 
 	print standard defaults for the listed missions. some must have inheritance because it doesn't get them all'''
 	missions=["Science/profile_station","Science/sci2","Science/mbts_sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
@@ -297,6 +301,62 @@ def getMissionDefaults():
 		except urllib.error.HTTPError:
 			print("# FAILED TO FIND MISSION",mission, file=sys.stderr)
 			
+def getNewMissionDefaults(missionn):
+	Speed = None
+	NCTime = None
+	TimeOut = None
+	"""NOTE: This mission name needs the suffix!"""
+	
+	'''https://okeanids.mbari.org/TethysDash/api/commands/script?path=Science/altitudeServo_approach_backseat_poweronly.tl'''
+	'''{"description":"Maximum duration of mission","name":"MissionTimeout","unit":"hour","value":"12"},{"description":"How often to surface for commumications","name":"NeedCommsTime","unit":"minute","value":"180"},'''
+	missions=["Science/mbts_sci2","Science/profile_station"]
+	
+	URL = "https://{}/TethysDash/api/commands/script?path={}".format(servername,missionn)
+	if DEBUG: 
+		print("\n#===========================\n",missionn, "\n", file=sys.stderr)
+		print("\n#===========================\n",URL, "\n", file=sys.stderr)
+	try:
+		connection = urllib.request.urlopen(URL,timeout=8)
+		if connection: # here?
+			raw = connection.read()
+			structured = json.loads(raw)
+			connection.close()
+			result = structured['result']['scriptArgs']
+		
+			# if DEBUG: 
+			# 	print(result, file=sys.stderr)
+			for subfield in result:
+				sfn = subfield.get('name')
+				if "NeedCommsTime" in sfn:
+					'''needcomms expects minutes'''
+					NCTime = subfield.get('value',None)
+					if subfield.get('unit',0)=='hour':
+						NCTime = int(NCTime)*60
+					if DEBUG:
+						print(subfield, file=sys.stderr)
+				elif sfn=="MissionTimeout":
+					'''Timeout expects hours'''
+					TimeOut = subfield.get('value',None)
+					if subfield.get('unit',0)=='minute':
+						TimeOut = int(TimeOut)/60
+					if DEBUG:
+						print(subfield, file=sys.stderr)
+				elif sfn=="Speed":
+					Speed = subfield.get('value',None)
+					if DEBUG:
+						print(subfield, file=sys.stderr)
+			# try: 
+			# 	splitted = str(result).split("{")
+			# 	for item in splitted:
+			# 		print(item, file=sys.stderr)
+			# except KeyError:
+			# 	print("NA", file=sys.stderr)
+			if DEBUG: 
+				print(NCTime,TimeOut,Speed, file=sys.stderr)
+	except urllib.error.HTTPError:
+		print("# FAILED TO FIND MISSION",missionn, file=sys.stderr)
+	return NCTime,TimeOut,Speed
+		
 
 	
 def getNotes(starttime):
@@ -1666,16 +1726,27 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			if DEBUG:
 				print("# FOUND SPEED:",Speed, file=sys.stderr)
 			# Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].split(" ")[0]))
-		
-	if not Speed:
-			Speed = mission_defaults.get(MissionName,{}).get("Speed","na")
-	if not NeedComms:
-			NeedComms = mission_defaults.get(MissionName,{}).get("NeedCommsTime",0)
-	if not TimeoutDuration:
+	if not all([Speed,NeedComms,TimeoutDuration]):
+		if DEBUG: 
+			print("# TRYING NEW DEFAULT RETRIEVAL ",file=sys.stderr)
+			
+		default_NCTime,default_TimeOut,default_Speed = getNewMissionDefaults("Science/mbts_sci2.tl")
+		if not Speed and default_Speed:
+			# Speed = mission_defaults.get(MissionName,{}).get("Speed","na")
+			Speed = float(default_Speed)
+				
+		if not NeedComms and default_NCTime:
+			NeedComms = int(default_NCTime)
+			# NeedComms = mission_defaults.get(MissionName,{}).get("NeedCommsTime",0)
+			
+		if not TimeoutDuration and default_TimeOut:
 			if DEBUG:
 				print("# NO TIMEOUT - checking defaults", file=sys.stderr)
+				print("# FOUND NEW TIMEOUT:",default_TimeOut, file=sys.stderr)
+				
+			TimeoutDuration = int(default_TimeOut)
 			
-			TimeoutDuration = mission_defaults.get(MissionName,{}).get("MissionTimeout",0)
+			# TimeoutDuration = mission_defaults.get(MissionName,{}).get("MissionTimeout",0)
 			TimeoutStart = MissionTime
 	
 			
@@ -1875,7 +1946,13 @@ if Opt.missions:
 	'''utility to show default values for selected missions'''
 	getMissionDefaults()
 	sys.exit("Done")
-
+	
+if Opt.newmissions:
+	'''test retrieval of mission defaults'''
+	getNewMissionDefaults("Science/mbts_sci2.tl")
+	sys.exit("Done new mission test")
+	
+	
 if Opt.inst == 'whoi':
 	servername = 'lrauv.whoi.edu'
 else:
