@@ -467,7 +467,10 @@ def getDataAsc(starttime,mission):
 	TrackTime = []
 	allpaths =[]
 	NeedTracking = True
-
+	
+	if DEBUG:
+		print("# Running Old Data query...")
+			
 	record = runQuery(event="dataProcessed",limit="10",timeafter=starttime)
 	
 	if record:
@@ -799,7 +802,7 @@ def getNewBattery():
 	cameratime = 0
 
 	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
-	
+	#extrastring=f"&maxlen=800"
 	BattFields = runNewStyleQuery(api="data")
 	if BattFields:
 		for record in BattFields:
@@ -2485,7 +2488,8 @@ else:   #not opt report
 			cdd['svg_current'] = '<rect desc="cugreen"  x="365.5" y="264.8" class="st25" width="4" height="7"/>'
 		else:
 			cdd['svg_current'] = '<rect desc="cuyellow" x="365.5" y="257.8" class="st26" width="4" height="14"/>'
-
+	if DEBUG:
+		print("# BATTERY REMAINING  ",batteryduration, file=sys.stderr)
 	if batteryduration > -998:
 		cdd["text_batteryduration"] = batteryduration
 		cdd["color_duration"] = colorduration
