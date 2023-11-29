@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.48  - Updated battery to use 3 queries
 	v 2.47  - Implemented API-based retrieval of default values (lightly tested)
 	v 2.46  - Accounted for age of battery update in calculating Amps remaining
 	v 2.45  - YASD - Yet another speed definition ApproachSpeedNotFirstTime
@@ -789,7 +790,12 @@ def getNewBattery():
 	Sometimes the battery_charge field can be empty, so use .get instead of []
 		Battery thresholds:
 	onfigSet IBIT.batteryVoltageThreshold 13 v persist;configSet IBIT.batteryCapacityThreshold 15 Ah persist
-
+	
+	Nov 2023: redo with 3 separate queries so maxlen is respected
+	average_current
+	battery_charge
+	battery_voltage
+	
 	'''
 	volt= 0.0
 	amp = 0.0
@@ -803,7 +809,36 @@ def getNewBattery():
 
 	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
 	#extrastring=f"&maxlen=800"
-	BattFields = runNewStyleQuery(api="data")
+	
+	VoltFields    = runNewStyleQuery(api="data/battery_voltage",extrastring="&maxlen=5")
+	if DEBUG:
+		print("# NEW STYLE VOLT FIELD RECORD",VoltFields, file=sys.stderr)
+
+	if VoltFields:
+		record = VoltFields
+		volt = record['values'][-1]
+		volttime = record['times'][-1]
+	
+	AmpFields     = runNewStyleQuery(api="data/battery_charge",extrastring="&maxlen=5")
+	if AmpFields:
+		record = AmpFields
+		amp = record['values'][-1]
+		if DEBUG:
+			print("# NEW STYLE AMP RECORD",record, file=sys.stderr)
+
+	CurrentFields = runNewStyleQuery(api="data/average_current",extrastring="&maxlen=7")
+	if CurrentFields:
+		record = CurrentFields
+		currentlist = record['values'][-7:]
+		if DEBUG:
+			print("\n# CURRENT LIST",currentlist, file=sys.stderr)
+
+		if currentlist:
+			precisecurrent = sum(currentlist)/(len(currentlist)*1000)
+			avgcurrent = round(precisecurrent,1)
+
+	'''# Old strategy
+	BattFields    = runNewStyleQuery(api="data")
 	if BattFields:
 		for record in BattFields:
 			if record['name'] == 'battery_voltage':
@@ -829,8 +864,10 @@ def getNewBattery():
 			# 	cameratime = record['times'][-1]
 			# 	if DEBUG:
 			# 		print("\n# PISCIVORE CURRENT",cameracurrent, file=sys.stderr)
+	'''
 	if DEBUG:
-		print("# New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
+		print("# Extra New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
+		
 	batterycolor = "st12"
 	if amp > 0 and avgcurrent > 0.1:
 		now = 1000 * time.mktime(time.localtime())
