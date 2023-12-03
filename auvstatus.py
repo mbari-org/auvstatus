@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.49  - Show orange status for Piscivore cameras sending old data
 	v 2.48  - Updated battery to use 3 queries
 	v 2.47  - Implemented API-based retrieval of default values (lightly tested)
 	v 2.46  - Accounted for age of battery update in calculating Amps remaining
@@ -635,13 +636,25 @@ def getNewCameraPower(starttime):
 	nowpowtime = False
 	'''Returns the most recent power consumption for the piscivore cameras'''
 	'''PowerOnly.component_avgCurrent_loadControl''' 
-	'''https://okeanids.mbari.org/TethysDash/api/data/PowerOnly.component_avgCurrent_loadControl?vehicle=pontus'''
-	record = runNewStyleQuery(api="data/PowerOnly.component_avgCurrent_loadControl",extrastring="")
+	'''https://okeanids.mbari.org/TethysDash/api/data/PowerOnly.component_avgCurrent_loadControl?vehicle=pontus
+	# updated to add extra string if values are not being reported? 
+	https://okeanids.mbari.org/TethysDash/api/data/PowerOnly.component_avgCurrent_loadControl?vehicle=pontus&maxlen=10&from=1701196801652'''
+	if DEBUG:
+		print(f"# NewPowerOnly &maxlen=10&from={starttime}", file=sys.stderr)
+	record = runNewStyleQuery(api="data/PowerOnly.component_avgCurrent_loadControl",extrastring=f"&maxlen=10&from={starttime}")
+	'''(-ago_cellcomms / (60*1000)) > (needcomms+60):'''
 	if record and nowcat < -998: #nowcat check not needed because no loop
 		nowcat = ampToCat(record['values'][-1])
 		nowpow = "{}".format(int(record['values'][-1])) + "ma"
 		nowpowtime = record['times'][-1]
 		# -1 to 15, 16-65, 66-125
+		agopowtime = now - nowpowtime
+		if (agopowtime / (60*1000)) > (needcomms+60):
+			nowpow="Too Old"
+			nowcat=5
+			if DEBUG:
+				print("# PowerOnly too old",elapsed(nowpowtime - now), file=sys.stderr)
+
 		for v,t in zip(record['values'][::-1],record['times'][::-1]):
 			tc = ampToCat(v)
 			if tc == nowcat:
@@ -2731,7 +2744,10 @@ else:   #not opt report
 				else:
 					cdd["text_camago"]=""	
 		
-				if (camcat == 2): # two cameras on
+				if (camcat==5): #Too old data
+					cdd["color_cam1"]= 'st6'
+					cdd["color_cam2"]= 'st6'
+				elif (camcat == 2): # two cameras on
 					cdd["color_cam1"]= 'st4'
 					cdd["color_cam2"]= 'st4'
 				elif (camcat == 1):  # (one camera on)
@@ -2743,6 +2759,7 @@ else:   #not opt report
 				elif camcat == 3: # current > 200
 					cdd["color_cam1"]= 'st6'
 					cdd["color_cam2"]= 'st6'
+					
 					
 
 			else: 
