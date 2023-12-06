@@ -125,7 +125,7 @@ svgtext = '''
 <circle desc="logoverdue"      class="{color_logago}"          cx="138.5" cy="219" r="2"/>
 <circle desc="missionoverdue"     class="{color_missionago}"     cx="138.5" cy="306" r="2"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="{color_satcomm}" width="24.43" height="11.5"/>
-<rect desc="cell"    x="260.15" y="212.24" class="{color_cell}" width="26.43" height="11.31"/>
+<rect desc="cell"    x="260.15" y="202" class="{color_cell}" width="26.43" height="11.31"/>
 <rect desc="gps"     x="407.76" y="221.71" class="{color_gps}" width="26.93" height="10.17"/>
 <rect desc="amps"    x="336.28" y="261.76" class="{color_amps}" width="25.5" height="10.5"/>
 <rect desc="volts"   x="336.28" y="249.85" class="{color_volts}" width="25.5" height="10.5"/>
@@ -176,7 +176,7 @@ svgtext = '''
 <text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12">{text_mission}</text>
 <text desc="text_missionago" transform="matrix(1 0 0 1 452 177)" class="st12 st9 sparktext">{text_missionago}</text>
 <text desc="missionsched" transform="matrix(1 0 0 1 460 196)" class="st12 st9 st13">{text_scheduled}</text>
-<text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">{text_cell}</text>
+<text desc="text_cell" transform="matrix(1 0 0 1 262.2472 211)" class="st9 st10">{text_cell}</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
 <text desc="text_bearing" transform="matrix(1 0 0 1 605 262.3)" text-anchor="middle" class="st9 st13">{text_bearing}</text>
@@ -187,7 +187,8 @@ svgtext = '''
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">{text_logtime}</text>
 <text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">{text_logago}</text>
-<text desc="text_cellago" transform="matrix(1 0 0 1 342.0 221.2224)" class="st12 st9 st13">{text_cellago}</text>
+<text desc="text_cellago" transform="matrix(1 0 0 1 342.0 211)" class="st12 st9 st13">{text_cellago}</text>
+<text desc="text_argoago" transform="matrix(1 0 0 1 257.0 227)" class="st12 st9 st13">{text_argoago}</text>
 <text desc="text_volts" transform="matrix(1 0 0 1 338.0 257.9931)" class="st9 st10">{text_volts}</text>
 <text desc="text_amps" transform="matrix(1 0 0 1 338.0 270.4917)" class="st9 st10">{text_amps}</text>
 <text desc="text_ampago" transform="matrix(1 0 0 1 330.0 280.0)" class="st12 st9 st13">{text_ampago}</text>
@@ -239,7 +240,7 @@ svglabels='''
 
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
-<text transform="matrix(1 0 0 1 291.6499 221.6039)" class="st9 st10">Cell comms</text>
+<text transform="matrix(1 0 0 1 291.6499 211)" class="st9 st10">Cell comms</text>
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
 '''

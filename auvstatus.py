@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.50  - Show age of last good Argo Battery Record
 	v 2.49  - Show orange status for Piscivore cameras sending old data
 	v 2.48  - Updated battery to use 3 queries
 	v 2.47  - Implemented API-based retrieval of default values (lightly tested)
@@ -255,7 +256,17 @@ def getGPS(starttime,mylimit="1"):
 def getArgo(starttime,mylimit="1"):
 	''' extract the most recent GPS entry'''
 	if DEBUG:
-		print("###\n### RUNNING ARGO LIMIT 1 starttime:",starttime, file=sys.stderr)
+		print("###\n### RUNNING ARGO LIMIT 50 starttime:",starttime, file=sys.stderr)
+	qString = runQuery(event="argoReceive",limit=mylimit,timeafter=starttime)
+	retstring=""
+	if qString:
+		retstring = qString	
+	return retstring
+	
+def getArgo50(starttime,mylimit="100"):
+	''' extract the most recent GPS entry'''
+	if DEBUG:
+		print("###\n### RUNNING ARGO LIMIT 50 starttime:",starttime, file=sys.stderr)
 	qString = runQuery(event="argoReceive",limit=mylimit,timeafter=starttime)
 	retstring=""
 	if qString:
@@ -928,9 +939,37 @@ def parseARGO(recordlist):
 		elif status == "255":
 			argobatt = "Low"
 		argotime = recordlist[0].get('unixTime',False)
-		return argobatt,gpstime
+		return argobatt,argotime
 
-
+def parseARGO50(recordlist):
+	''' Find last good ARGO battery time as well as current status '''
+	# if DEBUG:
+	# 	print("parseARGO50",recordlist, file=sys.stderr)
+	argobatt="Low"
+	argogoodtime = False
+	argobadtime  = False
+	argotime = False
+	'''{"result":[{"eventId":18239361,"vehicleName":"makai","unixTime":1681926395000,"isoTime":"2023-04-19T17:46:35.000Z","eventType":"argoReceive","fix":{"latitude":36.793,"longitude":-121.983,"date":"Wed Apr 19 10:46:35 PDT 2023"},"note":"B","text":"127"}]}'''
+	if not recordlist:
+		return(False,False,False)
+	else:
+		for r in recordlist:
+			status =    r.get('text','')
+			if (status == "127" and not argogoodtime):
+				if DEBUG:
+					print("ARGO FULL GOOD RECORD",r,file=sys.stderr)
+				argogoodtime = r.get('unixTime',False)
+			elif (status == "255" and not argobadtime):
+				argobadtime = r.get('unixTime',False)
+				if DEBUG:
+					print("ARGO FULL BAD RECORD",r,file=sys.stderr)
+		if argogoodtime > argobadtime:
+			argobatt = "Good"
+			argotime = argogoodtime
+		else:
+			argotime = argobadtime
+		return argobatt,argotime,argogoodtime
+		
 def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mins=60,lastcomm=1684547199000):
 	''' 
 	TODO: make orange region from now back to the start of the time
@@ -2101,8 +2140,10 @@ camchangetime = False
 argobatt = False
 padded = False
 pisctext = ""
+argoet = ""
 Paused = True
 PauseTime = False
+argogoodtime=False
 WaypointName = "Waypoint"
 
 
@@ -2132,6 +2173,16 @@ if (not recovered) or Opt.anyway or DEBUG:
 			print("## GOT SECOND OLDER GPS:", oldsite,oldgpstime, file=sys.stderr)
 		
 	argobatt,argotime = parseARGO(getArgo(startTime))
+	argobatt,argotime,argogoodtime = parseARGO50(getArgo50(startTime))
+	
+	if (argobatt == "Low" and argotime):
+		et = "Last good: " + elapsed(argogoodtime-argotime)
+		if 'h' in et:
+			et = re.sub(r'( \d+m)','',et)
+		argoet = et
+			
+	if DEBUG:
+		print("## AGRO TIME AND LASTGOODTIME:", argobatt,argotime,argogoodtime,elapsed(argogoodtime-argotime), file=sys.stderr)
 		
 	deltadist,deltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
 
@@ -2428,6 +2479,7 @@ else:   #not opt report
 	"text_batteryduration",
 	"text_ampago",
 	"text_cellago",
+	"text_argoago",
 	"text_needcomms",
 	"text_gpsago",
 	"text_logago",	
@@ -2548,6 +2600,7 @@ else:   #not opt report
 		cdd["color_argo"]="st25"
 	elif argobatt == "Low":
 		cdd["color_argo"]="st27"
+		cdd["text_argoago"] = argoet
 
 		
 	###
