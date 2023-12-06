@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.51  - Fixed bug parsing Pause status when recent critical
 	v 2.50  - Show age of last good Argo Battery Record
 	v 2.49  - Show orange status for Piscivore cameras sending old data
 	v 2.48  - Updated battery to use 3 queries
@@ -1154,7 +1155,7 @@ def parseCritical(recordlist):
 					CriticalError += "..."
 			CriticalTime = Record["unixTime"]
 			if DEBUG:
-				print("FOUND CRITICAL",RecordText,"\n",CriticalError, (now-CriticalTime)/3600000, file=sys.stderr)
+				print("FOUND CRITICAL",RecordText,"\n",CriticalError, elapsed(CriticalTime-now), file=sys.stderr)
 			if (((now - CriticalTime)/3600000) > 6):
 				CriticalError = ""
 				CriticalTime = False
@@ -1513,7 +1514,7 @@ def parseImptMisc(recordlist):
 				PauseTime = Record["unixTime"]
 				NeedSched = False
 				if DEBUG:
-					print("## Got SCHEDULE RESUME", elapsed(now-PauseTime), file=sys.stderr)
+					print("## Got SCHEDULE RESUME", elapsed(PauseTime-now), file=sys.stderr)
 			elif bool(re.search('got command stop|got command schedule pause |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText) and not ('ESP' in RecordText):
 				Paused = True
 				PauseTime = Record["unixTime"]
@@ -2175,6 +2176,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	argobatt,argotime = parseARGO(getArgo(startTime))
 	argobatt,argotime,argogoodtime = parseARGO50(getArgo50(startTime))
 	
+	# determine age of last good battery time. Remove minutes if over an hour
 	if (argobatt == "Low" and argotime):
 		et = "Last good: " + elapsed(argogoodtime-now)
 		if 'h' in et:
@@ -2989,8 +2991,8 @@ else:   #not opt report
 		if CriticalError:
 			cdd["text_criticalerror"] = "CRITICAL: "+ CriticalError
 			cdd["text_criticaltime"]  = elapsed(CriticalTime-now)
-		else:
-			CriticalTime = 0
+		# else:
+		# 	CriticalTime = 0
 		
 		cdd["color_dvl"] = DVLcolor
 		
@@ -3012,8 +3014,10 @@ else:   #not opt report
 		
 		# If there was a critical since the last schedule pause or schedule resume event, 
 		# then the schedule is effectively paused.
-		
-		if Paused or (PauseTime < CriticalTime):
+		# This was messed up
+		if PauseTime and Paused and (PauseTime < CriticalTime):
+			if DEBUG:
+				print("#PAUSED INFO: ", PauseTime, CriticalTime, file=sys.stderr)
 			cdd["text_pauseshape"] = '''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
 	<rect x="450" y="189" class="st27" width="8.2" height="8.2"/>
 	<rect x="452" y="190.6" width="1.3" height="5"/>
