@@ -2176,7 +2176,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	argobatt,argotime,argogoodtime = parseARGO50(getArgo50(startTime))
 	
 	if (argobatt == "Low" and argotime):
-		et = "Last good: " + elapsed(argogoodtime-argotime)
+		et = "Last good: " + elapsed(argogoodtime-now)
 		if 'h' in et:
 			et = re.sub(r'( \d+m)','',et)
 		argoet = et

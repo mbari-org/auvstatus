@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Oct 2 2023 version  -->
+<!-- Dec 5 2023 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -188,7 +188,7 @@ svgtext = '''
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">{text_logtime}</text>
 <text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">{text_logago}</text>
 <text desc="text_cellago" transform="matrix(1 0 0 1 342.0 211)" class="st12 st9 st13">{text_cellago}</text>
-<text desc="text_argoago" transform="matrix(1 0 0 1 257.0 227)" class="st12 st9 st13">{text_argoago}</text>
+<text desc="text_argoago" transform="matrix(1 0 0 1 258 227)" class="st12 st9 st13">{text_argoago}</text>
 <text desc="text_volts" transform="matrix(1 0 0 1 338.0 257.9931)" class="st9 st10">{text_volts}</text>
 <text desc="text_amps" transform="matrix(1 0 0 1 338.0 270.4917)" class="st9 st10">{text_amps}</text>
 <text desc="text_ampago" transform="matrix(1 0 0 1 330.0 280.0)" class="st12 st9 st13">{text_ampago}</text>
