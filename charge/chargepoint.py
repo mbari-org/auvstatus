@@ -38,7 +38,7 @@ def sendMessage(MessageText="EV Status"):
 
 
 	# PCfB Stuff
-	me = ''
+	me = settings.me
 	port = 587
 	lasthord = settings.pa
 	mailhost = 'smtp.dreamhost.com'
