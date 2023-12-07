@@ -30,7 +30,7 @@ def get_options():
 
 opt=get_options()
 
-def sendMessage(MessageText="EV Status"):
+def sendMessage(MessageText="EV Status",debb=False):
 	import smtplib
 	import settings
 
@@ -48,7 +48,8 @@ def sendMessage(MessageText="EV Status"):
 	msg['Subject'] = "EV Charger" 
 	msg['From'] = me
 	msg['To'] = you
-
+	# if debb:
+	# 	print(me,lasthord)
 	server = smtplib.SMTP(mailhost, port)
 	# server.ehlo()
 	server.starttls()
@@ -136,8 +137,11 @@ if opt.DEBUG:
 
 TimeString = time.strftime('%H:%M', time.localtime())
 
-# if opt.DEBUG:
-# 	sendMessage("Test Message " + TimeString)
+if opt.DEBUG:
+	try:
+		sendMessage("Test Message " + TimeString,opt.DEBUG)
+	except:
+		print("Can't send test message.")
 
 # TODO: Implementing a log that tracked duration of INUSE events (instead of querying). Write start time to text file at first transition?
 
