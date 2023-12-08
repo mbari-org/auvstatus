@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.53  - Added age colors for argo battery and show ARGO battery when docked
+	v 2.52  - Fixed integer timeout bug
 	v 2.51  - Fixed bug parsing Pause status when recent critical
 	v 2.50  - Show age of last good Argo Battery Record
 	v 2.49  - Show orange status for Piscivore cameras sending old data
@@ -946,7 +948,7 @@ def parseARGO50(recordlist):
 	''' Find last good ARGO battery time as well as current status '''
 	# if DEBUG:
 	# 	print("parseARGO50",recordlist, file=sys.stderr)
-	argobatt="Low"
+	argobatt="na"
 	argogoodtime = False
 	argobadtime  = False
 	argotime = False
@@ -967,8 +969,9 @@ def parseARGO50(recordlist):
 		if argogoodtime > argobadtime:
 			argobatt = "Good"
 			argotime = argogoodtime
-		else:
+		elif argobadtime:
 			argotime = argobadtime
+			argobatt = "Low"
 		return argobatt,argotime,argogoodtime
 		
 def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mins=60,lastcomm=1684547199000):
@@ -1643,6 +1646,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	StationLat = False
 	StationLon = False
 	ASAP = False
+	dotcolor="st27"
 	hash = "9x9x9"
 	
 	if DEBUG:
@@ -1664,7 +1668,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 		     ".MissionTimeout" in RecordText and RecordText.startswith("got") and not ("chedule" in RecordText):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			'''got command set sci2.MissionTimeout 24.000000 hour'''
-			TimeoutDuration = int(float(Record["text"].split("MissionTimeout ")[1].split(" ")[0]))
+			TimeoutDuration = float(Record["text"].split("MissionTimeout ")[1].split(" ")[0])
 			'''got command set Smear.MissionTimeout 8.000000 hour'''
 			if "minute" in Record["text"]:
 				TimeoutDuration = TimeoutDuration/60.0
@@ -1791,6 +1795,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					print("#NeedComms but no split",Record["text"], VEHICLE, file=sys.stderr)
 			if NeedComms and "hour" in Record["text"]:
 				NeedComms = NeedComms * 60
+			if NeedComms:
+				dotcolor="st25"
 			if DEBUG:
 				print("#FOUND NEEDCOMMS",NeedComms, VEHICLE, file=sys.stderr)
 			## ADD FLOW RATE FOR UBAT...
@@ -1824,6 +1830,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			print("# TRYING NEW DEFAULT RETRIEVAL ",file=sys.stderr)
 			
 		default_NCTime,default_TimeOut,default_Speed = getNewMissionDefaults("Science/mbts_sci2.tl")
+		
 		if not Speed and default_Speed:
 			# Speed = mission_defaults.get(MissionName,{}).get("Speed","na")
 			Speed = float(default_Speed)
@@ -1843,7 +1850,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			TimeoutStart = MissionTime
 	
 			
-	return TimeoutDuration, TimeoutStart, NeedComms,Speed,Scheduled,StationLat,StationLon
+	return TimeoutDuration, TimeoutStart, NeedComms,Speed,Scheduled,StationLat,StationLon,dotcolor
 
 def handleURLerror():
 	now = 1000 * time.mktime(time.localtime())
@@ -2141,12 +2148,28 @@ camchangetime = False
 argobatt = False
 padded = False
 pisctext = ""
-argoet = ""
+argoet=''
+missiondot="st18" #next to mission: invisible
 Paused = True
 PauseTime = False
 argogoodtime=False
 WaypointName = "Waypoint"
 
+# ========
+# Get argo status even if vehicle not recovered
+argobatt,argotime,argogoodtime = parseARGO50(getArgo50(startTime))
+
+# determine age of last good battery time. Remove minutes if over an hour
+if (argobatt == "Low" and argogoodtime):
+	et = "Last good: " + elapsed(argogoodtime-now)
+	if 'h' in et:
+		et = re.sub(r'( \d+m)','',et)
+	argoet = et
+elif argogoodtime and argogoodtime==argotime:
+	argoet = "Now"
+		
+if DEBUG:
+	print("## ARGO TIME AND LASTGOODTIME:", argobatt,argotime,argogoodtime,elapsed(argogoodtime-argotime),argoet, file=sys.stderr)
 
 # vehicle not recovered
 if (not recovered) or Opt.anyway or DEBUG:
@@ -2173,18 +2196,10 @@ if (not recovered) or Opt.anyway or DEBUG:
 		if DEBUG:
 			print("## GOT SECOND OLDER GPS:", oldsite,oldgpstime, file=sys.stderr)
 		
-	argobatt,argotime = parseARGO(getArgo(startTime))
-	argobatt,argotime,argogoodtime = parseARGO50(getArgo50(startTime))
-	
-	# determine age of last good battery time. Remove minutes if over an hour
-	if (argobatt == "Low" and argotime):
-		et = "Last good: " + elapsed(argogoodtime-now)
-		if 'h' in et:
-			et = re.sub(r'( \d+m)','',et)
-		argoet = et
+#	argobatt,argotime = parseARGO(getArgo(startTime))
 			
-	if DEBUG:
-		print("## AGRO TIME AND LASTGOODTIME:", argobatt,argotime,argogoodtime,elapsed(argogoodtime-argotime), file=sys.stderr)
+	# if DEBUG:
+	# 	print("## ARGO TIME AND LASTGOODTIME:", argobatt,argotime,argogoodtime,elapsed(argogoodtime-argotime), file=sys.stderr)
 		
 	deltadist,deltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
 
@@ -2213,7 +2228,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	if DEBUG:
 		print("MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime, file=sys.stderr)
 		
-	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon  = \
+	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot  = \
 	          parseDefaults(postmission,mission_defaults,missionName,missionTime)
 	
 
@@ -2505,7 +2520,7 @@ else:   #not opt report
 	"text_vehicle","text_lastupdate","text_flowago","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime",
 	"text_leak","text_leakago","text_missionago","text_cameraago","text_waypoint",
-	"text_criticalerror","text_camago","text_piscamp"
+	"text_criticalerror","text_camago","text_piscamp","text_argoago"
 	]
 	for tname in specialnames:
 		cdd[tname]=''
@@ -2597,12 +2612,25 @@ else:   #not opt report
 	if batteryduration > -998:
 		cdd["text_batteryduration"] = batteryduration
 		cdd["color_duration"] = colorduration
+		
+	argoago = (argogoodtime-now)/(60*1000*60*24) 
+	if DEBUG:
+		print("last good argo in days:",argoago,file=sys.stderr)
 
 	if argobatt == "Good":
 		cdd["color_argo"]="st25"
 	elif argobatt == "Low":
-		cdd["color_argo"]="st27"
+		# last good argo older than 5 days, make orange
+		if argoago < -5:
+			if DEBUG:
+				print("OLD argo good",argoet,file=sys.stderr)
+			cdd["color_argo"]="st27"
+		else:
+			cdd["color_argo"]="st26"
 		cdd["text_argoago"] = argoet
+	elif argobatt =="na":
+		cdd["color_argo"]="st16" # Grey
+		cdd["text_argoago"] = "NA"
 
 		
 	###
@@ -2612,8 +2640,9 @@ else:   #not opt report
 	cdd["text_vehicle"] = VEHICLE.upper()
 	cdd["text_lastupdate"] = time.strftime('%H:%M')
 	# Green = 5 if in defaults Lets go orange for not in
-	cdd["color_missiondefault"] = ['st27','st25'][missionName in mission_defaults] 
-	
+	# cdd["color_missiondefault"] = ['st27','st25'][missionName in mission_defaults] 
+	cdd["color_missiondefault"] = missiondot
+
 
 	# NOT USED YET! NOTES  
 	# if noteTime:
@@ -2634,7 +2663,7 @@ else:   #not opt report
 		cdd["color_cartcircle"] = 'st18'
 		cdd["color_smallcable"] = 'st18'
 		cdd["color_bigcable"]   = 'st18'
-
+		cdd["text_argoago"] = argoet
 		cdd["color_wavecolor"] = 'st18' # invisible
 		cdd["color_arrow"]     = 'st18'
 		cdd["color_dirtbox"] = 'st17'   # brown
