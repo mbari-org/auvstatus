@@ -1795,8 +1795,6 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 					print("#NeedComms but no split",Record["text"], VEHICLE, file=sys.stderr)
 			if NeedComms and "hour" in Record["text"]:
 				NeedComms = NeedComms * 60
-			if NeedComms:
-				dotcolor="st25"
 			if DEBUG:
 				print("#FOUND NEEDCOMMS",NeedComms, VEHICLE, file=sys.stderr)
 			## ADD FLOW RATE FOR UBAT...
@@ -1848,7 +1846,9 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 			# TimeoutDuration = mission_defaults.get(MissionName,{}).get("MissionTimeout",0)
 			TimeoutStart = MissionTime
-	
+	if NeedComms:
+		dotcolor="st25"
+
 			
 	return TimeoutDuration, TimeoutStart, NeedComms,Speed,Scheduled,StationLat,StationLon,dotcolor
 
@@ -2165,8 +2165,12 @@ if (argobatt == "Low" and argogoodtime):
 	if 'h' in et:
 		et = re.sub(r'( \d+m)','',et)
 	argoet = et
-elif argogoodtime and argogoodtime==argotime:
-	argoet = "Now"
+elif argotime:
+	et = elapsed(argotime-now)
+	if 'h' in et:
+		et = re.sub(r'( \d+m)','',et)
+	argoet = et
+
 		
 if DEBUG:
 	print("## ARGO TIME AND LASTGOODTIME:", argobatt,argotime,argogoodtime,elapsed(argogoodtime-argotime),argoet, file=sys.stderr)
