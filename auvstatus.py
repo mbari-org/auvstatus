@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-	v 2.53  - Added age colors for argo battery and show ARGO battery when docked
+	v 2.54  - Smarter schedule parsing for upcoming missions
+	v 2.53  - Added age colors for argo battery and show ARGO battery when on shore
 	v 2.52  - Fixed integer timeout bug
 	v 2.51  - Fixed bug parsing Pause status when recent critical
 	v 2.50  - Show age of last good Argo Battery Record
@@ -1645,6 +1646,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 	Speed = 0
 	StationLat = False
 	StationLon = False
+	ScheduledFresh = True
+	ScheduledTime = 0
 	ASAP = False
 	dotcolor="st27"
 	hash = "9x9x9"
@@ -1680,7 +1683,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 			"esp samples have 3h timeout"
 		if DEBUG and "sched" in Record["text"]:
-			print("\n#\n# MISSION: found Scheduled mission", Record["text"],Record["name"],"\n#\n#",file=sys.stderr)
+			print("\n#\n# MISSION: found Scheduled item", Record["text"],Record["name"],"\n#\n#",file=sys.stderr)
 		if RecordText.startswith("Started mission") or RecordText.startswith('got command schedule clear'):
 			Cleared = True
 			if DEBUG:
@@ -1689,8 +1692,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 		# Mission Request - sched 20230609T11
 		# sched 20230609T11 "load Science/profile_station.xml;
 
-		
-		if Scheduled == False and not Cleared and (RecordText.startswith('got command schedule "run') or RecordText.startswith('got command schedule "load') or RecordText.startswith('got command schedule asap "set')) :
+		# removing or RecordText.startswith('got command schedule asap "set') 
+		if Scheduled == False and not Cleared and (RecordText.startswith('got command schedule "run') or RecordText.startswith('got command schedule "load') or RecordText.startswith('got command schedule asap "load') or ("load" in RecordText and RecordText.startswith('got command schedule 20'))) :
 			if "ASAP" in RecordText.upper():
 				ASAP = True
 			'''got command schedule "run " 3p78c'''
@@ -1744,7 +1747,9 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				sys.exit("## Can't parse scheduled mission name: \n\t" + RecordText)
 			if DEBUG:
 				print("## Found Scheduled hash",Scheduled, file=sys.stderr)
-
+		if ScheduledFresh and Scheduled:
+			ScheduledTime = Record["unixTime"]
+			ScheduledFresh = False
 					
 		# SETTING STATION. Will fail on multi-station missions..?
 		# CHECK For Reached Waypoint: 36.821898,-121.885600   
@@ -1850,7 +1855,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 		dotcolor="st25"
 
 			
-	return TimeoutDuration, TimeoutStart, NeedComms,Speed,Scheduled,StationLat,StationLon,dotcolor
+	return TimeoutDuration, TimeoutStart, NeedComms,Speed,Scheduled,StationLat,StationLon,dotcolor,ScheduledTime
 
 def handleURLerror():
 	now = 1000 * time.mktime(time.localtime())
@@ -1932,7 +1937,11 @@ def elapsed(rawdur):
 			HourString = str(hours%24) + "h "
 			DayString = str(hours//24) + "d " 
 		DurationString = DurationBase.format(DayString,HourString,MinuteString)
-		if days > 4:
+		if days > 6:
+			DurationString = "over 6 days"
+		elif days > 5:
+			DurationString = "over 5 days"
+		elif days > 4:
 			DurationString = "over 4 days"
 		if rawdur < 1:
 			DurationString += " ago"
@@ -2161,15 +2170,18 @@ argobatt,argotime,argogoodtime = parseARGO50(getArgo50(startTime))
 
 # determine age of last good battery time. Remove minutes if over an hour
 if (argobatt == "Low" and argogoodtime):
-	et = "Last good: " + elapsed(argogoodtime-now)
+	et = "Last good: " + elapsed(argogoodtime-argotime)
 	if 'h' in et:
 		et = re.sub(r'( \d+m)','',et)
 	argoet = et
 elif argotime:
-	et = elapsed(argotime-now)
-	if 'h' in et:
-		et = re.sub(r'( \d+m)','',et)
-	argoet = et
+	if argotime==argogoodtime:
+		argoet=""
+	else:
+		et = elapsed(argogoodtime-argotime)
+		if 'h' in et:
+			et = re.sub(r'( \d+m)','',et)
+		argoet = et
 
 		
 if DEBUG:
@@ -2232,7 +2244,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	if DEBUG:
 		print("MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime, file=sys.stderr)
 		
-	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot  = \
+	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot,scheduledtime  = \
 	          parseDefaults(postmission,mission_defaults,missionName,missionTime)
 	
 
@@ -2617,7 +2629,7 @@ else:   #not opt report
 		cdd["text_batteryduration"] = batteryduration
 		cdd["color_duration"] = colorduration
 		
-	argoago = (argogoodtime-now)/(60*1000*60*24) 
+	argoago = (argogoodtime-argotime)/(60*1000*60*24) 
 	if DEBUG:
 		print("last good argo in days:",argoago,file=sys.stderr)
 
@@ -2685,9 +2697,6 @@ else:   #not opt report
 			
 	# NOT RECOVERED
 	else: 
-		if DEBUG:
-			getNewLatLon(startTime)
-			sys.exit()
 		# SWError = False
 		# CriticalError = False                                                               # unicode bullet
 		if missionName and missionTime:
@@ -2708,8 +2717,13 @@ else:   #not opt report
 				cdd["text_speed"]= "%.2f" % speed + "m/s"
 		else:
 			cdd["color_thrust"] = 'st5'
-				
-		if Scheduled:
+
+		if DEBUG: 
+			print("\n# COMPARING MISSION to SCHEDULED",missionName,Scheduled,missionTime,scheduledtime, file=sys.stderr)
+			
+		# These Schedule parameters are set in parseDefaults and parseMission
+		#removed this  and (missionName not in Scheduled)
+		if Scheduled and (scheduledtime > missionTime):
 			cdd["text_scheduled"] = Scheduled
 			if "/" in Scheduled:
 				Scheduled=Scheduled.split("/")[-1]
