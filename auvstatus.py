@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.55  - Properly come up paused after critical
 	v 2.54  - Smarter schedule parsing for upcoming missions
 	v 2.53  - Added age colors for argo battery and show ARGO battery when on shore
 	v 2.52  - Fixed integer timeout bug
@@ -1159,7 +1160,7 @@ def parseCritical(recordlist):
 					CriticalError += "..."
 			CriticalTime = Record["unixTime"]
 			if DEBUG:
-				print("FOUND CRITICAL",RecordText,"\n",CriticalError, elapsed(CriticalTime-now), file=sys.stderr)
+				print("FOUND CRITICAL #1162",RecordText,"\nDetails:",CriticalError, CriticalTime, elapsed(CriticalTime-now), file=sys.stderr)
 			if (((now - CriticalTime)/3600000) > 6):
 				CriticalError = ""
 				CriticalTime = False
@@ -1183,6 +1184,7 @@ def parseFaults(recordlist):
 	MotorLock = False
 	WaterFault    = False
 	CTDError = False
+	PauseFault = False
 	# Do we parse this:
 	# LCB fault: LCB Watchdog Reset. Hardware Overcurrent Shutdown. Current Limiter Activated
 	# if DEBUG:
@@ -1213,6 +1215,11 @@ def parseFaults(recordlist):
 		
 		if (not Overload) and "overload error" in RT.lower():
 			Overload = Record["unixTime"]
+			
+		if (not PauseFault) and "overload error" in RT.lower():
+			PauseFault = Record["unixTime"]
+			if DEBUG:
+				print("## PAUSE IN FAULT REPORT", PauseFault,elapsed(PauseFault - now), file=sys.stderr)
 		
 		if (not Hardware) and ("thruster uart error" in RT.lower()):
 			Hardware = Record["unixTime"]
@@ -1233,7 +1240,7 @@ def parseFaults(recordlist):
 
 		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
 			DVLError=Record["unixTime"]
-	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock,CTDError
+	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock,CTDError,PauseFault
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -1509,8 +1516,11 @@ def parseImptMisc(recordlist):
 
 		
 		# got command schedule resume 
-		# Can also have a Fault: Scheduling is paused
+		# Can also have a Fault: Scheduling is paused 
+		# Time for that is stored in PauseFault
 		# also Scheduling was paused by a command
+		# This assumes scheduler comes up running after app restart
+		
 		if NeedSched:
 			if bool(re.search('got command schedule resume|got command restart application|scheduling is resumed',RecordText.lower())):
 			# if "got command schedule resume" in RecordText or "Scheduling is resumed" in RecordText:
@@ -1523,6 +1533,8 @@ def parseImptMisc(recordlist):
 				Paused = True
 				PauseTime = Record["unixTime"]
 				NeedSched = False
+				if DEBUG:
+					print("## Got SCHEDULE PAUSE", elapsed(PauseTime-now), file=sys.stderr)
 		
 		# This will only parse the most recent event in the queue between Reached or Nav
 		if not NavigatingTo and not ReachedWaypoint: 
@@ -1629,7 +1641,7 @@ def parseImptMisc(recordlist):
 		#	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 		#	FlowTime   = Record["unixTime"]
 
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused, ampthresh,voltthresh
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh
 
 	
 
@@ -2161,6 +2173,7 @@ argoet=''
 missiondot="st18" #next to mission: invisible
 Paused = True
 PauseTime = False
+PauseFault = False
 argogoodtime=False
 WaypointName = "Waypoint"
 
@@ -2226,7 +2239,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	missionName,missionTime = parseMission(important)
 	Ampthreshnum=0
 	Voltthreshnum = 0
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand,Paused,Ampthreshnum,Voltthreshnum  = parseImptMisc(important)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum  = parseImptMisc(important)
 	
 	gf,gftime,gflow = parseCBIT(gfrecords)
 
@@ -2306,9 +2319,10 @@ if (not recovered) or Opt.anyway or DEBUG:
 	OverloadError = False
 	MotorLock = False
 	CTDError = False
+	PauseFault = False
 	
 	if faults:
-		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock,CTDError = parseFaults(faults)
+		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock,CTDError,PauseFault = parseFaults(faults)
 
 	
 # vehicle has been recovered
@@ -2343,7 +2357,8 @@ else:
 	missionName = "Out of the water"
 	CTDError = False
 	padded = False
-	PauseTime=False
+	PauseTime=9999999999999
+
 	
 	
 	
@@ -2723,6 +2738,7 @@ else:   #not opt report
 			
 		# These Schedule parameters are set in parseDefaults and parseMission
 		#removed this  and (missionName not in Scheduled)
+		
 		if Scheduled and (scheduledtime > missionTime):
 			cdd["text_scheduled"] = Scheduled
 			if "/" in Scheduled:
@@ -3061,8 +3077,17 @@ else:   #not opt report
 		
 		# If there was a critical since the last schedule pause or schedule resume event, 
 		# then the schedule is effectively paused.
-		# This was messed up
-		if PauseTime and Paused and (PauseTime < CriticalTime):
+		if DEBUG:
+			print("\n### CRITICAL PAUSED ###  \nComparing Critical {}; to Pause {}; Paused {}; and PauseFault {}".format(CriticalTime,PauseTime,Paused,PauseFault),file=sys.stderr)
+			
+		# PaustTime starts as 9999+
+		# Trying again with Faults and Criticals coming after UnPausing
+		if not Paused: 
+			if ((PauseTime < CriticalTime) or (PauseTime < PauseFault)):
+				Paused=True
+		
+		if Paused:
+			'''draw orange pause button'''
 			if DEBUG:
 				print("#PAUSED INFO: ", PauseTime, CriticalTime, file=sys.stderr)
 			cdd["text_pauseshape"] = '''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
