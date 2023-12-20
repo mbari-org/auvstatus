@@ -1394,6 +1394,7 @@ def parseImptMisc(recordlist):
 	
 	NeedSched = True
 	Paused = False
+	PauseTime=False
 	
 	FlowRate = False
 	FlowTime = False
@@ -2239,6 +2240,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	missionName,missionTime = parseMission(important)
 	Ampthreshnum=0
 	Voltthreshnum = 0
+	
 	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum  = parseImptMisc(important)
 	
 	gf,gftime,gflow = parseCBIT(gfrecords)
@@ -2307,6 +2309,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	CriticalError=False
 	EnvirCritical=False
+	CriticalTime=False
 	if (critical):
 		if DEBUG:
 			print("# Starting CRITICAL parse  ", file=sys.stderr)
