@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.56  - Quieting the No dataProcessed message
 	v 2.55  - Properly come up paused after critical
 	v 2.54  - Smarter schedule parsing for upcoming missions
 	v 2.53  - Added age colors for argo battery and show ARGO battery when on shore
@@ -498,7 +499,8 @@ def getDataAsc(starttime,mission):
 		if DEBUG:
 			print("# Found (allpaths) Data Path", allpaths,file=sys.stderr)
 	else:
-		print("# No dataProcessed Path found", file=sys.stderr)
+		if DEBUG:
+			print("# No dataProcessed Path found", file=sys.stderr)
 		return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
 	
 	#moving duplicate checking above		
@@ -1697,7 +1699,8 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			"esp samples have 3h timeout"
 		if DEBUG and "sched" in Record["text"]:
 			print("\n#\n# MISSION: found Scheduled item", Record["text"],Record["name"],"\n#\n#",file=sys.stderr)
-		if RecordText.startswith("Started mission") or RecordText.startswith('got command schedule clear'):
+		# removing Started mission from schedule clear
+		if RecordText.startswith('got command schedule clear'):
 			Cleared = True
 			if DEBUG:
 				print("## Got CLEAR", file=sys.stderr)
@@ -2296,7 +2299,8 @@ if (not recovered) or Opt.anyway or DEBUG:
 	#this is volt, amp, time
 	volt,amphr,batttime,flowdat,flowtime,Tracking,TrackTime = getDataAsc(startTime,missionName)
 	# COMMENTED this out to get battery data from the old data-file method instead of new API
-	if VEHICLE!='ahi' and newvolt>0:
+	# if VEHICLE!='ahi' and newvolt>0:
+	if newvolt>0:
 		volt=newvolt
 	if newamp>0:
 		amphr=newamp
@@ -2737,7 +2741,7 @@ else:   #not opt report
 			cdd["color_thrust"] = 'st5'
 
 		if DEBUG: 
-			print("\n# COMPARING MISSION to SCHEDULED",missionName,Scheduled,missionTime,scheduledtime, file=sys.stderr)
+			print("\n# COMPARING MISSION to SCHEDULED, mN,S,mT,St",missionName,Scheduled,missionTime,scheduledtime, file=sys.stderr)
 			
 		# These Schedule parameters are set in parseDefaults and parseMission
 		#removed this  and (missionName not in Scheduled)
