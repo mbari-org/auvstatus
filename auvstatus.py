@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.57  - Make mission name red if DEFAULT > 15 minutes
 	v 2.56  - Quieting the No dataProcessed message
 	v 2.55  - Properly come up paused after critical
 	v 2.54  - Smarter schedule parsing for upcoming missions
@@ -2491,6 +2492,7 @@ else:   #not opt report
 
 	cdd["color_ampthresh"] = "st18"  # start invisible
 	cdd["color_voltthresh"] = "st18"
+	cdd["color_missiontext"] = ""  # no color = black. can make it red
 	
 	# These are made invisible
 	cartcolors=["color_bigcable",
@@ -2725,8 +2727,18 @@ else:   #not opt report
 			missionNameText = missionName
 			if missionName == "Default":
 				missionNameText = "DEFAULT"
+				# minutes DEFAULT has been running
+				ago_default = missionTime - now 
+				# if in default more than 15 minutes, make mission name red
+				defaulttextcolor = ""
+				if (-ago_default / (60*1000)) > (15): 
+					# 20 minutes past running
+					defaulttextcolor = 'st31'
+				cdd["color_missiontext"]=defaulttextcolor
+		
 			cdd["text_mission"]= missionNameText + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
 			cdd["text_missionago"] = elapsed(missionTime - now)
+			
 		else:
 			cdd["text_mission"]     = "PENDING " 
 			
@@ -2964,6 +2976,7 @@ else:   #not opt report
 			# 60 minutes past needcomms
 			satcommtextcolor = 'st31'
 		cdd["color_satcommstext"]=satcommtextcolor
+		
 		
 		nextcommtextcolor = ""
 		#commreftime = ms of last comm

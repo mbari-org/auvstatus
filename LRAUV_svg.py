@@ -173,7 +173,7 @@ svgtext = '''
     </g>
 </g>
 
-<text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12">{text_mission}</text>
+<text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12 {color_missiontext}">{text_mission}</text>
 <text desc="text_missionago" transform="matrix(1 0 0 1 452 177)" class="st12 st9 sparktext">{text_missionago}</text>
 <text desc="missionsched" transform="matrix(1 0 0 1 460 196)" class="st12 st9 st13">{text_scheduled}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 211)" class="st9 st10">{text_cell}</text>

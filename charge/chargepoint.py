@@ -11,6 +11,8 @@
 import argparse
 import sys
 import time
+import datetime
+from datetime import datetime as dt
 import os
 from zeep import xsd
 from zeep import Client
@@ -94,9 +96,47 @@ client = Client(wsdl_url, wsse=UsernameToken(Username, Password))
 if not client:
 	sys.exit()
 StatusArray=[]
+
+
+tNow = dt.now()
+
+tStart = tNow - datetime.timedelta(hours=23, minutes=59, seconds=59)
+
+if opt.DEBUG:
+	# load = client.service.getLoad({'stationID': '1:812581'})
+	# print("Load: ",load)
+	test = client.service.getChargingSessionData({'stationID': '1:114123', 'fromTimeStamp':tStart})
+	# test15 = client.service.get15minChargingSessionData({'stationID': '1:114123', 'fromTimeStamp':tStart})
+	
+	
+	st=test.ChargingSessionData[-1]['startTime']
+	tz_info = st.tzinfo
+	print(f"TZ info:{tz_info}",file=sys.stderr)
+	tNowTZ = dt.now(tz_info)
+
+	et=test.ChargingSessionData[-1]['endTime']
+	en=test.ChargingSessionData[-1]['Energy']
+	interval = et-st
+	intstart = tNowTZ-st
+	intend   = tNowTZ-et
+	print(f"Interval (min): {interval.seconds/60:.1f}",file=sys.stderr)
+	print(f"NowTZ: {tNowTZ}\nStart: {st}\nEnd:   {et}\nEnergy:{en}",file=sys.stderr)
+	print(f"TimeFromStart:{intstart.seconds/60:.1f} h:{intstart.seconds/(60*60):.1f}",file=sys.stderr)
+	print(f"TimeFromEnd:  {intend.seconds/60:.1f} h:{intend.seconds/(60*60):.1f}\n",file=sys.stderr)
+	# print(test15,file=sys.stderr)
+	'''BEFORE CHARGING:
+	Interval (min): 121.0
+NowTZ: 2024-02-07 15:22:06.958138+00:00
+Start: 2024-02-06 23:53:07+00:00
+End:   2024-02-07 01:54:09+00:00
+Energy:12.004365
+TimeFromStart:929.0 h:15.5
+TimeFromEnd:  808.0 h:13.5
+'''
 for Site in UnitOrder:
 	try:
 		data = client.service.getStationStatus(ListQuery[Site])
+		# what I really want is the portLoad value from .getLoad
 		d = data.stationData[0]
 		if opt.DEBUG:
 			print(Site, d.stationID, d.Port[0].Status,d.Port[1].Status, file=sys.stderr)
@@ -240,7 +280,7 @@ for item in enumerate(zip(OldTimes,StyleList)):
 
 if opt.DEBUG:
 	print("NewOldList After Loop",NewOldList, file=sys.stderr)
-	print("DurationList",DurationList, file=sys.stderr)
+	# print("DurationList",DurationList, file=sys.stderr)
 	
 
 SVGText = '''<svg id="Layer_9" data-name="Layer 9" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440.37 438.1">
