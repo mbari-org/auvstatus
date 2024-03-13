@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- June 4 2023 version  -->
+<!-- Dec 5 2023 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -74,9 +74,9 @@
 <polygon class="st3" points="255.42,235.44 244.05,237.4 244.8,189.82 255.99,186.82 "/>
 
 <!-- add new overcurrent lights -->
-<text desc="HardwareLabel" text-anchor="right" transform="matrix(1 0 0 1 245 254)" class="st9 st10">HW</text>
-<text desc="SoftwareLabel" text-anchor="right" transform="matrix(1 0 0 1 245 267)" class="st9 st10">SW</text>
-<text desc="OtherLabel"    text-anchor="right" transform="matrix(1 0 0 1 245 280)" class="st9 st10">OT</text>
+<text desc="HardwareLabel" text-anchor="end" transform="matrix(1 0 0 1 260 254)" class="st9 st10">HW</text>
+<text desc="SoftwareLabel" text-anchor="end" transform="matrix(1 0 0 1 260 267)" class="st9 st10">SW</text>
+<text desc="OtherLabel"    text-anchor="end" transform="matrix(1 0 0 1 260 280)" class="st9 st10">OT</text>
 
 <!-- battery consumption meter -->
 <text desc="text_batteryduration" x="372" y="255"  class="st18 st9 st13">na</text>
@@ -97,7 +97,7 @@
 <line class="st7" x1="471.24" y1="272.82" x2="479.49" y2="272.82"/>
 </g>
 <line class="st8" x1="472.57" y1="275.05" x2="478.16" y2="275.05"/> <!-- not sure -->
-<circle desc="thrust" class="st5" cx="175.51" cy="261.61" r="8.15"/>
+<circle desc="thrust" class="st4" cx="175.51" cy="261.61" r="8.15"/>
 <!--<circle desc="gf" class="st6" cx="488.44" cy="259.45" r="8.15"/>-->
 
 <!--<circle desc="bat1" class="st3" cx="295" cy="241.38" r="4"/>-->
@@ -117,14 +117,14 @@
 <rect desc="argobattery"      x="247.5" y="220" class="st18" width="5" height="9"/>
 
 <circle desc="CTD" class="st4" cx="544" cy="241" r="4" /> 
-<circle desc="missiondefault"   class="st27" cx="405" cy="183" r="2"/>
+<circle desc="missiondefault"   class="st25" cx="405" cy="183" r="2"/>
 <circle desc="scheduleddefault" class="st18"      cx="405" cy="193.5" r="1.6"/>
-<circle desc="commoverdue"     class="st6"         cx="138.5" cy="295.5" r="2"/>
+<circle desc="commoverdue"     class="st4"         cx="138.5" cy="295.5" r="2"/>
 <circle desc="logoverdue"      class="st6"          cx="138.5" cy="219" r="2"/>
-<circle desc="missionoverdue"     class="st6"     cx="138.5" cy="306" r="2"/>
+<circle desc="missionoverdue"     class="st4"     cx="138.5" cy="306" r="2"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="st6" width="24.43" height="11.5"/>
-<rect desc="cell"    x="260.15" y="212.24" class="st6" width="26.43" height="11.31"/>
-<rect desc="gps"     x="407.76" y="221.71" class="st5" width="26.93" height="10.17"/>
+<rect desc="cell"    x="260.15" y="202" class="st4" width="26.43" height="11.31"/>
+<rect desc="gps"     x="407.76" y="221.71" class="st4" width="26.93" height="10.17"/>
 <rect desc="amps"    x="336.28" y="261.76" class="st3" width="25.5" height="10.5"/>
 <rect desc="volts"   x="336.28" y="249.85" class="st3" width="25.5" height="10.5"/>
 <rect desc="gf_rect" x="480" y="254.0" class="st3" width="24.43" height="10.5"/>
@@ -155,7 +155,7 @@
 <circle desc="CameraLens" class="st18" cx="548" cy="255" r="3"/>
 
 <!-- High and low side GF arrows -->
-<polygon desc="LowGF" class="st18" points="510,265 514,255 506,255 510,263"/>
+<polygon desc="LowGF" class="st18" points="510,263 514,255 506,255 510,263"/>
 <polygon desc="HighGF" class="st18" points="510,255 514,263 506,263 510,255"/>
 
 
@@ -164,51 +164,56 @@
 <circle desc="BT1" class="st3" cx="535.99" cy="225.78" r="4.07"/>
 -->
 
-<g desc="arrow" transform="rotate (-90,604.94,259.74), rotate(90,605,259.74)">
+<g desc="arrow" transform="rotate (-90,604.94,259.74), rotate(307,605,259.74)">
     <rect x="594.14" y="256.24" class="st16" width="11.73" height="7"/>
     <g>
         <polygon class="st16" points="618.22,259.74 600.81,266.86 604.94,259.74 600.81,252.63"/>
     </g>
 </g>
 
-<text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12">PENDING </text>
-<text desc="text_missionago" transform="matrix(1 0 0 1 452 177)" class="st12 st9 sparktext"></text>
+<text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12 st31">DEFAULT - 10:01 &#x2022; 13Mar24</text>
+<text desc="text_missionago" transform="matrix(1 0 0 1 452 177)" class="st12 st9 sparktext">2h 48m ago</text>
 <text desc="missionsched" transform="matrix(1 0 0 1 460 196)" class="st12 st9 st13"></text>
-<text desc="text_cell" transform="matrix(1 0 0 1 262.2472 221.3249)" class="st9 st10">99:99</text>
+<text desc="text_cell" transform="matrix(1 0 0 1 262.2472 211)" class="st9 st10">12:46</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">99:99</text>
-<text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">99:99</text>
-<text desc="text_bearing" transform="matrix(1 0 0 1 598 262.3)" class="st9 st13">90&#x00B0;</text>
-<text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">0.0km/hr</text>
+<text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">12:46</text>
+<text desc="text_bearing" transform="matrix(1 0 0 1 605 262.3)" text-anchor="middle" class="st9 st13">307&#x00B0;</text>
+<text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">0.1km/hr</text>
 <text desc="text_needcommstime" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">60 min</text>
-<text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">17:00 - over 4 days ago</text>
-<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">99:99 - over 4 days ago</text>
-<text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">over 4 days ago</text>
-<text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">17:45</text>
-<text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">over 4 days ago</text>
-<text desc="text_cellago" transform="matrix(1 0 0 1 342.0 221.2224)" class="st12 st9 st13">over 4 days ago</text>
+<text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">13:46 - in 56m</text>
+<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">10:01 - in 1d 21h 11m</text>
+<text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">over 6 days ago</text>
+<text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">15:57</text>
+<text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">over 6 days ago</text>
+<text desc="text_cellago" transform="matrix(1 0 0 1 342.0 211)" class="st12 st9 st13">3m ago</text>
+<text desc="text_argoago" transform="matrix(1 0 0 1 258 227)" class="st12 st9 st13"></text>
 <text desc="text_volts" transform="matrix(1 0 0 1 338.0 257.9931)" class="st9 st10">0.0</text>
 <text desc="text_amps" transform="matrix(1 0 0 1 338.0 270.4917)" class="st9 st10">0.0</text>
 <text desc="text_ampago" transform="matrix(1 0 0 1 330.0 280.0)" class="st12 st9 st13">na</text>
 <text desc="text_droptime" transform="matrix(1 0 0 1 285 307)" class="st12 st9 st13"></text>
 <text desc="text_gftime" transform="matrix(1 0 0 1 479.3629 250)" class="st12 st9 st13">no scan</text>
-<text desc="text_gpsago" transform="matrix(1 0 0 1 481 226.5)" class="st12 st9 st13">na</text>
+<text desc="text_gpsago" transform="matrix(1 0 0 1 481 226.5)" class="st12 st9 st13">3m ago</text>
 <text desc="text_gf" transform="matrix(1 0 0 1 482 262.4973)" class="st9 st10">NA</text>
 <text desc="text_arrive" transform="matrix(1 0 0 1 580 222)" class="st12 st9 st24">Arrive at Waypoint</text>
-<text desc="text_speed" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">na<title>Speed estimated from last two GPS fixes</title></text>
-<text desc="text_vehicle" transform="matrix(1 0 0 1 400 254.7336)" class="st14 st15">SIM</text>
-<text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">17:57</text>
-<text desc="reckoned_detail" transform="matrix(1 0 0 1 592 293)" class="st12 st9 st24">na</text>
+<text desc="text_speed" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">1.00m/s<title>Speed estimated from last two GPS fixes</title></text>
+<text desc="text_vehicle" transform="matrix(1 0 0 1 419 254.7336)" text-anchor="middle" class="st14 st15">SIM</text>
+<text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">12:50</text>
+<text desc="reckoned_detail" transform="matrix(1 0 0 1 592 293)" class="st12 st9 st24">0.0km in 0.3h</text>
 <text desc="text_arrivestation" transform="matrix(1 0 0 1 581 230)" class="st9 st13">Nav missing</text>
 <text desc="text_stationdist" transform="matrix(1 0 0 1 582 238)" class="st12 st9 st24"></text>
 <text desc="text_currentdist" transform="matrix(1 0 0 1 582 245)" class="st12 st9 st24"></text>
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">OFF</text>
 <text desc="text_criticalerror" transform="matrix(1 0 0 1 352.0 300)" class="st9 st30 st31"></text>
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13"></text>
+<text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10 ">Sat comms</text>
+<text desc="text_nextcomms" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 ">NextComm:</text>
+<text desc="text_version" transform="matrix(1 0 0 1 638 316)" text-anchor="end" class="st12 st9 st24">v2.57</text>
+<text desc="text_thresh_volt" x="310" y="258" text-anchor="end" class="st12 st9 st13">13.7</text>
+<text desc="text_thresh_amph" x="304.5" y="270" text-anchor="end"  class="st12 st9 st13">50</text>
+
 <text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
-	<rect x="450" y="189" class="st27" width="8.2" height="8.2"/>
-	<rect x="452" y="190.6" width="1.3" height="5"/>
-	<rect x="455" y="190.6" width="1.3" height="5"/>
-	
+	<rect x="450" y="189" class="st25" width="8.2" height="8.2"/> 
+	<polygon class="stwhite" points="452,190 452,196 456.5,193"/>
 <g><title>Ground Fault: None means not detected. False means no recent scan</title>
 <text transform="matrix(1 0 0 1 485 273)" class="st12 st9 st13">GROUND</text>
 <text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT</text>
@@ -219,22 +224,40 @@
 <!-- Static labels -->  
 <text transform="matrix(1 0 0 1 409.0 186)" class="st9 st10">MISSION:</text>
 <text transform="matrix(1 0 0 1 404.0 268.0)" class="st12 st9 st13">UPDATED:</text>
-
+<rect desc="sparkbox" x="131" y="166" class="sparkline" width="120" height="20"/>
+	<polyline desc="sparkline" class="gridline" points="161.0,166 161.0,186"/>
+	<polyline desc="sparkline" class="gridline" points="191.0,166 191.0,186"/>
+	<polyline desc="sparkline" class="gridline" points="221.0,166 221.0,186"/>
+	<polyline desc="sparkline" class="gridline" points="131,171.0 251,171.0"/>
+	<polyline desc="sparkline" class="gridline" points="131,176.0 251,176.0"/>
+	<polyline desc="sparkline" class="gridline" points="131,181.0 251,181.0"/>
+	<polyline desc="minorgrid" class="gridline" points="146.0,166 146.0,186"/>
+	<polyline desc="minorgrid" class="gridline" points="176.0,166 176.0,186"/>
+	<polyline desc="minorgrid" class="gridline" points="206.0,166 206.0,186"/>
+	<polyline desc="minorgrid" class="gridline" points="236.0,166 236.0,186"/>
+	<text desc="sparknote" transform="matrix(1 0 0 1 253 170)" class="st12 st9 sparktext">12:46</text>
+	<text desc="sparknote" transform="matrix(1 0 0 1 253 176)" class="st12 st9 sparktext">3m ago</text>
+	
+	<text desc="axislabel" transform="matrix(1 0 0 1 159.0 191.5)" class="st12 st9 sparktext">6h</text>
+	<text desc="axislabel" transform="matrix(1 0 0 1 189.0 191.5)" class="st12 st9 sparktext">4h</text>
+	<text desc="axislabel" transform="matrix(1 0 0 1 219.0 191.5)" class="st12 st9 sparktext">2h</text>
+	<text desc="axislabel" transform="matrix(1 0 0 1 130 191.5)" class="st12 st9 sparktext">8h</text>
+	<circle desc="spr_is_old" class="st25" cx="272" cy="168" r="2"/><polygon desc="sparkpoly" class="sparkpoly" points="195.82793333381414,165.4 195.82793,165.99999 195.96994,165.99999 195.98197,165.99999 195.98197,165.99999 196.25716,165.99999 196.25716,165.99999 196.29399,165.99999 196.29399,165.99999 196.58243,165.99999 196.58243,165.99999 196.61899,165.99999 196.61899,165.99999 196.91076,165.99999 196.91076,165.99999 197.85561,165.99999 197.96923,165.99999 197.96923,165.99999 198.17929,165.99999 198.50797,165.99999 198.79990,165.99999 198.79990,165.99999 198.81005,165.99999 198.84260,165.99999 198.84260,165.99999 199.00951,165.99999 199.00951,165.99999 199.21951,165.99999 199.21951,165.99999 199.57700,165.99999 199.57700,165.99999 202.20542,165.99999 202.20542,165.99999 205.60640,165.99999 205.60640,165.99999 206.93754,165.99999 206.93754,165.99999 208.26707,165.99999 208.26707,165.99999 209.23144,165.99999 209.23144,165.99999 209.55533,165.99999 209.55533,165.99999 209.59660,165.99999 209.59660,165.99999 209.72051,165.99999 209.72051,165.99999 210.92436,165.99999 210.92436,165.99999 210.92602,165.99999 210.92602,165.99999 211.05015,165.99999 211.05015,165.99999 211.30336,165.99999 211.30336,165.99999 212.38210,165.99999 212.38210,165.99999 213.71191,165.99999 213.71191,165.99999 215.04148,165.99999 215.04148,165.99999 216.36920,165.99999 216.36920,165.99999 217.70015,165.99999 217.70015,165.99999 219.02814,165.99999 219.02814,165.99999 220.35766,165.99999 220.35766,165.99999 221.68869,165.99999 221.68869,165.99999 223.01860,165.99999 223.01860,165.99999 224.35197,165.99999 224.35197,165.99999 224.35363,165.99999 224.35363,165.99999 225.71974,165.99999 225.71974,165.99999 227.05122,165.99999 227.05122,165.99999 228.33028,165.99999 228.33028,165.99999 229.72653,165.99999 229.72653,165.99999 231.05573,165.99999 231.05573,165.99999 232.38517,165.99999 232.38517,165.99999 233.71293,165.99999 233.71293,165.99999 235.04265,165.99999 235.04265,165.99999 236.37212,165.99999 236.37212,165.99999 237.70202,165.99999 237.70202,165.99999 239.03175,165.99999 239.03175,165.99999 240.36066,165.99999 240.36066,165.99999 241.69224,165.99999 241.69224,165.99999 243.02161,165.99999 243.02161,165.99999 244.35127,165.99999 244.35127,165.99999 245.68202,165.99999 245.68202,165.99999 247.00866,165.99999 247.00866,165.99999 248.33945,165.99999 248.33945,165.99999 249.67080,165.99999 249.67080,165.99999 251.00000,165.99999 251.00000,165.99999  251,165.4"/><text desc="sparknote" transform="matrix(1 0 0 1 132 185)" class="st12 st9 sparktext">40m</text>
 <!-- create new variable for these -->
 <text desc="reckoned_label" transform="matrix(1 0 0 1 592 286)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
-<text transform="matrix(1 0 0 1 308.64 258.2642)" class="st9 st10">Volts:</text>
-<text transform="matrix(1 0 0 1 304.7791 270.4165)" class="st9 st10">AmpH:</text>
+
+<text transform="matrix(1 0 0 1 334 258.2642)" text-anchor="end" class="st9 st10">Volts:</text>
+<text transform="matrix(1 0 0 1 334 270.4165)" text-anchor="end" class="st9 st10">AmpH:</text>
+
 <text desc="text_amplabel" x="372" y="272" class="st12 st9 st24">amps</text>
 <text transform="matrix(1 0 0 1 285 300)" class="st12 st9 st13">DROP WEIGHT</text>
-<text transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
 <text desc="" transform="matrix(1 0 0 1 551 244)" class="st9 st10">CTD</text>
 
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
-<text transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10">Sat comms</text>
-<text transform="matrix(1 0 0 1 291.6499 221.6039)" class="st9 st10">Cell comms</text>
+<text transform="matrix(1 0 0 1 291.6499 211)" class="st9 st10">Cell comms</text>
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
 

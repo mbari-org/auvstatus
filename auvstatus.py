@@ -841,33 +841,33 @@ def getNewBattery():
 
 	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
 	#extrastring=f"&maxlen=800"
-	
-	VoltFields    = runNewStyleQuery(api="data/battery_voltage",extrastring="&maxlen=5")
-	if DEBUG:
-		print("# NEW STYLE VOLT FIELD RECORD",VoltFields, file=sys.stderr)
-
-	if VoltFields:
-		record = VoltFields
-		volt = record['values'][-1]
-		volttime = record['times'][-1]
-	
-	AmpFields     = runNewStyleQuery(api="data/battery_charge",extrastring="&maxlen=5")
-	if AmpFields:
-		record = AmpFields
-		amp = record['values'][-1]
+	if VEHICLE != 'sim':
+		VoltFields    = runNewStyleQuery(api="data/battery_voltage",extrastring="&maxlen=5")
 		if DEBUG:
-			print("# NEW STYLE AMP RECORD",record, file=sys.stderr)
-
-	CurrentFields = runNewStyleQuery(api="data/average_current",extrastring="&maxlen=7")
-	if CurrentFields:
-		record = CurrentFields
-		currentlist = record['values'][-7:]
-		if DEBUG:
-			print("\n# CURRENT LIST",currentlist, file=sys.stderr)
-
-		if currentlist:
-			precisecurrent = sum(currentlist)/(len(currentlist)*1000)
-			avgcurrent = round(precisecurrent,1)
+			print("# NEW STYLE VOLT FIELD RECORD",VoltFields, file=sys.stderr)
+	
+		if VoltFields:
+			record = VoltFields
+			volt = record['values'][-1]
+			volttime = record['times'][-1]
+		
+		AmpFields     = runNewStyleQuery(api="data/battery_charge",extrastring="&maxlen=5")
+		if AmpFields:
+			record = AmpFields
+			amp = record['values'][-1]
+			if DEBUG:
+				print("# NEW STYLE AMP RECORD",record, file=sys.stderr)
+	
+		CurrentFields = runNewStyleQuery(api="data/average_current",extrastring="&maxlen=7")
+		if CurrentFields:
+			record = CurrentFields
+			currentlist = record['values'][-7:]
+			if DEBUG:
+				print("\n# CURRENT LIST",currentlist, file=sys.stderr)
+	
+			if currentlist:
+				precisecurrent = sum(currentlist)/(len(currentlist)*1000)
+				avgcurrent = round(precisecurrent,1)
 
 	'''# Old strategy
 	BattFields    = runNewStyleQuery(api="data")
