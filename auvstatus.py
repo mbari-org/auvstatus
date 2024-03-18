@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.58  - Remove year from mission start time if not recovered
 	v 2.57  - Make mission name red if DEFAULT > 15 minutes
 	v 2.56  - Quieting the No dataProcessed message
 	v 2.55  - Properly come up paused after critical
@@ -2037,11 +2038,14 @@ def hours(unixtime):
 	else:
 		return "99:99"
 		
-def dates(unixtime):
+def dates(unixtime,year=True):
 	'''return epoch in DDmonYY string'''
 	if unixtime:
 		t1=time.localtime(unixtime/1000)
-		TimeString = time.strftime('%d%b%y',t1)
+		if year:
+			TimeString = time.strftime('%d%b%y',t1)
+		else:
+			TimeString = time.strftime('%d%b',t1)
 		return TimeString
 	else:
 		return "9NaN99"
@@ -2736,7 +2740,7 @@ else:   #not opt report
 					defaulttextcolor = 'st31'
 				cdd["color_missiontext"]=defaulttextcolor
 		
-			cdd["text_mission"]= missionNameText + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime)
+			cdd["text_mission"]= missionNameText + " - " + hours(missionTime)+ " &#x2022; " + dates(missionTime,year=False)
 			cdd["text_missionago"] = elapsed(missionTime - now)
 			
 		else:
