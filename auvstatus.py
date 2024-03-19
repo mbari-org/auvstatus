@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.59  - Report piscivore powerOnly widget for daphne also
 	v 2.58  - Remove year from mission start time if not recovered
 	v 2.57  - Make mission name red if DEFAULT > 15 minutes
 	v 2.56  - Quieting the No dataProcessed message
@@ -2291,7 +2292,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,colorduration = getNewBattery()
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
-	if VEHICLE == "pontus":
+	if VEHICLE == "pontus" or VEHICLE == "daphne":
 		camcat,camchangetime,pisctext = getNewCameraPower(startTime)
 		if DEBUG:
 			print("## PISCIVORE STATS:",camcat,camchangetime,pisctext, file=sys.stderr)
@@ -2874,8 +2875,14 @@ else:   #not opt report
 				cdd["text_flowago"]=""
 
 			cdd["color_ubat"] = ubatStatus
+			
+		else:
+			cdd["color_ubat"] = 'st18'
+			cdd["color_flow"] = 'st18'
+			
+		# PARSE PISCIVORE CAMERA
+		if VEHICLE == 'pontus' or VEHICLE == 'daphne':	
 			cdd["text_piscamp"]=pisctext
-
 			# parse piscivore camera
 			'''{text_camago}{color_cam1}{color_cam2} 2=gray, 3 white, 4 green 6 orange 11 dark gray'''
 					
@@ -2908,9 +2915,6 @@ else:   #not opt report
 				cdd["color_cam1"] = "st3"
 				cdd["color_cam2"] = "st3"
 
-		else:
-			cdd["color_ubat"] = 'st18'
-			cdd["color_flow"] = 'st18'
 		
 		# THIS camera is not being used anymore
 		# if VEHICLE == 'galene':
@@ -3172,8 +3176,9 @@ else:   #not opt report
 				outfile.write(makeTrackSVG(Tracking,TrackTime))
 			if not recovered:
 				outfile.write(svglabels)
-				if VEHICLE=="pontus":
+				if VEHICLE=="pontus" or VEHICLE == "daphne":
 					outfile.write(svgpontus)
+				if VEHICLE=="pontus" or VEHICLE == "daphne":
 					if (camcat < 998) and (camcat > -1):
 						outfile.write(svgpiscivore.format(
 							color_cam1  = cdd["color_cam1"],
