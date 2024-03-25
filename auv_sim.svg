@@ -120,8 +120,8 @@
 <circle desc="missiondefault"   class="st25" cx="405" cy="183" r="2"/>
 <circle desc="scheduleddefault" class="st18"      cx="405" cy="193.5" r="1.6"/>
 <circle desc="commoverdue"     class="st6"         cx="138.5" cy="295.5" r="2"/>
-<circle desc="logoverdue"      class="st4"          cx="138.5" cy="219" r="2"/>
-<circle desc="missionoverdue"     class="st4"     cx="138.5" cy="306" r="2"/>
+<circle desc="logoverdue"      class="st6"          cx="138.5" cy="219" r="2"/>
+<circle desc="missionoverdue"     class="st6"     cx="138.5" cy="306" r="2"/>
 <rect desc="satcomm" x="261.49" y="182.98" class="st6" width="24.43" height="11.5"/>
 <rect desc="cell"    x="260.15" y="202" class="st6" width="26.43" height="11.31"/>
 <rect desc="gps"     x="407.76" y="221.71" class="st5" width="26.93" height="10.17"/>
@@ -172,7 +172,7 @@
 </g>
 
 <text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12 st31">DEFAULT - 18:32 &#x2022; 17Mar</text>
-<text desc="text_missionago" transform="matrix(1 0 0 1 452 177)" class="st12 st9 sparktext">22h 37m ago</text>
+<text desc="text_missionago" transform="matrix(1 0 0 1 452 177)" class="st12 st9 sparktext">over 6 days ago</text>
 <text desc="missionsched" transform="matrix(1 0 0 1 460 196)" class="st12 st9 st13"></text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 211)" class="st9 st10">11:18</text>
 <text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">99:99</text>
@@ -180,34 +180,34 @@
 <text desc="text_bearing" transform="matrix(1 0 0 1 605 262.3)" text-anchor="middle" class="st9 st13">172&#x00B0;</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">0.1km/hr</text>
 <text desc="text_needcommstime" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">60 min</text>
-<text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">12:18 - 4h 51m ago</text>
-<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">18:32 - in 1d 1h 22m</text>
+<text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">12:18 - over 5 days ago</text>
+<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">18:32 - over 4 days ago</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">over 6 days ago</text>
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">18:32</text>
-<text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">22h 37m ago</text>
-<text desc="text_cellago" transform="matrix(1 0 0 1 342.0 211)" class="st12 st9 st13">5h 51m ago</text>
+<text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">over 6 days ago</text>
+<text desc="text_cellago" transform="matrix(1 0 0 1 342.0 211)" class="st12 st9 st13">over 5 days ago</text>
 <text desc="text_argoago" transform="matrix(1 0 0 1 258 227)" class="st12 st9 st13"></text>
 <text desc="text_volts" transform="matrix(1 0 0 1 338.0 257.9931)" class="st9 st10">0.0</text>
 <text desc="text_amps" transform="matrix(1 0 0 1 338.0 270.4917)" class="st9 st10">0.0</text>
 <text desc="text_ampago" transform="matrix(1 0 0 1 330.0 280.0)" class="st12 st9 st13">na</text>
-<text desc="text_droptime" transform="matrix(1 0 0 1 285 307)" class="st12 st9 st13">4d 5h 35m ago</text>
+<text desc="text_droptime" transform="matrix(1 0 0 1 285 307)" class="st12 st9 st13">over 6 days ago</text>
 <text desc="text_gftime" transform="matrix(1 0 0 1 479.3629 250)" class="st12 st9 st13">no scan</text>
-<text desc="text_gpsago" transform="matrix(1 0 0 1 481 226.5)" class="st12 st9 st13">5h 51m ago</text>
+<text desc="text_gpsago" transform="matrix(1 0 0 1 481 226.5)" class="st12 st9 st13">over 5 days ago</text>
 <text desc="text_gf" transform="matrix(1 0 0 1 482 262.4973)" class="st9 st10">NA</text>
 <text desc="text_arrive" transform="matrix(1 0 0 1 580 222)" class="st12 st9 st24">Arrive at 3km</text>
 <text desc="text_speed" transform="matrix(1 0 0 1 198.0612 270)" class="st12 st9 st13">1.00m/s<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="text_vehicle" transform="matrix(1 0 0 1 419 254.7336)" text-anchor="middle" class="st14 st15">SIM</text>
-<text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">17:10</text>
+<text desc="text_lastupdate" transform="matrix(1 0 0 1 406.0 280.0)" class="st14 st15">09:51</text>
 <text desc="reckoned_detail" transform="matrix(1 0 0 1 592 293)" class="st12 st9 st24">0.0km in 0.3h</text>
-<text desc="text_arrivestation" transform="matrix(1 0 0 1 581 230)" class="st9 st13">19:37 - in 3d 2h 27m</text>
+<text desc="text_arrivestation" transform="matrix(1 0 0 1 581 230)" class="st9 st13">19:37 - 3d 14h 13m ago</text>
 <text desc="text_stationdist" transform="matrix(1 0 0 1 582 238)" class="st12 st9 st24">11.9km from last fix</text>
-<text desc="text_currentdist" transform="matrix(1 0 0 1 582 245)" class="st12 st9 st24">11.0km from est.veh</text>
+<text desc="text_currentdist" transform="matrix(1 0 0 1 582 245)" class="st12 st9 st24">-12.8km from est.veh</text>
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">OFF</text>
 <text desc="text_criticalerror" transform="matrix(1 0 0 1 352.0 300)" class="st9 st30 st31"></text>
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13"></text>
 <text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10 st31">Sat comms</text>
 <text desc="text_nextcomms" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 st31">NextComm:</text>
-<text desc="text_version" transform="matrix(1 0 0 1 638 316)" text-anchor="end" class="st12 st9 st24">v2.58</text>
+<text desc="text_version" transform="matrix(1 0 0 1 638 316)" text-anchor="end" class="st12 st9 st24">v2.61</text>
 <text desc="text_thresh_volt" x="310" y="258" text-anchor="end" class="st12 st9 st13">13.7</text>
 <text desc="text_thresh_amph" x="304.5" y="270" text-anchor="end"  class="st12 st9 st13">50</text>
 
@@ -238,13 +238,13 @@
 	<polyline desc="minorgrid" class="gridline" points="206.0,166 206.0,186"/>
 	<polyline desc="minorgrid" class="gridline" points="236.0,166 236.0,186"/>
 	<text desc="sparknote" transform="matrix(1 0 0 1 253 170)" class="st12 st9 sparktext">11:18</text>
-	<text desc="sparknote" transform="matrix(1 0 0 1 253 176)" class="st12 st9 sparktext">5h 51m ago</text>
+	<text desc="sparknote" transform="matrix(1 0 0 1 253 176)" class="st12 st9 sparktext">over 5 days ago</text>
 	
 	<text desc="axislabel" transform="matrix(1 0 0 1 159.0 191.5)" class="st12 st9 sparktext">6h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 189.0 191.5)" class="st12 st9 sparktext">4h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 219.0 191.5)" class="st12 st9 sparktext">2h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 130 191.5)" class="st12 st9 sparktext">8h</text>
-	<circle desc="spr_is_old" class="st27" cx="272" cy="168" r="2"/><polygon desc="sparkpoly" class="sparkpoly" points="131.24339583329856,165.4 131.24340,165.99987 131.24340,165.99987 131.24340,165.99987 132.57256,165.99987 132.57256,165.99987 132.57256,165.99987 133.90241,165.99987 133.90241,165.99987 133.90241,165.99987 135.23355,165.99987 135.23355,165.99987 135.23355,165.99987 136.56325,165.99987 136.56325,165.99987 136.56325,165.99987 137.89294,165.99987 137.89294,165.99987 137.89294,165.99987 139.22388,165.99987 139.22388,165.99987 139.22388,165.99987 140.55334,165.99987 140.55334,165.99987 140.55334,165.99987 141.88570,165.99987 141.88570,165.99987 141.88570,165.99987 143.21542,165.99987 143.21542,165.99987 143.21542,165.99987 144.54436,165.99987 144.54436,165.99987 144.54436,165.99987 145.87550,165.99987 145.87550,165.99987 145.87550,165.99987 147.20597,165.99987 147.20597,165.99987 147.20597,165.99987 148.53754,165.99987 148.53754,165.99987 148.53754,165.99987 149.86695,165.99987 149.86695,165.99987 149.86695,165.99987 151.19678,165.99987 151.19678,165.99987 151.19678,165.99987 152.52964,165.99987 152.52964,165.99987 152.52964,165.99987 153.85947,165.99987 153.85947,165.99987 153.85947,165.99987 155.19090,165.99987 155.19090,165.99987 155.19090,165.99987 156.51880,165.99987 156.51880,165.99987 156.51880,165.99987 157.85039,165.99987 157.85039,165.99987 157.85039,165.99987 159.18147,165.99987 159.18147,165.99987 159.18147,165.99987 160.50935,165.99987 160.50935,165.99987 160.50935,165.99987 161.84064,165.99987 161.84064,165.99987 161.84064,165.99987 163.17151,165.99987 163.17151,165.99987 163.17151,165.99987 163.17151,166.50000 163.67151,171.00000 251.00000,171.00000  251,165.4"/><polyline desc="sparkline" class="st27" points="163.17151,165.4 163.17151,166.5 163.67151,171.0 251,171.0 251,165.4"/><text desc="sparknote" transform="matrix(1 0 0 1 132 185)" class="st12 st9 sparktext">40m</text>
+	<circle desc="spr_is_old" class="st27" cx="272" cy="168" r="2"/><polygon desc="sparkpoly" class="sparkpoly" points="251.0,165.4 251.00000,171.00000  251,165.4"/><polyline desc="emptysparkline" class="st27" points="131,165.4 131,171.0 250,171.0 251,171.0 251,165.4"/><text desc="sparknote" transform="matrix(1 0 0 1 132 185)" class="st12 st9 sparktext">40m</text>
 <!-- create new variable for these -->
 <text desc="reckoned_label" transform="matrix(1 0 0 1 592 286)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>

@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.61  - Upped the mA expectation for piscivore
+	v 2.60  - Added Waterlinked to the list of potential DVLs, and Ahi DVL on = True 
 	v 2.59  - Report piscivore powerOnly widget for daphne also
 	v 2.58  - Remove year from mission start time if not recovered
 	v 2.57  - Make mission name red if DEFAULT > 15 minutes
@@ -408,6 +410,7 @@ def getFaults(starttime):
 	On overcurrent errors, the component varies. Probably worth having a special indicator and report what is flagged
 		LCB Fault
 		
+		
 		2020-03-06T00:10:13.771Z,1583453413.771 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
 		
 	2020-03-06T00:09:26.051Z,1583453366.051 [RDI_Pathfinder](FAULT): DVL failed to acquire valid data within timeout.'''
@@ -638,16 +641,17 @@ def getNewUBATFlow(starttime):
 def ampToCat(val):
 	'''convert piscivore current draw to number of cameras'''
 	'''each camera draws 100, not 50, so upping ranges'''
+	'''Cameras now drawing 375 ma total. upping ranges again'''
 	cat = False
 	ival = int(val)
 	'''for piscivore, convert raw current to category'''
 	if ival <=30:
 		cat = 0
-	elif ival < 125:
+	elif ival < 176:
 		cat = 1
-	elif ival > 250:
+	elif ival > 390:
 		cat = 3
-	elif ival > 125:
+	elif ival > 175:
 		cat = 2
 	return cat
 		
@@ -1242,8 +1246,8 @@ def parseFaults(recordlist):
 			WaterFault = Record["unixTime"]
 		
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
-
-		if not DVLError and Record["name"] in ["DVL_Micro", "RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
+		# Water linked??
+		if not DVLError and Record["name"] in ["DVL_Micro", "Waterlinked","RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
 			DVLError=Record["unixTime"]
 	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock,CTDError,PauseFault
 
@@ -1463,6 +1467,7 @@ def parseImptMisc(recordlist):
 		'tethys':True,
 		'daphne':False,
 		'brizo':True,
+		'ahi':True,
 		'galene':False,
 		'polaris':True,
 		'proxima':True,
@@ -1486,6 +1491,7 @@ def parseImptMisc(recordlist):
 			DVL_micro
 			Rowe_600
 			RDI_Pathfinder
+			Waterlinked.loadAtStartup
 			configSet AMEcho.loadAtStartup 0 bool
 '''
 		## RELOCATED (Duplicated) from parseMission
@@ -1586,6 +1592,7 @@ def parseImptMisc(recordlist):
 		      ("DVL_micro.loadAtStartup"      in Record.get("text","NA")) or 
 		      ("RDI_Pathfinder.loadAtStartup" in Record.get("text","NA")) or 
 		      ("AMEcho.loadAtStartup"         in Record.get("text","NA")) or 
+		      ("Waterlinked.loadAtStartup"    in Record.get("text","NA")) or 
 		      ("Rowe_600.loadAtStartup"       in Record.get("text","NA"))
 		      ):
 		    # TO CHECK. this might split incorrectly on the space because sometimes config set?
@@ -3176,7 +3183,7 @@ else:   #not opt report
 				outfile.write(makeTrackSVG(Tracking,TrackTime))
 			if not recovered:
 				outfile.write(svglabels)
-				if VEHICLE=="pontus" or VEHICLE == "daphne":
+				if VEHICLE=="pontus":
 					outfile.write(svgpontus)
 				if VEHICLE=="pontus" or VEHICLE == "daphne":
 					if (camcat < 998) and (camcat > -1):
