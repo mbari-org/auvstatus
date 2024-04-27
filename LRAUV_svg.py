@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Dec 5 2023 version  -->
+<!-- Apr 25 2024 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -82,7 +82,7 @@ svgtext = '''
 
 <!-- battery consumption meter -->
 <text desc="text_batteryduration" x="372" y="255"  class="{color_duration} st9 st13">{text_batteryduration}</text>
-<text desc="text_durationlabel" x="372" y="260" class="{color_duration} st9 st24">hours</text>
+<text desc="text_durationlabel" x="372" y="260" class="{color_duration} st9 st24">{text_batteryunits}</text>
 <rect desc="current"  x="365" y="250" class="st32" width="5" height="22"/>
 <text desc="text_current" x="372" y="267"  class="st12 st9 st13">{text_current}</text>
 

@@ -1,6 +1,9 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.64  - Projected battery remaining shows days if > 5 days remaining
+	v 2.63  - Parsing powerOnly piscivore cam for ahi also
+	v 2.62  - Changed the way defaults and full mission names are retrieved
 	v 2.61  - Upped the mA expectation for piscivore
 	v 2.60  - Added Waterlinked to the list of potential DVLs, and Ahi DVL on = True 
 	v 2.59  - Report piscivore powerOnly widget for daphne also
@@ -301,6 +304,7 @@ def getMissionDefaults():
 	'''https://okeanids.mbari.org/TethysDash/api/commands/script?path=Science/altitudeServo_approach_backseat_poweronly.tl'''
 	'''{"description":"Maximum duration of mission","name":"MissionTimeout","unit":"hour","value":"12"},{"description":"How often to surface for commumications","name":"NeedCommsTime","unit":"minute","value":"180"},'''
 	'''MBARI specific Utility script. Not routinely used. 
+	SurfacingIntervalDuringListening
 	print standard defaults for the listed missions. some must have inheritance because it doesn't get them all'''
 	missions=["Science/profile_station","Science/sci2","Science/mbts_sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
 	missions=["Science/mbts_sci2","Science/profile_station"]
@@ -333,8 +337,9 @@ def getNewMissionDefaults(missionn):
 	
 	'''https://okeanids.mbari.org/TethysDash/api/commands/script?path=Science/altitudeServo_approach_backseat_poweronly.tl'''
 	'''{"description":"Maximum duration of mission","name":"MissionTimeout","unit":"hour","value":"12"},{"description":"How often to surface for commumications","name":"NeedCommsTime","unit":"minute","value":"180"},'''
-	missions=["Science/mbts_sci2","Science/profile_station"]
-	
+	missions=["Science/mbts_sci2.tl","Transport/keepstation.tl"]
+	# TEMPORARY FOR DEBUGGING
+	missionn=missions[1]
 	URL = "https://{}/TethysDash/api/commands/script?path={}".format(servername,missionn)
 	if DEBUG: 
 		print("\n#===========================\n",missionn, "\n", file=sys.stderr)
@@ -840,6 +845,7 @@ def getNewBattery():
 	avgcurrent = 0.0
 	volttime= 0.0
 	hoursleft = -999
+	daysleft = -999
 	currentlist = []
 	baseline = 1
 	cameracurrent=-999
@@ -856,13 +862,15 @@ def getNewBattery():
 			record = VoltFields
 			volt = record['values'][-1]
 			volttime = record['times'][-1]
-		
-		AmpFields     = runNewStyleQuery(api="data/battery_charge",extrastring="&maxlen=5")
-		if AmpFields:
-			record = AmpFields
-			amp = record['values'][-1]
-			if DEBUG:
-				print("# NEW STYLE AMP RECORD",record, file=sys.stderr)
+		# Temporary removing Ahi due to error
+		#if VEHICLE != 'ahi':
+		if True:
+			AmpFields     = runNewStyleQuery(api="data/battery_charge",extrastring="&maxlen=5")
+			if AmpFields:
+				record = AmpFields
+				amp = record['values'][-1]
+				if DEBUG:
+					print("# NEW STYLE AMP RECORD",record, file=sys.stderr)
 	
 		CurrentFields = runNewStyleQuery(api="data/average_current",extrastring="&maxlen=7")
 		if CurrentFields:
@@ -912,6 +920,7 @@ def getNewBattery():
 		hourssincebatt = abs((volttime-now) / (60*60*1000))
 		timeinhours = ((amp-baseline)/precisecurrent)
 		hoursleft = int(round(timeinhours-hourssincebatt,0))
+		daysleft = round(hoursleft/24,1)
 		if DEBUG:
 			print("\n# RAW BATTERY HOURS:",timeinhours, file=sys.stderr)
 			print(  "# HOURS SINCE BATT :",hourssincebatt, file=sys.stderr)
@@ -924,7 +933,7 @@ def getNewBattery():
 			batterycolor = "st31"
 
 		
-	return volt,amp,avgcurrent,volttime,hoursleft,batterycolor
+	return volt,amp,avgcurrent,volttime,hoursleft,daysleft,batterycolor
 
 def parseGPS(recordlist):
 	if DEBUG:
@@ -1308,6 +1317,7 @@ def parseMission(recordlist):
 				print("\n\n## MISSION RECORD",Record, file=sys.stderr)
 			MissionName = Record.get("text","mission NA").split("mission ")[1]
 			MissionTime = Record["unixTime"]
+			
 			break
 			# moved break from here. does it break the if or the for??
 	return MissionName,MissionTime
@@ -1394,7 +1404,7 @@ Ground fault: Queue on RED on Low side ground fault detected - Yellow on any gro
 
 
 '''
-def parseImptMisc(recordlist):
+def parseImptMisc(recordlist,MissionN):
 	'''Loads events that persist across missions'''
    #FORMER HOME OF GF SCANS
 	ubatStatus = "st3"
@@ -1420,10 +1430,12 @@ def parseImptMisc(recordlist):
 
 	voltthresh = 0
 	ampthresh  = 0
+	FullMission = ""
 	
 	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
-
+	missionre =  re.compile(r'Loaded ./Missions/(.+\.tl).?')
+	
 	ReachedWaypoint = False
 	NavigatingTo    = False
 	WaypointName = "Waypoint"
@@ -1477,7 +1489,8 @@ def parseImptMisc(recordlist):
 	
 	DVL_on = GetDVLStartup.get(VEHICLE,False)
 	# NEW get DVL from grepping (or other) out of https://okeanids.mbari.org/TethysDash/api/vconfig?vehicle=daphne
-	
+	if DEBUG:
+		print(f"Parsing Important for Mission {MissionN}",file=sys.stderr)
 	for Record in recordlist:
 		if DEBUG:
 			if "dvl" in Record["text"].lower():
@@ -1526,7 +1539,14 @@ def parseImptMisc(recordlist):
 			if DEBUG:
 				print("## Got AmpThresh from ImptMisc", ampthresh, file=sys.stderr)
 
-		
+		if not FullMission and not (MissionN=="Default"):
+			'''Loaded ./Missions/Transport/keepstation.tl id=keepstation'''
+			if RecordText.startswith("Loaded ./Mission"):
+				missionresult = missionre.search(RecordText)
+				if missionresult:
+					FullMission = missionresult.groups()[0]
+				if DEBUG:
+					print(f"## Found Loaded Mission name {FullMission} for {MissionN}", file=sys.stderr)
 		# got command schedule resume 
 		# Can also have a Fault: Scheduling is paused 
 		# Time for that is stored in PauseFault
@@ -1654,11 +1674,11 @@ def parseImptMisc(recordlist):
 		#	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 		#	FlowTime   = Record["unixTime"]
 
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
 
 	
 
-def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
+def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 	''' parse events that get reset after missions and might be default'''
 	''' check schedule: got command schedule "run Science/mbts_sci2.xml"'''
 	''' todo, need to move the ubat here and change the ubat on command parsing'''
@@ -1708,7 +1728,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			
 			"esp samples have 3h timeout"
 		if DEBUG and "sched" in Record["text"]:
-			print("\n#\n# MISSION: found Scheduled item", Record["text"],Record["name"],"\n#\n#",file=sys.stderr)
+			print("\n#\n# MISSION: found Scheduled item", Record["text"],Record["name"],file=sys.stderr)
 		# removing Started mission from schedule clear
 		if RecordText.startswith('got command schedule clear'):
 			Cleared = True
@@ -1803,11 +1823,16 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 				print("## Got Lat from mission", StationLat, file=sys.stderr)
 		
 		## PARSE NEED COMMS Assumes MINUTES
-		if NeedComms == False and (Record["name"]=="CommandLine" or Record["name"]=="CommandExec") and RecordText.startswith("got command") and not "chedule" in RecordText and (".NeedCommsTime" in RecordText or "NeedCommsMaxWait" in RecordText):
+		'''SurfacingIntervalDuringListening'''
+		if DEBUG:
+			if "SurfacingIntervalDuringListening" in RecordText:
+				print("## NEEDCOMMS SURFACING", RecordText, file=sys.stderr)
+		if NeedComms == False and (Record["name"]=="CommandLine" or Record["name"]=="CommandExec") and RecordText.startswith("got command") and not "chedule" in RecordText and (".NeedCommsTime" in RecordText or "NeedCommsMaxWait" in RecordText or "SurfacingIntervalDuringListening" in RecordText):
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			'''got command set trackPatchChl_yoyo.NeedCommsTimeInTransit 45.000000'''
 			'''got command set trackPatch_yoyo.NeedCommsTimePatchTracking 120.000000 minute 
+			; set PAM.SurfacingIntervalDuringListening 300 min
 			NeedCommsTimeVeryLong
 			NeedCommsMaxWait'''
 			'''NeedCommsTimePatchMapping'''
@@ -1816,7 +1841,7 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			if DEBUG:
 				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 			try:
-				NeedComms = int(float(re.split("NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait ",Record["text"])[1].split(" ")[0]))
+				NeedComms = int(float(re.split("SurfacingIntervalDuringListening |NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait ",Record["text"])[1].split(" ")[0]))
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
 					NeedComms = int(float(Record["text"].split("NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
@@ -1856,26 +1881,26 @@ def parseDefaults(recordlist,mission_defaults,MissionName,MissionTime):
 			# Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].split(" ")[0]))
 	if not all([Speed,NeedComms,TimeoutDuration]):
 		if DEBUG: 
-			print("# TRYING NEW DEFAULT RETRIEVAL ",file=sys.stderr)
+			print(f"# TRYING NEW DEFAULT RETRIEVAL for {FullMission}\nSp,NeedC,Timeout:{Speed}, {NeedComms}, {TimeoutDuration}",file=sys.stderr)
 			
-		default_NCTime,default_TimeOut,default_Speed = getNewMissionDefaults("Science/mbts_sci2.tl")
+		default_NCTime,default_TimeOut,default_Speed = getNewMissionDefaults(FullMission)
 		
 		if not Speed and default_Speed:
-			# Speed = mission_defaults.get(MissionName,{}).get("Speed","na")
+			# Speed = mission_defaults.get(FullMission,{}).get("Speed","na")
 			Speed = float(default_Speed)
 				
 		if not NeedComms and default_NCTime:
 			NeedComms = int(default_NCTime)
-			# NeedComms = mission_defaults.get(MissionName,{}).get("NeedCommsTime",0)
+			# NeedComms = mission_defaults.get(FullMission,{}).get("NeedCommsTime",0)
 			
 		if not TimeoutDuration and default_TimeOut:
 			if DEBUG:
-				print("# NO TIMEOUT - checking defaults", file=sys.stderr)
+				print(f"# NO TIMEOUT - checking defaults for {FullMission}", file=sys.stderr)
 				print("# FOUND NEW TIMEOUT:",default_TimeOut, file=sys.stderr)
 				
 			TimeoutDuration = int(default_TimeOut)
 			
-			# TimeoutDuration = mission_defaults.get(MissionName,{}).get("MissionTimeout",0)
+			# TimeoutDuration = mission_defaults.get(FullMission,{}).get("MissionTimeout",0)
 			TimeoutStart = MissionTime
 	if NeedComms:
 		dotcolor="st25"
@@ -2257,7 +2282,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	Ampthreshnum=0
 	Voltthreshnum = 0
 	
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum  = parseImptMisc(important)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission  = parseImptMisc(important,missionName)
 	
 	gf,gftime,gflow = parseCBIT(gfrecords)
 
@@ -2276,7 +2301,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 		print("MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime, file=sys.stderr)
 		
 	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot,scheduledtime  = \
-	          parseDefaults(postmission,mission_defaults,missionName,missionTime)
+	          parseDefaults(postmission,mission_defaults,FullMission,missionTime)
 	
 
 	# Time to waypoint:
@@ -2297,9 +2322,9 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# Just need distance from this calc, so put in fake times or make a new function and subfunction for d
 	
 	
-	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,colorduration = getNewBattery()
+	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,batterydaysleft,colorduration = getNewBattery()
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
-	if VEHICLE == "pontus" or VEHICLE == "daphne":
+	if VEHICLE == "pontus" or VEHICLE == "daphne" or VEHICLE == "ahi":
 		camcat,camchangetime,pisctext = getNewCameraPower(startTime)
 		if DEBUG:
 			print("## PISCIVORE STATS:",camcat,camchangetime,pisctext, file=sys.stderr)
@@ -2570,7 +2595,7 @@ else:   #not opt report
 	specialnames=[
 	"svg_current",
 	"text_vehicle","text_lastupdate","text_flowago","text_scheduled","text_arrivestation",
-	"text_stationdist","text_currentdist",	"text_criticaltime",
+	"text_stationdist","text_currentdist",	"text_criticaltime","text_batteryunits",
 	"text_leak","text_leakago","text_missionago","text_cameraago","text_waypoint",
 	"text_criticalerror","text_camago","text_piscamp","text_argoago"
 	]
@@ -2662,7 +2687,12 @@ else:   #not opt report
 	if DEBUG:
 		print("# BATTERY REMAINING  ",batteryduration, file=sys.stderr)
 	if batteryduration > -998:
-		cdd["text_batteryduration"] = batteryduration
+		if batterydaysleft > 5:
+			cdd["text_batteryduration"] = batterydaysleft
+			cdd["text_batteryunits"] = "days"
+		else:
+			cdd["text_batteryduration"] = batteryduration
+			cdd["text_batteryunits"] = "hours"
 		cdd["color_duration"] = colorduration
 		
 	argoago = (argogoodtime-argotime)/(60*1000*60*24) 
@@ -2888,7 +2918,7 @@ else:   #not opt report
 			cdd["color_flow"] = 'st18'
 			
 		# PARSE PISCIVORE CAMERA
-		if VEHICLE == 'pontus' or VEHICLE == 'daphne':	
+		if VEHICLE == 'pontus' or VEHICLE == 'daphne' or VEHICLE == 'ahi':	
 			cdd["text_piscamp"]=pisctext
 			# parse piscivore camera
 			'''{text_camago}{color_cam1}{color_cam2} 2=gray, 3 white, 4 green 6 orange 11 dark gray'''
@@ -3185,7 +3215,7 @@ else:   #not opt report
 				outfile.write(svglabels)
 				if VEHICLE=="pontus":
 					outfile.write(svgpontus)
-				if VEHICLE=="pontus" or VEHICLE == "daphne":
+				if VEHICLE=="pontus" or VEHICLE == "daphne" or VEHICLE == "ahi":
 					if (camcat < 998) and (camcat > -1):
 						outfile.write(svgpiscivore.format(
 							color_cam1  = cdd["color_cam1"],
