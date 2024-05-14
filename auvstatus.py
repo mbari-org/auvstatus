@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.65  - Removed old debugging code which made error in mission defaults
 	v 2.64  - Projected battery remaining shows days if > 5 days remaining
 	v 2.63  - Parsing powerOnly piscivore cam for ahi also
 	v 2.62  - Changed the way defaults and full mission names are retrieved
@@ -339,51 +340,52 @@ def getNewMissionDefaults(missionn):
 	'''{"description":"Maximum duration of mission","name":"MissionTimeout","unit":"hour","value":"12"},{"description":"How often to surface for commumications","name":"NeedCommsTime","unit":"minute","value":"180"},'''
 	missions=["Science/mbts_sci2.tl","Transport/keepstation.tl"]
 	# TEMPORARY FOR DEBUGGING
-	missionn=missions[1]
+	# missionn=missions[1]
 	URL = "https://{}/TethysDash/api/commands/script?path={}".format(servername,missionn)
 	if DEBUG: 
 		print("\n#===========================\n",missionn, "\n", file=sys.stderr)
 		print("\n#===========================\n",URL, "\n", file=sys.stderr)
-	try:
-		connection = urllib.request.urlopen(URL,timeout=8)
-		if connection: # here?
-			raw = connection.read()
-			structured = json.loads(raw)
-			connection.close()
-			result = structured['result']['scriptArgs']
-		
-			# if DEBUG: 
-			# 	print(result, file=sys.stderr)
-			for subfield in result:
-				sfn = subfield.get('name')
-				if "NeedCommsTime" in sfn:
-					'''needcomms expects minutes'''
-					NCTime = subfield.get('value',None)
-					if subfield.get('unit',0)=='hour':
-						NCTime = int(NCTime)*60
-					if DEBUG:
-						print(subfield, file=sys.stderr)
-				elif sfn=="MissionTimeout":
-					'''Timeout expects hours'''
-					TimeOut = subfield.get('value',None)
-					if subfield.get('unit',0)=='minute':
-						TimeOut = int(TimeOut)/60
-					if DEBUG:
-						print(subfield, file=sys.stderr)
-				elif sfn=="Speed":
-					Speed = subfield.get('value',None)
-					if DEBUG:
-						print(subfield, file=sys.stderr)
-			# try: 
-			# 	splitted = str(result).split("{")
-			# 	for item in splitted:
-			# 		print(item, file=sys.stderr)
-			# except KeyError:
-			# 	print("NA", file=sys.stderr)
-			if DEBUG: 
-				print(NCTime,TimeOut,Speed, file=sys.stderr)
-	except urllib.error.HTTPError:
-		print("# FAILED TO FIND MISSION",missionn, file=sys.stderr)
+	if missionn:
+		try:
+			connection = urllib.request.urlopen(URL,timeout=8)
+			if connection: # here?
+				raw = connection.read()
+				structured = json.loads(raw)
+				connection.close()
+				result = structured['result']['scriptArgs']
+			
+				# if DEBUG: 
+				# 	print(result, file=sys.stderr)
+				for subfield in result:
+					sfn = subfield.get('name')
+					if "NeedCommsTime" in sfn:
+						'''needcomms expects minutes'''
+						NCTime = subfield.get('value',None)
+						if subfield.get('unit',0)=='hour':
+							NCTime = int(NCTime)*60
+						if DEBUG:
+							print(subfield, file=sys.stderr)
+					elif sfn=="MissionTimeout":
+						'''Timeout expects hours'''
+						TimeOut = subfield.get('value',None)
+						if subfield.get('unit',0)=='minute':
+							TimeOut = int(TimeOut)/60
+						if DEBUG:
+							print(subfield, file=sys.stderr)
+					elif sfn=="Speed":
+						Speed = subfield.get('value',None)
+						if DEBUG:
+							print(f"FOUND SPEED IN NEW DEFAULTS {subfield}", file=sys.stderr)
+				# try: 
+				# 	splitted = str(result).split("{")
+				# 	for item in splitted:
+				# 		print(item, file=sys.stderr)
+				# except KeyError:
+				# 	print("NA", file=sys.stderr)
+				if DEBUG: 
+					print(NCTime,TimeOut,Speed, file=sys.stderr)
+		except urllib.error.HTTPError:
+			print("# FAILED TO FIND NEW MISSION",missionn, file=sys.stderr)
 	return NCTime,TimeOut,Speed
 		
 
@@ -2687,7 +2689,8 @@ else:   #not opt report
 	if DEBUG:
 		print("# BATTERY REMAINING  ",batteryduration, file=sys.stderr)
 	if batteryduration > -998:
-		if batterydaysleft > 5:
+		# changed duration to 2 days
+		if batterydaysleft > 2:
 			cdd["text_batteryduration"] = batterydaysleft
 			cdd["text_batteryunits"] = "days"
 		else:

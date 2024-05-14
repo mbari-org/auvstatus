@@ -87,7 +87,8 @@ Username = "c153d01bc218067cb536909438aa48e4581b9c7f0520d1478204543"
 Password = "020968c4856a8fb1b23342856e1bc407"
 
 client = False
-wsdl_url = "https://webservices.chargepoint.com/cp_api_5.0.wsdl"
+# May 2024: changed endpoint from 5.0 to 5.1
+wsdl_url = "https://webservices.chargepoint.com/cp_api_5.1.wsdl"
 client = Client(wsdl_url, wsse=UsernameToken(Username, Password))
 
 # Get our whole list of stations:
@@ -102,7 +103,7 @@ tNow = dt.now()
 
 tStart = tNow - datetime.timedelta(hours=23, minutes=59, seconds=59)
 
-if opt.DEBUG:
+if opt.DEBUG and False:
 	# load = client.service.getLoad({'stationID': '1:812581'})
 	# print("Load: ",load)
 	test = client.service.getChargingSessionData({'stationID': '1:114123', 'fromTimeStamp':tStart})
@@ -177,7 +178,7 @@ if opt.DEBUG:
 
 TimeString = time.strftime('%H:%M', time.localtime())
 
-if opt.DEBUG:
+if opt.DEBUG and False:
 	try:
 		sendMessage("Test Message " + TimeString,opt.DEBUG)
 	except:
