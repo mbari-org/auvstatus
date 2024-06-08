@@ -662,6 +662,52 @@ def ampToCat(val):
 		cat = 2
 	return cat
 		
+
+
+
+def getNewPlanktivore(starttime):	
+	'''https://okeanids.mbari.org/TethysDash/api/data/_.planktivore_HM_AvgRois?vehicle=ahi&maxlen=10&from=1701196801652
+	https://okeanids.mbari.org/TethysDash/api/data/_.ayeris_particle_counts?vehicle=galene&maxlen=10&from=1701196801652
+	
+_.ayeris_particle_counts=996.500000 count/s
+{"name":"_.planktivore_HM_AvgRois","units":"count/s","values":[0.602051,0.0,0.301025,0.602051,0.0,0.0,0.301025,0.0,0.301025,0.0],"times":[1715273810966,1715273962095,1715273992123,1715274201341,1715274241384,1715274366502,1715274414547,1715274559677,1715274600716,1715274824916]}
+2024-05-08T03:19:18.234Z,1715138358.234 Unknown-->_.planktivore_LM_AvgRois=2.650269 count/s
+2024-05-08T03:19:39.255Z,1715138379.255 Unknown-->_.planktivore_HM_AvgRois=0.477119 count/s'''
+
+	nowcat=-999
+	origtime = False
+	nowpowtime = False
+	if DEBUG:
+		print(f"# Plank &maxlen=10&from={starttime}", file=sys.stderr)
+	record = runNewStyleQuery(api="data/_.planktivore_HM_AvgRois",extrastring=f"&maxlen=10&from={starttime}")
+	'''(-ago_cellcomms / (60*1000)) > (needcomms+60):'''
+	if record and nowcat < -998: #nowcat check not needed because no loop
+		nowcat = ampToCat(record['values'][-1])
+		nowpow = "{}".format(int(record['values'][-1])) + "ma"
+		nowpowtime = record['times'][-1]
+		# -1 to 15, 16-65, 66-125
+		agopowtime = now - nowpowtime
+		if (agopowtime / (60*1000)) > (needcomms+60):
+			nowpow="Too Old"
+			nowcat=5
+			if DEBUG:
+				print("# PowerOnly too old",elapsed(nowpowtime - now), file=sys.stderr)
+
+		for v,t in zip(record['values'][::-1],record['times'][::-1]):
+			tc = ampToCat(v)
+			if tc == nowcat:
+				nowpowtime = t
+			else:
+				break
+		if DEBUG:
+			print("# record",record['values'], file=sys.stderr)
+			# print("# ORIGTIME",elapsed(origtime - now), file=sys.stderr)
+			print("# FIRST TIME",elapsed(nowpowtime - now), file=sys.stderr)
+	else:
+		nowpow="PISC"
+		nowpowtime=False
+	return nowcat,nowpowtime,nowpow
+
 def getNewCameraPower(starttime):	
 	nowcat=-999
 	origtime = False
@@ -1235,8 +1281,9 @@ def parseFaults(recordlist):
 		
 		if (not Overload) and "overload error" in RT.lower():
 			Overload = Record["unixTime"]
-			
-		if (not PauseFault) and "overload error" in RT.lower():
+		
+		# CHECK this parsefault. Used to say if "overload error" in RT, but I think that was copy/paste
+		if (not PauseFault) and "paused" in RT.lower():
 			PauseFault = Record["unixTime"]
 			if DEBUG:
 				print("## PAUSE IN FAULT REPORT", PauseFault,elapsed(PauseFault - now), file=sys.stderr)
@@ -2286,6 +2333,9 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission  = parseImptMisc(important,missionName)
 	
+	if DEBUG:
+		print(f"FRESH PAUSE/RESUME: {Paused}",file=sys.stderr)
+		
 	gf,gftime,gflow = parseCBIT(gfrecords)
 
 	if not logtime:

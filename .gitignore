@@ -8,6 +8,9 @@
 !legend.svg
 charge/startcharge.csv
 charge/settings.py
+charge/chargepoint.py
+charge/chargepoint2.py
+charge/*
 startcharge.csv
 .nova
 *.gif

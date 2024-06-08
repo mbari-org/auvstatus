@@ -65,8 +65,8 @@ def sendMessage(MessageText="EV Status",debb=False):
 UnitOrder = ["Outside1","Outside2","Garage1","Garage2"] # <-- Check which is 1 vs 2
 
 
-ListQuery = {"Garage1": {'stationID': '1:812581' },       # 5,6
-             "Garage2": {'stationID': '1:1762561'},       # 7,8
+ListQuery = {"Garage1":  {'stationID': '1:812581' },       # 5,6
+             "Garage2":  {'stationID': '1:1762561'},       # 7,8
              "Outside1": {'stationID': '1:114123' },      # 1,2
              "Outside2": {'stationID': '1:1762571'}  }    # 3,4
 				
@@ -88,7 +88,9 @@ Password = "020968c4856a8fb1b23342856e1bc407"
 
 client = False
 # May 2024: changed endpoint from 5.0 to 5.1
+wsdl_url_list = ["https://webservices.chargepoint.com/cp_api_5.0.wsdl","https://webservices.chargepoint.com/cp_api_5.0.wsdl"]
 wsdl_url = "https://webservices.chargepoint.com/cp_api_5.1.wsdl"
+
 client = Client(wsdl_url, wsse=UsernameToken(Username, Password))
 
 # Get our whole list of stations:
@@ -103,28 +105,45 @@ tNow = dt.now()
 
 tStart = tNow - datetime.timedelta(hours=23, minutes=59, seconds=59)
 
-if opt.DEBUG and False:
+if opt.DEBUG:
+	'''redo query with all active sessions, maybe don't specify station ID
+	Either capture Energy and compare, or compare charging duration to session duration'''
+	'''     'Energy': 4.390221,
+            'startTime': datetime.datetime(2024, 5, 17, 19, 53, 40, tzinfo=<isodate.tzinfo.Utc object at 0x7f0e1217d630>),
+            'endTime': None,
+            'totalChargingDuration': '01:19:52',
+            'totalSessionDuration': '01:20:15',
+            'userID': '31423371',
+            'credentialID': 'CNCP0000544245',
+'''
 	# load = client.service.getLoad({'stationID': '1:812581'})
 	# print("Load: ",load)
-	test = client.service.getChargingSessionData({'stationID': '1:114123', 'fromTimeStamp':tStart})
-	# test15 = client.service.get15minChargingSessionData({'stationID': '1:114123', 'fromTimeStamp':tStart})
+	print("Debugging active sessions")
+	whichstation = '1:812581'
+	whichstation = '1:1762571'
+	#test = client.service.getChargingSessionData({'stationID': whichstation, 'fromTimeStamp':tStart, 'activeSessionsOnly':True})
+	test = client.service.getChargingSessionData({'activeSessionsOnly':True})#testActive = client.service.get15minChargingSessionData({'stationID': '1:114123', 'fromTimeStamp':tStart})
 	
+	print("All records",test,file=sys.stderr)
+	if test.ChargingSessionData:
+		st=test.ChargingSessionData[-1]['startTime']
+		tz_info = st.tzinfo
+		print(f"TZ info:{tz_info}",file=sys.stderr)
+		tNowTZ = dt.now(tz_info)
 	
-	st=test.ChargingSessionData[-1]['startTime']
-	tz_info = st.tzinfo
-	print(f"TZ info:{tz_info}",file=sys.stderr)
-	tNowTZ = dt.now(tz_info)
-
-	et=test.ChargingSessionData[-1]['endTime']
-	en=test.ChargingSessionData[-1]['Energy']
-	interval = et-st
-	intstart = tNowTZ-st
-	intend   = tNowTZ-et
-	print(f"Interval (min): {interval.seconds/60:.1f}",file=sys.stderr)
-	print(f"NowTZ: {tNowTZ}\nStart: {st}\nEnd:   {et}\nEnergy:{en}",file=sys.stderr)
-	print(f"TimeFromStart:{intstart.seconds/60:.1f} h:{intstart.seconds/(60*60):.1f}",file=sys.stderr)
-	print(f"TimeFromEnd:  {intend.seconds/60:.1f} h:{intend.seconds/(60*60):.1f}\n",file=sys.stderr)
-	# print(test15,file=sys.stderr)
+		chgdur=test.ChargingSessionData[-1]['totalChargingDuration']
+		totdur=test.ChargingSessionData[-1]['totalChargingDuration']
+		en=test.ChargingSessionData[-1]['Energy']
+		# interval = et-st
+		# intstart = tNowTZ-st
+		# intend   = tNowTZ-et
+		# print(f"Interval (min): {interval.seconds/60:.1f}",file=sys.stderr)
+		# print(f"NowTZ: {tNowTZ}\nStart: {st}\nEnd:   {et}\nEnergy:{en}",file=sys.stderr)
+		# print(f"TimeFromStart:{intstart.seconds/60:.1f} h:{intstart.seconds/(60*60):.1f}",file=sys.stderr)
+		print(f"CHARGING DURATION:  {chgdur}\n",file=sys.stderr)
+		print(f"   TOTAL DURATION:  {totdur}\n",file=sys.stderr)
+	else:
+		print(f"## No sessions found for {whichstation}.",file=sys.stderr)
 	'''BEFORE CHARGING:
 	Interval (min): 121.0
 NowTZ: 2024-02-07 15:22:06.958138+00:00
@@ -134,7 +153,9 @@ Energy:12.004365
 TimeFromStart:929.0 h:15.5
 TimeFromEnd:  808.0 h:13.5
 '''
+toggle = True
 for Site in UnitOrder:
+	toggle = not(toggle)
 	try:
 		data = client.service.getStationStatus(ListQuery[Site])
 		# what I really want is the portLoad value from .getLoad
@@ -165,7 +186,7 @@ else:
 	
 StyleList = [FirstValue]
 for Stat in StatusArray[2:]:
-	StyleList.append(StyleD.get(Stat))
+	StyleList.append(StyleD.get(Stat,8))
 ##
 ###### MANUAL OVERRIDE
 ##
@@ -335,10 +356,15 @@ SVGText = '''<svg id="Layer_9" data-name="Layer 9" xmlns="http://www.w3.org/2000
 if opt.DEBUG: 
 	print("DurationList", DurationList, file=sys.stderr)
 	print("OfflineString",OfflineString, file=sys.stderr)
+	print("TimeString",TimeString, file=sys.stderr)
+	print("StyleList",StyleList, file=sys.stderr)
+	print("DurationList",DurationList, file=sys.stderr)
+	print("OfflineString",OfflineString, file=sys.stderr)
 # DurationStrings = ['{:^3}'.format(j) for j in DurationList]
-OutString = SVGText % tuple([TimeString] + StyleList[::-1] + DurationList[::-1] + [OfflineString])
 
 # print(os.uname().nodename)
+
+OutString = SVGText % tuple([TimeString] + StyleList[::-1] + DurationList[::-1] + [OfflineString])
 
 if opt.myprint:
 	print(OutString)
