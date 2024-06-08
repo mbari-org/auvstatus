@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.66  - Fixed copy/paste bug where OT triggers Paused event
 	v 2.65  - Removed old debugging code which made error in mission defaults
 	v 2.64  - Projected battery remaining shows days if > 5 days remaining
 	v 2.63  - Parsing powerOnly piscivore cam for ahi also
