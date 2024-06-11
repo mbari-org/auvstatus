@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.67  - Added Fore Aft Aux to water critical message
 	v 2.66  - Fixed copy/paste bug where OT triggers Paused event
 	v 2.65  - Removed old debugging code which made error in mission defaults
 	v 2.64  - Projected battery remaining shows days if > 5 days remaining
@@ -1189,6 +1190,7 @@ def parseCritical(recordlist):
 	CriticalTime  = False
 	Water         = False
 	Envir         = False
+	WaterLoc    = ""
 	
 	# if DEBUG:
 	#	print "### Start Recordlist"
@@ -1206,11 +1208,20 @@ def parseCritical(recordlist):
 			Drop=Record["unixTime"]
 		if RecordText.startswith("Dropped weight"):
 			Drop=Record["unixTime"]
-			
+		
+		"""WATER DETECTED IN PRESSURE HULL: AUX"""
 		if RecordText.startswith("WATER DETECTED"):
 			Water = Record["unixTime"]
-			
-		elif "environmental failure" in RecordText.lower():
+			if DEBUG: 
+				print("## FOUND WATER LEAK in PARSE",RecordText, file=sys.stderr)
+			try:
+				LeakLoc = RecordText.split(":")[1].strip()
+				if LeakLoc.lower() in ["aux","forward","aft"]:
+					WaterLoc = f" ({LeakLoc.upper()})"
+			except IndexError:
+				WaterLoc="-"
+				
+		if "environmental failure" in RecordText.lower():
 			Envir = Record["unixTime"]
 			
 		if "burnwire activated" in RecordText.lower():
@@ -1236,7 +1247,7 @@ def parseCritical(recordlist):
 					     file=sys.stderr)
 			
 		# if Record["name"]=="CBIT" and Record.get("text","NA").startswith("LAST"):
-	return Drop, ThrusterServo, CriticalError, CriticalTime, Water, Envir
+	return Drop, ThrusterServo, CriticalError, CriticalTime, Water, WaterLoc, Envir
 
 def parseFaults(recordlist):
 	'''https://okeanids.mbari.org/TethysDash/api/events?vehicles=brizo&eventTypes=logFault&from=1591731032512
@@ -1812,6 +1823,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 
 			else:
 			#'''got command schedule "run Science/mbts_sci2.xml"'''
+			#'''## failed to parse schedule: brizo got command schedule "run" 4d401 4 4.000000'''
 			#	'''got command schedule "load Science/circle_acoustic_contact.xml'''
 				#Scheduled = Record["text"].split("/")[1].replace('.xml"','')
 				if "/" in RecordText[:30]:
@@ -2405,10 +2417,11 @@ if (not recovered) or Opt.anyway or DEBUG:
 	CriticalError=False
 	EnvirCritical=False
 	CriticalTime=False
+	WaterLoc=""
 	if (critical):
 		if DEBUG:
 			print("# Starting CRITICAL parse  ", file=sys.stderr)
-		dropWeight,ThrusterServo,CriticalError,CriticalTime,WaterCritical,EnvirCritical = parseCritical(critical)
+		dropWeight,ThrusterServo,CriticalError,CriticalTime,WaterCritical,WaterLoc,EnvirCritical = parseCritical(critical)
 
 	DVLError=False
 	BadBattery=False
@@ -3179,8 +3192,14 @@ else:   #not opt report
 		cdd["color_dvl"] = DVLcolor
 		
 		if (WaterCritical):
-			cdd["color_leak"] = "stleak2"
-			cdd["text_leak"] = "CRITICAL LEAK: "
+			if DEBUG: 
+				print("## FOUND WATER LEAK in RENDER",WaterLoc, file=sys.stderr)
+
+			if "AUX" in WaterLoc:
+				cdd["color_leak"] = "stleak1"
+			else:
+				cdd["color_leak"] = "stleak2"
+			cdd["text_leak"] = "CRITICAL LEAK"+ WaterLoc + ":"
 			cdd["text_leakago"] = elapsed(WaterCritical-now)
 			
 		elif (EnvirCritical):
