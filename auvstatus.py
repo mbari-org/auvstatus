@@ -1217,7 +1217,7 @@ def parseCritical(recordlist):
 			try:
 				LeakLoc = RecordText.split(":")[1].strip()
 				if LeakLoc.lower() in ["aux","forward","aft"]:
-					WaterLoc = f" ({LeakLoc.upper()})"
+					WaterLoc = f" ({LeakLoc[:3].upper()})"
 			except IndexError:
 				WaterLoc="-"
 				
