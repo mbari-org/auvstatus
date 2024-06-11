@@ -38,7 +38,8 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st32{fill:#aaaaaa;stroke:#000000; } <!-- LighterGray Fill-->
 	.st33{fill:#FFEEBB;stroke:none; } <!--PaleYellow No Stroke -->
 	.stleak2{fill:#7DA6D8;} <!-- critical water leak-->
-	.stleak1{fill:#92c19b;} <!--aux water leak-->
+	.stleak1orig{fill:#92c19b;} <!--orig green aux water leak-->
+	.stleak1{fill:#a7fbf5;} <!--light blue aux water leak-->
 	.sparkbg{fill:#E8E8F0;stroke:none; } <!-- light bluegray Fill-->
 	.sparkline{fill:none;stroke:#000000; stroke-width:0.2;}  <!-- changed from black to invisible line -->
 	.sparkpoly{fill:#549fd4;stroke:none; } <!--seafoamgreen No Stroke -->	

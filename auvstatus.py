@@ -2545,7 +2545,8 @@ else:   #not opt report
 	.st26{fill:#FFE850;stroke:none; } <!--Yellow No Stroke -->
 	.st27{fill:#EF9D30;stroke:none; } <!--Orange No Stroke -->	
 	.stleak2{fill:#7DA6D8;} <!-- critical water leak-->
-	.stleak1{fill:#92c19b;} <!--aux water leak-->
+	.stleak1orig{fill:#92c19b;} <!--orig green aux water leak-->
+	.stleak1{fill:#a7fbf5;} <!--light blue aux water leak-->
 
 	'''
 	cdd={}
