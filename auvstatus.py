@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.68  - Muting query timeout for average_current :^(
 	v 2.67  - Added Fore Aft Aux to water critical message
 	v 2.66  - Fixed copy/paste bug where OT triggers Paused event
 	v 2.65  - Removed old debugging code which made error in mission defaults
@@ -205,8 +206,8 @@ def runNewStyleQuery(api="",extrastring=""):
 		if ssl.SSLError:
 			if DEBUG:
 				print("\n### HTTP ERROR:",URL, file=sys.stderr)
-			if not "PowerOnly" in URL and not "data/depth" in URL:
-				print("# QUERY TIMEOUT:",URL, file=sys.stderr)
+			if not "PowerOnly" in URL and not "average_current" in URL and not "data/depth" in URL:
+				print("# NEW QUERY TIMEOUT:",URL, file=sys.stderr)
 				handleURLerror()
 		else:
 			print("# FAILURE IN QUERY:",URL, file=sys.stderr)
@@ -1105,7 +1106,10 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	
 	# changed orange to be 25% more than needcomms
 	if DEBUG:
-		print("### SPARK TIME (minutes?)", (now-max(sublist)*60000)/(1000*60*60),file=sys.stderr)
+		if (sublist):
+			print("### SPARK TIME (minutes?)", (now-max(sublist)*60000)/(1000*60*60),file=sys.stderr)
+		else:
+			print("### NO DEPTH DATA sublist",file=sys.stderr)
 	if sublist and (now-max(sublist)*60000)/(1000*60*60) > (1.25 * need_comm_mins/60):
 		agecolor = "st27"
 		padcolor = "st27" # padded values if more than an hour: orange
