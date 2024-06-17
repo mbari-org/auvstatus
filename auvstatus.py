@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.71  - Fixed bug parsing default timeout, etc, when mission is Run vs Loaded
 	v 2.70  - Moved next waypoint out of ImptMisc to its own mission-specific query
 	v 2.69  - Working on parsing one-waypoint missions in case of no Nav To entry
 	v 2.68  - Muting query timeout for average_current :^(
@@ -1635,6 +1636,7 @@ def parseImptMisc(recordlist,MissionN):
 	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	missionre =  re.compile(r'Loaded ./Missions/(.+\.tl).?')
+	missionrunning= re.compile(r'Running ./Missions/(.+\.tl).?')
 	
 	# ReachedWaypoint = False
 	# NavigatingTo    = False
@@ -1742,12 +1744,22 @@ def parseImptMisc(recordlist,MissionN):
 
 		if not FullMission and not (MissionN=="Default"):
 			'''Loaded ./Missions/Transport/keepstation.tl id=keepstation'''
-			if RecordText.startswith("Loaded ./Mission"):
+			if RecordText.startswith("Loaded ./Mission") or RecordText.startswith("Running ./Mission"):
+				extrat="NONE"
+				if DEBUG:
+					print("## GETTING FULL MISSION FROM", RecordText, file=sys.stderr)
 				missionresult = missionre.search(RecordText)
 				if missionresult:
 					FullMission = missionresult.groups()[0]
+					extrat = "Loaded"
+				else:
+					missionresult = missionrunning.search(RecordText)
+					if missionresult:
+						FullMission = missionresult.groups()[0]
+						extrat = "Running"
+			
 				if DEBUG:
-					print(f"## Found Loaded Mission name {FullMission} for {MissionN}", file=sys.stderr)
+					print(f"## Found FULL {extrat} Mission name {FullMission} for {MissionN}", file=sys.stderr)
 		# got command schedule resume 
 		# Can also have a Fault: Scheduling is paused 
 		# Time for that is stored in PauseFault
@@ -2315,6 +2327,8 @@ if Opt.missions:
 	getMissionDefaults()
 	sys.exit("Done")
 	
+### WHAT IS GOING ON HERE?
+
 if Opt.newmissions:
 	'''test retrieval of mission defaults'''
 	getNewMissionDefaults("Science/mbts_sci2.tl")
