@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.70  - Moved next waypoint out of ImptMisc to its own mission-specific query
 	v 2.69  - Working on parsing one-waypoint missions in case of no Nav To entry
 	v 2.68  - Muting query timeout for average_current :^(
 	v 2.67  - Added Fore Aft Aux to water critical message
@@ -760,8 +761,92 @@ def getNewCameraPower(starttime):
 		nowpow="PISC"
 		nowpowtime=False
 	return nowcat,nowpowtime,nowpow
+	
+def getNewNavigating(missiontime):
+	recordlist = getImportant(missiontime)
+	StationLat = False
+	StationLon = False
+	ReachedWaypoint = False
+	NavigatingTo    = False
+	WaypointName = "Waypoint"
+	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
+	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 
-def newGetNextWaypoint():
+	
+	RawWaypoints={"C1"    : "-121.847,36.797",
+		"M1"    : "-122.022,36.750",
+		"M2"    : "-122.375999,36.691",
+		"3km"   : "-121.824326,36.806965",
+		"Sta.N" : "-121.9636,36.9026",
+		"Sta.S" : "-121.8934,36.6591",
+		"NEreal" : "-121.900002,36.919998",
+		"NE"    : "-121.9,36.9"}
+	TruncatedWaypoints = {
+  		"36.797,-121.847": "C1"    ,
+  		"36.797,-121.850": "C1 profile",
+  		"36.750,-122.022": "M1"    ,
+  		"36.691,-122.376": "M2"    ,
+  		"36.807,-121.824": "3km"   ,
+  		"36.903,-121.964": "Sta.N" ,
+  		"36.659,-121.893": "Sta.S" ,
+  		"36.920,-121.900": "NE-b",
+  		"36.900,-121.900": "NE",
+		"36.81,-121.98": "Lower Soquel", 
+		"36.77,-121.89": "Krill Shelf",
+		"36.82,-121.86": "N. Spur",
+		"36.712,-122.187" : "MARS",
+		"36.722,-122.187" : "Canon 1N",
+		"36.713,-122.176" : "Canon 1E",
+		"36.704,-122.187" : "Canon 1S",
+		"36.713,-122.198" : "Canon 1W",
+		"36.731,-122.187" : "Canon 2N",
+		"36.713,-122.165" : "Canon 2E",
+		"36.695,-122.187" : "Canon 2S",
+		"36.713,-122.209" : "Canon 2W",
+		"36.87,-121.96" : "Upper Soquel" 
+		}
+	
+	if DEBUG:
+		print(f"Parsing Waypoints for current mission",file=sys.stderr)
+	for Record in recordlist:
+		RecordText = Record.get("text","NA")
+		# This will only parse the most recent event in the queue between Reached or Nav
+		if not NavigatingTo and not ReachedWaypoint: 
+			if Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
+				if DEBUG:
+					print("## Found Navigating To Event", Record["text"], file=sys.stderr)
+					'''Navigating to waypoint: 36.750000,-122.022003'''
+				NavRes = wayre.search(Record["text"].replace("arcdeg",""))
+				if NavRes:
+					textlat,textlon = NavRes.groups()
+					if textlat:
+						StationLat = float(textlat)
+						StationLon = float(textlon)
+					if DEBUG:
+						print("## Got LatLon from Navigating To", StationLat,StationLon, file=sys.stderr)
+					NavigatingTo = Record["unixTime"]
+			if Record["text"].lower().startswith("reached waypoint"):
+				if DEBUG:
+					print("## Found Reached Event", Record["text"], Record["unixTime"], file=sys.stderr)
+				waresult = wayre.search(Record["text"])
+				if waresult:
+					textlat,textlon=waresult.groups()
+					if textlat:
+						StationLat = float(textlat)
+						StationLon = float(textlon)
+				if DEBUG:
+					print("## Got ReachedWaypoint", StationLat,StationLon, file=sys.stderr)
+				ReachedWaypoint = Record["unixTime"]
+				
+			if StationLat:
+				LookupLL = f"{round(StationLat,3):.3f},{round(StationLon,3):.3f}"
+				if DEBUG:
+					print("## Looking up Station", LookupLL, file=sys.stderr)
+				
+				WaypointName = TruncatedWaypoints.get(LookupLL,"Station.")  # if not found, use "Station"
+	return StationLat, StationLon, ReachedWaypoint, WaypointName
+
+def getNewNextWaypoint():
 	wpq = ""
 	'''https://okeanids.mbari.org/TethysDash/api/wp?vehicle=pontus
 	"result": {
@@ -1551,41 +1636,41 @@ def parseImptMisc(recordlist,MissionN):
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	missionre =  re.compile(r'Loaded ./Missions/(.+\.tl).?')
 	
-	ReachedWaypoint = False
-	NavigatingTo    = False
-	WaypointName = "Waypoint"
-	RawWaypoints={"C1"    : "-121.847,36.797",
-		"M1"    : "-122.022,36.750",
-		"M2"    : "-122.375999,36.691",
-		"3km"   : "-121.824326,36.806965",
-		"Sta.N" : "-121.9636,36.9026",
-		"Sta.S" : "-121.8934,36.6591",
-		"NEreal" : "-121.900002,36.919998",
-		"NE"    : "-121.9,36.9"}
-	TruncatedWaypoints = {
-  		"36.797,-121.847": "C1"    ,
-  		"36.797,-121.850": "C1 profile",
-  		"36.750,-122.022": "M1"    ,
-  		"36.691,-122.376": "M2"    ,
-  		"36.807,-121.824": "3km"   ,
-  		"36.903,-121.964": "Sta.N" ,
-  		"36.659,-121.893": "Sta.S" ,
-  		"36.920,-121.900": "NE-b",
-  		"36.900,-121.900": "NE",
-		"36.81,-121.98": "Lower Soquel", 
-		"36.77,-121.89": "Krill Shelf",
-		"36.82,-121.86": "N. Spur",
-		"36.712,-122.187" : "MARS",
-		"36.722,-122.187" : "Canon 1N",
-		"36.713,-122.176" : "Canon 1E",
-		"36.704,-122.187" : "Canon 1S",
-		"36.713,-122.198" : "Canon 1W",
-		"36.731,-122.187" : "Canon 2N",
-		"36.713,-122.165" : "Canon 2E",
-		"36.695,-122.187" : "Canon 2S",
-		"36.713,-122.209" : "Canon 2W",
-		"36.87,-121.96" : "Upper Soquel" 
-		}
+	# ReachedWaypoint = False
+	# NavigatingTo    = False
+	# WaypointName = "Waypoint"
+	# RawWaypoints={"C1"    : "-121.847,36.797",
+	# 	"M1"    : "-122.022,36.750",
+	# 	"M2"    : "-122.375999,36.691",
+	# 	"3km"   : "-121.824326,36.806965",
+	# 	"Sta.N" : "-121.9636,36.9026",
+	# 	"Sta.S" : "-121.8934,36.6591",
+	# 	"NEreal" : "-121.900002,36.919998",
+	# 	"NE"    : "-121.9,36.9"}
+	# TruncatedWaypoints = {
+  	# 	"36.797,-121.847": "C1"    ,
+  	# 	"36.797,-121.850": "C1 profile",
+  	# 	"36.750,-122.022": "M1"    ,
+  	# 	"36.691,-122.376": "M2"    ,
+  	# 	"36.807,-121.824": "3km"   ,
+  	# 	"36.903,-121.964": "Sta.N" ,
+  	# 	"36.659,-121.893": "Sta.S" ,
+  	# 	"36.920,-121.900": "NE-b",
+  	# 	"36.900,-121.900": "NE",
+	# 	"36.81,-121.98": "Lower Soquel", 
+	# 	"36.77,-121.89": "Krill Shelf",
+	# 	"36.82,-121.86": "N. Spur",
+	# 	"36.712,-122.187" : "MARS",
+	# 	"36.722,-122.187" : "Canon 1N",
+	# 	"36.713,-122.176" : "Canon 1E",
+	# 	"36.704,-122.187" : "Canon 1S",
+	# 	"36.713,-122.198" : "Canon 1W",
+	# 	"36.731,-122.187" : "Canon 2N",
+	# 	"36.713,-122.165" : "Canon 2E",
+	# 	"36.695,-122.187" : "Canon 2S",
+	# 	"36.713,-122.209" : "Canon 2W",
+	# 	"36.87,-121.96" : "Upper Soquel" 
+	# 	}
 
 	# CONFIGURE DVL config defaults
 	GetDVLStartup = {
@@ -1685,39 +1770,39 @@ def parseImptMisc(recordlist,MissionN):
 					print("## Got SCHEDULE PAUSE", elapsed(PauseTime-now), file=sys.stderr)
 				
 		# This will only parse the most recent event in the queue between Reached or Nav
-		if not NavigatingTo and not ReachedWaypoint: 
-			if Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
-				if DEBUG:
-					print("## Found Navigating To Event", Record["text"], file=sys.stderr)
-					'''Navigating to waypoint: 36.750000,-122.022003'''
-				NavRes = wayre.search(Record["text"].replace("arcdeg",""))
-				if NavRes:
-					textlat,textlon = NavRes.groups()
-					if textlat:
-						StationLat = float(textlat)
-						StationLon = float(textlon)
-					if DEBUG:
-						print("## Got LatLon from Navigating To", StationLat,StationLon, file=sys.stderr)
-					NavigatingTo = Record["unixTime"]
-			if Record["text"].lower().startswith("reached waypoint"):
-				if DEBUG:
-					print("## Found Reached Event", Record["text"], file=sys.stderr)
-				waresult = wayre.search(Record["text"])
-				if waresult:
-					textlat,textlon=waresult.groups()
-					if textlat:
-						StationLat = float(textlat)
-						StationLon = float(textlon)
-				if DEBUG:
-					print("## Got ReachedWaypoint", StationLat,StationLon, file=sys.stderr)
-				ReachedWaypoint = Record["unixTime"]
-				
-			if StationLat:
-				LookupLL = f"{round(StationLat,3):.3f},{round(StationLon,3):.3f}"
-				if DEBUG:
-					print("## Looking up Station", LookupLL, file=sys.stderr)
-				
-				WaypointName = TruncatedWaypoints.get(LookupLL,"Station.")  # if not found, use "Station"
+		# if not NavigatingTo and not ReachedWaypoint: 
+		# 	if Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
+		# 		if DEBUG:
+		# 			print("## Found Navigating To Event", Record["text"], file=sys.stderr)
+		# 			'''Navigating to waypoint: 36.750000,-122.022003'''
+		# 		NavRes = wayre.search(Record["text"].replace("arcdeg",""))
+		# 		if NavRes:
+		# 			textlat,textlon = NavRes.groups()
+		# 			if textlat:
+		# 				StationLat = float(textlat)
+		# 				StationLon = float(textlon)
+		# 			if DEBUG:
+		# 				print("## Got LatLon from Navigating To", StationLat,StationLon, file=sys.stderr)
+		# 			NavigatingTo = Record["unixTime"]
+		# 	if Record["text"].lower().startswith("reached waypoint"):
+		# 		if DEBUG:
+		# 			print("## Found Reached Event", Record["text"], Record["unixTime"], file=sys.stderr)
+		# 		waresult = wayre.search(Record["text"])
+		# 		if waresult:
+		# 			textlat,textlon=waresult.groups()
+		# 			if textlat:
+		# 				StationLat = float(textlat)
+		# 				StationLon = float(textlon)
+		# 		if DEBUG:
+		# 			print("## Got ReachedWaypoint", StationLat,StationLon, file=sys.stderr)
+		# 		ReachedWaypoint = Record["unixTime"]
+		# 		
+		# 	if StationLat:
+		# 		LookupLL = f"{round(StationLat,3):.3f},{round(StationLon,3):.3f}"
+		# 		if DEBUG:
+		# 			print("## Looking up Station", LookupLL, file=sys.stderr)
+		# 		
+		# 		WaypointName = TruncatedWaypoints.get(LookupLL,"Station.")  # if not found, use "Station"
 			
 		## TODO distinguish between UBAT off and FlowRate too low
 		## PARSE UBAT (make vehicle-specific)
@@ -1790,7 +1875,8 @@ def parseImptMisc(recordlist,MissionN):
 		#	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
 		#	FlowTime   = Record["unixTime"]
 
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
+#	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
 
 	
 
@@ -2392,11 +2478,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# 	print("## ARGO TIME AND LASTGOODTIME:", argobatt,argotime,argogoodtime,elapsed(argogoodtime-argotime), file=sys.stderr)
 		
 	deltadist,deltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
-
-	nextLat,nextLon = newGetNextWaypoint()  # From the mission statement, in case Navigating To is not found
 	
-	if DEBUG:
-		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
 
 # FULL RANGE OF RECORDS
 	important = getImportant(startTime)
@@ -2406,7 +2488,14 @@ if (not recovered) or Opt.anyway or DEBUG:
 	Ampthreshnum=0
 	Voltthreshnum = 0
 	
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,NavLat,NavLon,ReachedWaypoint,WaypointName,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission  = parseImptMisc(important,missionName)
+	nextLat,nextLon = getNewNextWaypoint()  # From the mission statement, in case Navigating To is not found
+	#  MOVE NavLat and ReachedWaypoint to after mission time
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission  = parseImptMisc(important,missionName)
+	
+	if DEBUG:
+		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
+
+	NavLat,NavLon, ReachedWaypoint, WaypointName = getNewNavigating(missionTime-60000)
 	
 	if DEBUG:
 		print(f"FRESH PAUSE/RESUME: {Paused}",file=sys.stderr)
@@ -2425,8 +2514,10 @@ if (not recovered) or Opt.anyway or DEBUG:
 		postmission = ''
 	
 	if DEBUG:
-		print("MISSION TIME AND RAW", hours(missionTime),dates(missionTime),missionTime, file=sys.stderr)
-		
+		print("MISSION          TIME AND RAW", hours(missionTime),dates(missionTime),missionTime, file=sys.stderr)
+		print("REACHED WAYPOINT TIME AND RAW", hours(ReachedWaypoint),dates(ReachedWaypoint), ReachedWaypoint, file=sys.stderr)
+	
+	# Do we want station from here or not?	
 	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot,scheduledtime  = \
 	          parseDefaults(postmission,mission_defaults,FullMission,missionTime)
 			  
@@ -2437,6 +2528,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 		waypointtime = ReachedWaypoint
 		waypointdist = 0.01
 	else: 
+		ReachedWaypoint = False
 		if nextLat and not NavLat:
 			if DEBUG: 
 				print("## Using mission WAYPOINT {nextLat},{nextLon} instead of Navigating to",file=sys.stderr)
@@ -2999,7 +3091,7 @@ else:   #not opt report
 		cdd["text_waypoint"] = "Arrive at " + WaypointName
 		if DEBUG and (waypointtime >= 0):
 			print("TIME TO STATION from GPS TIME, not now:",hours(waypointtime),elapsed(waypointtime), file=sys.stderr)
-		if ReachedWaypoint:
+		if ReachedWaypoint > missionTime:
 			arrivetext = f"Arrived: {WaypointName}"
 			cdd["text_stationdist"]   = elapsed(waypointtime - now)
 
