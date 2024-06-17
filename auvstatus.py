@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.69  - Working on parsing one-waypoint missions in case of no Nav To entry
 	v 2.68  - Muting query timeout for average_current :^(
 	v 2.67  - Added Fore Aft Aux to water critical message
 	v 2.66  - Fixed copy/paste bug where OT triggers Paused event
@@ -337,6 +338,7 @@ def getNewMissionDefaults(missionn):
 	Speed = None
 	NCTime = None
 	TimeOut = None
+	Docked = False
 	"""NOTE: This mission name needs the suffix!"""
 	
 	'''https://okeanids.mbari.org/TethysDash/api/commands/script?path=Science/altitudeServo_approach_backseat_poweronly.tl'''
@@ -368,7 +370,15 @@ def getNewMissionDefaults(missionn):
 							NCTime = int(NCTime)*60
 						if DEBUG:
 							print(subfield, file=sys.stderr)
-					elif sfn=="MissionTimeout":
+					# Mission Timeout = DockedTime plus 5 mins
+					elif sfn=="DockedTime":
+						TimeOut = subfield.get('value',None)
+						Docked=True
+						if subfield.get('unit',0)=='minute':
+							TimeOut = int(TimeOut)/60
+						if DEBUG:
+							print(subfield, file=sys.stderr)				
+					elif sfn=="MissionTimeout" and not Docked:
 						'''Timeout expects hours'''
 						TimeOut = subfield.get('value',None)
 						if subfield.get('unit',0)=='minute':
@@ -389,7 +399,7 @@ def getNewMissionDefaults(missionn):
 					print(NCTime,TimeOut,Speed, file=sys.stderr)
 		except urllib.error.HTTPError:
 			print("# FAILED TO FIND NEW MISSION",missionn, file=sys.stderr)
-	return NCTime,TimeOut,Speed
+	return NCTime,TimeOut,Speed,Docked
 		
 
 	
@@ -750,6 +760,46 @@ def getNewCameraPower(starttime):
 		nowpow="PISC"
 		nowpowtime=False
 	return nowcat,nowpowtime,nowpow
+
+def newGetNextWaypoint():
+	wpq = ""
+	'''https://okeanids.mbari.org/TethysDash/api/wp?vehicle=pontus
+	"result": {
+        "missionLatLonArgs": [
+            {
+                "name": "Lat",
+                "value": "36.806966"
+            },
+            {
+                "name": "Lon",
+                "value": "-121.824326"
+            }
+        ],
+        "points": [
+            {
+                "lat": 36.903,
+                "lon": -122.113
+            }
+        ],
+	'''
+	wpq = runNewStyleQuery(api="wp")
+	if DEBUG:
+		print("## QUERYING FOR WAYPOINTS", file=sys.stderr)
+	if not wpq:
+		return None,None
+	else:
+		wpr = wpq.get('points',None) # (get only First result of this)
+		# List will contain all the waypoints. Only use if there is only one.
+		if wpr and len(wpr)==1:
+			wp_lat = wpr[0].get('lat',None)
+			wp_lon = wpr[0].get('lon',None)
+			if DEBUG:
+				print(f"WAYPOINT LAT AND LON: {wpr} \n {wp_lat} {wp_lon}",file=sys.stderr)
+			return wp_lat,wp_lon
+		else:
+			return None,None
+		
+	
 
 def getNewLatLon(starttime=1676609209829):
 	'''https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=pontus&maxlen=200
@@ -1467,7 +1517,7 @@ If you see a Loaded mission command, or Started default before getting speed (or
 Ground fault: Queue on RED on Low side ground fault detected - Yellow on any ground fault
 ...
 
-
+	
 '''
 def parseImptMisc(recordlist,MissionN):
 	'''Loads events that persist across missions'''
@@ -1554,6 +1604,7 @@ def parseImptMisc(recordlist,MissionN):
 	
 	DVL_on = GetDVLStartup.get(VEHICLE,False)
 	# NEW get DVL from grepping (or other) out of https://okeanids.mbari.org/TethysDash/api/vconfig?vehicle=daphne
+
 	if DEBUG:
 		print(f"Parsing Important for Mission {MissionN}",file=sys.stderr)
 	for Record in recordlist:
@@ -1632,7 +1683,7 @@ def parseImptMisc(recordlist,MissionN):
 				NeedSched = False
 				if DEBUG:
 					print("## Got SCHEDULE PAUSE", elapsed(PauseTime-now), file=sys.stderr)
-		
+				
 		# This will only parse the most recent event in the queue between Reached or Nav
 		if not NavigatingTo and not ReachedWaypoint: 
 			if Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
@@ -1777,6 +1828,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 		## Widget fails to pick up duration that was set long ago in the schedule.
 		# if goes to default and then resumes: got command resume 
 		
+		# TODO: Add DockedTime to this parsing as a sub for MissionTimeout
 		if TimeoutDuration == False and \
 		     ".MissionTimeout" in RecordText and RecordText.startswith("got") and not ("chedule" in RecordText):
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
@@ -1949,7 +2001,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 		if DEBUG: 
 			print(f"# TRYING NEW DEFAULT RETRIEVAL for {FullMission}\nSp,NeedC,Timeout:{Speed}, {NeedComms}, {TimeoutDuration}",file=sys.stderr)
 			
-		default_NCTime,default_TimeOut,default_Speed = getNewMissionDefaults(FullMission)
+		default_NCTime,default_TimeOut,default_Speed,default_Docked = getNewMissionDefaults(FullMission)
 		
 		if not Speed and default_Speed:
 			# Speed = mission_defaults.get(FullMission,{}).get("Speed","na")
@@ -1959,7 +2011,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			NeedComms = int(default_NCTime)
 			# NeedComms = mission_defaults.get(FullMission,{}).get("NeedCommsTime",0)
 			
-		if not TimeoutDuration and default_TimeOut:
+		if not TimeoutDuration and default_TimeOut and not 'Docked' in str(default_TimeOut):
 			if DEBUG:
 				print(f"# NO TIMEOUT - checking defaults for {FullMission}", file=sys.stderr)
 				print("# FOUND NEW TIMEOUT:",default_TimeOut, file=sys.stderr)
@@ -1968,6 +2020,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			
 			# TimeoutDuration = mission_defaults.get(FullMission,{}).get("MissionTimeout",0)
 			TimeoutStart = MissionTime
+			
 	if NeedComms:
 		dotcolor="st25"
 
@@ -2340,6 +2393,11 @@ if (not recovered) or Opt.anyway or DEBUG:
 		
 	deltadist,deltat,speedmadegood,bearing = distance(site,gpstime,oldsite,oldgpstime)
 
+	nextLat,nextLon = newGetNextWaypoint()  # From the mission statement, in case Navigating To is not found
+	
+	if DEBUG:
+		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
+
 # FULL RANGE OF RECORDS
 	important = getImportant(startTime)
 
@@ -2371,19 +2429,26 @@ if (not recovered) or Opt.anyway or DEBUG:
 		
 	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot,scheduledtime  = \
 	          parseDefaults(postmission,mission_defaults,FullMission,missionTime)
+			  
 	
 
 	# Time to waypoint:
-	if abs(NavLon) > 0:
-		waypointtime,waypointdist = parseDistance(site,NavLat,NavLon,speedmadegood,bearing,gpstime)
-	elif abs(StationLat) > 0:
-		waypointtime,waypointdist = parseDistance(site,StationLat,StationLon,speedmadegood,bearing,gpstime)
-	else:
-		waypointtime = -2
-		waypointdist = None
-	if ReachedWaypoint:
+	if ReachedWaypoint > missionTime:
 		waypointtime = ReachedWaypoint
 		waypointdist = 0.01
+	else: 
+		if nextLat and not NavLat:
+			if DEBUG: 
+				print("## Using mission WAYPOINT {nextLat},{nextLon} instead of Navigating to",file=sys.stderr)
+			NavLat = nextLat
+			NavLon = nextLon
+		if abs(NavLon) > 0:
+			waypointtime,waypointdist = parseDistance(site,NavLat,NavLon,speedmadegood,bearing,gpstime)
+		elif abs(StationLat) > 0:
+			waypointtime,waypointdist = parseDistance(site,StationLat,StationLon,speedmadegood,bearing,gpstime)
+		else:
+			waypointtime = -2
+			waypointdist = None
 
 			
 
