@@ -151,7 +151,7 @@ def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 	
 	vehicle = VEHICLE
 
-	if not timeafter:
+	if not timeafter or int(timeafter) < 1234567890123:
 		timeafter="1234567890123"
 		
 	BaseQuery = "https://{ser}/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
@@ -371,7 +371,7 @@ def getNewMissionDefaults(missionn):
 						if subfield.get('unit',0)=='hour':
 							NCTime = int(NCTime)*60
 						if DEBUG:
-							print(subfield, file=sys.stderr)
+							print("FOUND NEEDCOMMS TIME:",subfield, file=sys.stderr)
 					# Mission Timeout = DockedTime plus 5 mins
 					elif sfn=="DockedTime":
 						TimeOut = subfield.get('value',None)
@@ -379,14 +379,14 @@ def getNewMissionDefaults(missionn):
 						if subfield.get('unit',0)=='minute':
 							TimeOut = int(TimeOut)/60
 						if DEBUG:
-							print(subfield, file=sys.stderr)				
+							print("FOUND DOCKED TIME:", subfield, file=sys.stderr)				
 					elif sfn=="MissionTimeout" and not Docked:
 						'''Timeout expects hours'''
 						TimeOut = subfield.get('value',None)
 						if subfield.get('unit',0)=='minute':
 							TimeOut = int(TimeOut)/60
 						if DEBUG:
-							print(subfield, file=sys.stderr)
+							print("FOUND MISSION TIMEOUT:", subfield, file=sys.stderr)
 					elif sfn=="Speed":
 						Speed = subfield.get('value',None)
 						if DEBUG:
@@ -1021,6 +1021,9 @@ def getNewBattery():
 		Battery thresholds:
 	onfigSet IBIT.batteryVoltageThreshold 13 v persist;configSet IBIT.batteryCapacityThreshold 15 Ah persist
 	
+	Important
+        IBIT.batteryVoltageThreshold=13 volt;
+
 	Nov 2023: redo with 3 separate queries so maxlen is respected
 	average_current
 	battery_charge
