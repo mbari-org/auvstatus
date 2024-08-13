@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.72  - Critical messages < 31 characters were sometimes not reported!
 	v 2.71  - Fixed bug parsing default timeout, etc, when mission is Run vs Loaded
 	v 2.70  - Moved next waypoint out of ImptMisc to its own mission-specific query
 	v 2.69  - Working on parsing one-waypoint missions in case of no Nav To entry
@@ -1379,9 +1380,11 @@ def parseCritical(recordlist):
 				CriticalError = RecordText.replace(" in component","")[:29]
 				if len(CriticalError)>28:
 					CriticalError += "..."
+			else:
+				CriticalError = RecordText
 			CriticalTime = Record["unixTime"]
 			if DEBUG:
-				print("FOUND CRITICAL #1162",RecordText,"\nDetails:",CriticalError, CriticalTime, elapsed(CriticalTime-now), file=sys.stderr)
+				print("FOUND CRITICAL >",RecordText,"\nDetails:",CriticalError, CriticalTime, elapsed(CriticalTime-now), file=sys.stderr)
 			if (((now - CriticalTime)/3600000) > 6):
 				CriticalError = ""
 				CriticalTime = False
@@ -1848,10 +1851,18 @@ def parseImptMisc(recordlist,MissionN):
 		
 		# ADDING CTD on/off parsing
 		if (not CTDonCommand and not CTDoffCommand) and ("CTD_Seabird.loadAtStartup" in Record["text"]):
-			CTD_command = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
-			if CTD_command:
+			skip = False
+			CTD_command = False
+			try:
+				CTD_command = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
+			except ValueError:
+				if DEBUG:
+					print("#Error parsing CTD Command: ",VEHICLE, Record["name"] ,"==>",Record["text"],file=sys.stderr)
+				skip=True
+				
+			if CTD_command and not skip:
 				CTDonCommand = Record["unixTime"]
-			else:
+			elif not skip:
 				CTDoffCommand = Record["unixTime"] 
 	
 			
@@ -2600,6 +2611,9 @@ if (not recovered) or Opt.anyway or DEBUG:
 		if DEBUG:
 			print("# Starting CRITICAL parse  ", file=sys.stderr)
 		dropWeight,ThrusterServo,CriticalError,CriticalTime,WaterCritical,WaterLoc,EnvirCritical = parseCritical(critical)
+	
+	if DEBUG: 
+		print("## CRITICAL STATUS: ",CriticalError, file=sys.stderr)
 
 	DVLError=False
 	BadBattery=False
@@ -2847,6 +2861,9 @@ else:   #not opt report
 	for tname in specialnames:
 		cdd[tname]=''
 	
+	if DEBUG: 
+		print("## CRITICAL STATUS (after cdd def) : ",CriticalError, file=sys.stderr)
+
 
 	'''
 	
@@ -3010,7 +3027,7 @@ else:   #not opt report
 	# NOT RECOVERED
 	else: 
 		# SWError = False
-		# CriticalError = False                                                               # unicode bullet
+		# CriticalError = False                        # unicode bullet
 		if missionName and missionTime:
 			missionNameText = missionName
 			if missionName == "Default":
@@ -3361,10 +3378,19 @@ else:   #not opt report
 		else:
 			DVLcolor = 'st5'
 			cdd["text_dvlstatus"]="OFF"
-		
+
+		if DEBUG: 
+			print("## CRITICAL STATUS (after before text_ ) : ",CriticalError, file=sys.stderr)
+
 		if CriticalError:
+			if DEBUG: 
+				print("## HAVE CRITICAL in RENDER: ",CriticalError, file=sys.stderr)
 			cdd["text_criticalerror"] = "CRITICAL: "+ CriticalError
 			cdd["text_criticaltime"]  = elapsed(CriticalTime-now)
+		else:
+			if DEBUG: 
+				print("## NO CRITICAL ERROR in RENDER: ",CriticalError, file=sys.stderr)
+	
 		# else:
 		# 	CriticalTime = 0
 		
