@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.74  - Support for docking ops - first working version
+	v 2.73  - Adding NeedCommsTimeProfileStation to the parsing
 	v 2.72  - Critical messages < 31 characters were sometimes not reported!
 	v 2.71  - Fixed bug parsing default timeout, etc, when mission is Run vs Loaded
 	v 2.70  - Moved next waypoint out of ImptMisc to its own mission-specific query
@@ -1634,7 +1636,9 @@ def parseImptMisc(recordlist,MissionN):
 	
 	CTDonCommand = False
 	CTDoffCommand = False
-
+	
+	Docking = False
+	DockTime = None
 	voltthresh = 0
 	ampthresh  = 0
 	FullMission = ""
@@ -1736,6 +1740,17 @@ def parseImptMisc(recordlist,MissionN):
 		
 		# IBIT.batteryCapacityThreshold=20 ampere_hour;
 		# IBIT.batteryVoltageThreshold=10 volt;
+		if not Docking:
+			if RecordText.strip().startswith("Undocking sequence complete"):
+				if DEBUG:
+					print("\n## Got UNDOCKING Event from ImptMisc", file=sys.stderr)
+				Docking = 2
+				DockTime = Record["unixTime"]
+			if RecordText.strip().startswith("Docking sequence complete"):
+				if DEBUG:
+					print("\n## Got DOCKING Event from ImptMisc", file=sys.stderr)
+				Docking = 1
+				DockTime = Record["unixTime"]
 
 		if not voltthresh and RecordText.startswith("IBIT.batteryVoltageThreshold="):
 			voltthresh = float(RecordText.split("IBIT.batteryVoltageThreshold=")[1].split(" ")[0])
@@ -1902,7 +1917,7 @@ def parseImptMisc(recordlist,MissionN):
 		#	FlowTime   = Record["unixTime"]
 
 #	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,FullMission,Docking,DockTime
 
 	
 
@@ -2071,7 +2086,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			if DEBUG:
 				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 			try:
-				NeedComms = int(float(re.split("SurfacingIntervalDuringListening |NeedCommsTime |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait ",Record["text"])[1].split(" ")[0]))
+				NeedComms = int(float(re.split("SurfacingIntervalDuringListening |NeedCommsTimeProfileStation |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait |NeedCommsTime ",Record["text"])[1].split(" ")[0]))
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
 					NeedComms = int(float(Record["text"].split("NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
@@ -2450,6 +2465,9 @@ Paused = True
 PauseTime = False
 PauseFault = False
 argogoodtime=False
+
+DockStatus = False # 1 = on dock, 2 = undocked
+DockingTime = None
 WaypointName = "Waypoint"
 
 # ========
@@ -2518,7 +2536,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	nextLat,nextLon = getNewNextWaypoint()  # From the mission statement, in case Navigating To is not found
 	#  MOVE NavLat and ReachedWaypoint to after mission time
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission  = parseImptMisc(important,missionName)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission,DockStatus,DockingTime  = parseImptMisc(important,missionName)
 	
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
@@ -2806,7 +2824,12 @@ else:   #not opt report
 	"color_cameralens",
 	"color_leak",
 	"color_cam1",
-	"color_cam2"]
+	"color_cam2", 
+	"dock_tri",
+	"dock_line",
+	"dock_eye",
+	"dock_buoy"
+]
 
 	for cname in cartcolors:
 		cdd[cname]='st18'
@@ -3417,7 +3440,22 @@ else:   #not opt report
 			cdd["text_leak"] = "AUX LEAK: "
 			cdd["text_leakago"] = elapsed(WaterFault-now)
 		
-		
+		if DockStatus ==1:  # Docked
+			cdd["dock_buoy"]="st4"
+			cdd["dock_line"]="stbuoyline"
+			cdd["dock_eye"]="st3"
+			cdd["dock_tri"]="st11"
+			cdd["text_arrivestation"] = "On Dock"
+			if DockingTime:
+				cdd["text_waypoint"]= "Docked "+ elapsed(DockingTime-now)
+		elif DockStatus ==2: # Undocked
+			cdd["dock_buoy"]="semitrans"
+			cdd["dock_line"]="semitransline"
+			cdd["dock_eye"] ="semitrans"
+			cdd["dock_tri"] ="semitrans"
+			if cdd["text_arrivestation"] == "Nav missing":
+				cdd["text_arrivestation"] = "Undocked " + elapsed(DockingTime-now)
+
 		# If there was a critical since the last schedule pause or schedule resume event, 
 		# then the schedule is effectively paused.
 		if DEBUG:

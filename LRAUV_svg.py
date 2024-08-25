@@ -40,6 +40,9 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.stleak2{fill:#7DA6D8;} <!-- critical water leak-->
 	.stleak1orig{fill:#92c19b;} <!--orig green aux water leak-->
 	.stleak1{fill:#a7fbf5;} <!--light blue aux water leak-->
+	.stbuoyline{fill:none;stroke:#6D6E6E; stroke-width:4.5;}
+	.semitrans{fill:#AAAAAAAA; stroke:#AAAAAAAA;}  <!-- transparent gray -->
+	.semitransline{fill:#AAAAAAAA; stroke:#AAAAAAAA; stroke-width:4.5;}  <!-- transparent gray -->
 	.sparkbg{fill:#E8E8F0;stroke:none; } <!-- light bluegray Fill-->
 	.sparkline{fill:none;stroke:#000000; stroke-width:0.2;}  <!-- changed from black to invisible line -->
 	.sparkpoly{fill:#549fd4;stroke:none; } <!--seafoamgreen No Stroke -->	
@@ -68,6 +71,14 @@ svgtext = '''
 <rect desc="backgroundbox" x="126.91" y="161.76" class="st1" width="514.08" height="156.08"/>
 <line desc="bigcable" class="{color_bigcable}" x1="250.77" y1="292.21" x2="268.73" y2="281.71"/>
 <path desc="smallcable" class="{color_smallcable}" d="M137.01,323.1c0,0,7.44-8.93,20.84-8.93s20.85,8.93,42.05,8.93s29.77-18.98,47.66-28.86"/>
+
+<!-- Docking Buoy-->
+<g id="Layer_2">
+	<circle class="{dock_buoy}" cx="538" cy="203.7" r="13.9"/>
+	<line class="{dock_line}" x1="538" y1="317.5" x2="538" y2="224.5"/>
+	<polygon class="{dock_tri}" points="536,225.5 540,225.5 545.6,215.4 530.5,215.4 	"/>
+	<circle class="{dock_eye}" cx="538" cy="220.9" r="1.5"/>
+</g>
 
 <!-- AUV Body -->
 <path class="st2" d="M554.57,292.12l-279.27,0l0-60.4l279.27,0c16.68,0,30.2,13.52,30.2,30.2v0
@@ -256,7 +267,6 @@ svgbadbattery='''<g><title>Bad battery cell detected</title>
 	{badcelltext}
 </g>	
 '''
-
 
 
 svgpontus='''
