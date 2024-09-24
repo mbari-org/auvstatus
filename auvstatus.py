@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.76  - Improved Water Leak location reporting
+	v 2.75  - Put Chiton/Ayeris indicator back on for Galene
 	v 2.74  - Support for docking ops - first working version
 	v 2.73  - Adding NeedCommsTimeProfileStation to the parsing
 	v 2.72  - Critical messages < 31 characters were sometimes not reported!
@@ -212,7 +214,7 @@ def runNewStyleQuery(api="",extrastring=""):
 		if ssl.SSLError:
 			if DEBUG:
 				print("\n### HTTP ERROR:",URL, file=sys.stderr)
-			if not "PowerOnly" in URL and not "average_current" in URL and not "data/depth" in URL:
+			if not "PowerOnly" in URL and not "average_current" in URL and not "battery_voltage" in URL and not "battery_charge" in URL and not "data/depth" in URL:
 				print("# NEW QUERY TIMEOUT:",URL, file=sys.stderr)
 				handleURLerror()
 		else:
@@ -807,7 +809,8 @@ def getNewNavigating(missiontime):
 		"36.713,-122.165" : "Canon 2E",
 		"36.695,-122.187" : "Canon 2S",
 		"36.713,-122.209" : "Canon 2W",
-		"36.87,-121.96" : "Upper Soquel" 
+		"36.87,-121.96" : "Upper Soquel",
+		"36.903,-121.113" : "Dock Site" 
 		}
 	
 	if DEBUG:
@@ -1337,6 +1340,7 @@ def parseCritical(recordlist):
 	Water         = False
 	Envir         = False
 	WaterLoc    = ""
+	LeakLoc = ""
 	
 	# if DEBUG:
 	#	print "### Start Recordlist"
@@ -1360,12 +1364,17 @@ def parseCritical(recordlist):
 			Water = Record["unixTime"]
 			if DEBUG: 
 				print("## FOUND WATER LEAK in PARSE",RecordText, file=sys.stderr)
-			try:
-				LeakLoc = RecordText.split(":")[1].strip()
-				if LeakLoc.lower() in ["aux","forward","aft"]:
-					WaterLoc = f" ({LeakLoc[:3].upper()})"
-			except IndexError:
-				WaterLoc="-"
+			if not WaterLoc:
+				try:
+					LeakLoc = RecordText.split(":")[1].strip()
+					if DEBUG: 
+						print("## LEAK LOCATION",LeakLoc, file=sys.stderr)
+					if LeakLoc[:3].lower() in ["aux","for","aft"]:
+						WaterLoc = f" ({LeakLoc[:3].upper()})"
+						if WaterLoc == " (FOR)":
+							WaterLoc = " (FORE)"
+				except IndexError:
+					WaterLoc="-"
 				
 		if "environmental failure" in RecordText.lower():
 			Envir = Record["unixTime"]
@@ -1643,46 +1652,15 @@ def parseImptMisc(recordlist,MissionN):
 	ampthresh  = 0
 	FullMission = ""
 	
+	Chiton=""
+	AcousticTime=0
+	
 	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	missionre =  re.compile(r'Loaded ./Missions/(.+\.tl).?')
 	missionrunning= re.compile(r'Running ./Missions/(.+\.tl).?')
 	
-	# ReachedWaypoint = False
-	# NavigatingTo    = False
-	# WaypointName = "Waypoint"
-	# RawWaypoints={"C1"    : "-121.847,36.797",
-	# 	"M1"    : "-122.022,36.750",
-	# 	"M2"    : "-122.375999,36.691",
-	# 	"3km"   : "-121.824326,36.806965",
-	# 	"Sta.N" : "-121.9636,36.9026",
-	# 	"Sta.S" : "-121.8934,36.6591",
-	# 	"NEreal" : "-121.900002,36.919998",
-	# 	"NE"    : "-121.9,36.9"}
-	# TruncatedWaypoints = {
-  	# 	"36.797,-121.847": "C1"    ,
-  	# 	"36.797,-121.850": "C1 profile",
-  	# 	"36.750,-122.022": "M1"    ,
-  	# 	"36.691,-122.376": "M2"    ,
-  	# 	"36.807,-121.824": "3km"   ,
-  	# 	"36.903,-121.964": "Sta.N" ,
-  	# 	"36.659,-121.893": "Sta.S" ,
-  	# 	"36.920,-121.900": "NE-b",
-  	# 	"36.900,-121.900": "NE",
-	# 	"36.81,-121.98": "Lower Soquel", 
-	# 	"36.77,-121.89": "Krill Shelf",
-	# 	"36.82,-121.86": "N. Spur",
-	# 	"36.712,-122.187" : "MARS",
-	# 	"36.722,-122.187" : "Canon 1N",
-	# 	"36.713,-122.176" : "Canon 1E",
-	# 	"36.704,-122.187" : "Canon 1S",
-	# 	"36.713,-122.198" : "Canon 1W",
-	# 	"36.731,-122.187" : "Canon 2N",
-	# 	"36.713,-122.165" : "Canon 2E",
-	# 	"36.695,-122.187" : "Canon 2S",
-	# 	"36.713,-122.209" : "Canon 2W",
-	# 	"36.87,-121.96" : "Upper Soquel" 
-	# 	}
+	
 
 	# CONFIGURE DVL config defaults
 	GetDVLStartup = {
@@ -1751,13 +1729,27 @@ def parseImptMisc(recordlist,MissionN):
 					print("\n## Got DOCKING Event from ImptMisc", file=sys.stderr)
 				Docking = 1
 				DockTime = Record["unixTime"]
+		
+		if not AcousticTime:
+			if RecordText.strip().startswith("Ac Comms: from"):
+				if DEBUG:
+					print("\n## Got ACOUSTIC COMMS from ImptMisc", file=sys.stderr)
+				AcousticTime = Record["unixTime"]
+			
 
 		if not voltthresh and RecordText.startswith("IBIT.batteryVoltageThreshold="):
 			voltthresh = float(RecordText.split("IBIT.batteryVoltageThreshold=")[1].split(" ")[0])
 
 			if DEBUG:
 				print("## Got VoltThresh from ImptMisc", voltthresh, file=sys.stderr)
-
+				
+		if VEHICLE == "galene" and not Chiton:
+			if "Running AyeRIS backseat app" in RecordText:
+				Chiton = "ON"
+			elif RecordText.startswith("got command set") and ("BackseatDriver.EnableBackseat" in RecordText):
+				ChitonVal = int(RecordText.replace("bool","").split("BackseatDriver.EnableBackseat")[1])
+				Chiton=["OFF","ON"][ChitonVal]
+				
 		if not ampthresh and RecordText.startswith("IBIT.batteryCapacityThreshold="):
 			ampthresh = round(float(RecordText.split("IBIT.batteryCapacityThreshold=")[1].split(" ")[0]))
 			if DEBUG:
@@ -1917,7 +1909,7 @@ def parseImptMisc(recordlist,MissionN):
 		#	FlowTime   = Record["unixTime"]
 
 #	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,FullMission,Docking,DockTime
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,FullMission,Docking,DockTime,Chiton,AcousticTime
 
 	
 
@@ -2117,8 +2109,8 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			else:
 				try:
 					Speed = "%.2f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
-				except ValueError:
-					print("Error parsing speed",Record["text"], file=sys.stderr)
+				except ValueError or IndexError:
+					print("Error parsing speed for ",VEHICLE,Record["text"], file=sys.stderr)
 					Speed = "na"
 			
 			if DEBUG:
@@ -2536,7 +2528,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	nextLat,nextLon = getNewNextWaypoint()  # From the mission statement, in case Navigating To is not found
 	#  MOVE NavLat and ReachedWaypoint to after mission time
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission,DockStatus,DockingTime  = parseImptMisc(important,missionName)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission,DockStatus,DockingTime,ChitonVal,AcousticComms  = parseImptMisc(important,missionName)
 	
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
@@ -2617,8 +2609,13 @@ if (not recovered) or Opt.anyway or DEBUG:
 		batttime=newvolttime
 
 	satcomms,cellcomms = parseComms(getComms(startTime))
-
+	
+	if cellcomms < AcousticComms:
+		cellcomms = AcousticComms
+		
 	if not needcomms: 
+		if DEBUG: 
+			print("# No NEEDCOMS found. Using default  ", file=sys.stderr)
 		needcomms = 60  #default
 	
 	CriticalError=False
@@ -2632,6 +2629,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	if DEBUG: 
 		print("## CRITICAL STATUS: ",CriticalError, file=sys.stderr)
+		print("## WATER LOCATION: ",WaterLoc, file=sys.stderr)
 
 	DVLError=False
 	BadBattery=False
@@ -2801,12 +2799,15 @@ else:   #not opt report
 	cdd["color_ubat"] = "st18"
 	cdd["color_flow"] = "st18"
 	cdd["color_duration"] = "st18"
-	cdd["color_satcommstext"]="st18" # no color = black
+	cdd["color_satcommstext"]="st18" # invisible
 	cdd["color_nextcommstext"]="st18"
+	cdd["color_timeouttext"]="st18"
+	
 
 	cdd["color_ampthresh"] = "st18"  # start invisible
 	cdd["color_voltthresh"] = "st18"
 	cdd["color_missiontext"] = ""  # no color = black. can make it red
+	cdd["text_celllabel"]= ""
 	
 	# These are made invisible
 	cartcolors=["color_bigcable",
@@ -3202,7 +3203,12 @@ else:   #not opt report
 		else:
 			cdd["color_ubat"] = 'st18'
 			cdd["color_flow"] = 'st18'
-			
+		
+		if AcousticComms:
+			cdd["text_celllabel"] = "ACOUSTIC"
+		else:
+			cdd["text_celllabel"] = "Cell comms"
+	
 		# PARSE PISCIVORE CAMERA
 		if VEHICLE == 'pontus' or VEHICLE == 'daphne' or VEHICLE == 'ahi':	
 			cdd["text_piscamp"]=pisctext
@@ -3240,14 +3246,16 @@ else:   #not opt report
 
 		
 		# THIS camera is not being used anymore
-		# if VEHICLE == 'galene':
-		# 	cdd["color_cameralens"] = "st3"
-		# 	if 'backseat' in missionName.lower():
-		# 		cdd["text_cameraago"] = "ON " # + cdd["text_missionago"]
-		# 		cdd["color_camerabody"] = "st4"
-		# 	else:
-		# 		cdd["color_camerabody"] = "st3"
-		# 		cdd["text_cameraago"] = "OFF " # + cdd["text_missionago"]
+		# calanus: Running AyeRIS backseat app
+		
+		if VEHICLE == 'galene' and ChitonVal:
+			cdd["color_cameralens"] = "st3"
+			if ChitonVal=="ON":
+				cdd["text_cameraago"] = "ON " # + cdd["text_missionago"]
+				cdd["color_camerabody"] = "st4"
+			elif ChitonVal == "OFF":
+				cdd["color_camerabody"] = "st3"
+				cdd["text_cameraago"] = "OFF" # + cdd["text_missionago"]
 				
 		# ubatTime TO ADD?
 		
@@ -3310,14 +3318,21 @@ else:   #not opt report
 		
 		
 		nextcommtextcolor = ""
+		timeouttextcolor = ""
 		#commreftime = ms of last comm
-		commoverdue = (commreftime+needcomms*60*1000) - now
-		if -commoverdue / (60*1000) > 60:
+		timeoutoverdue = (missionTime + missionduration*3600*1000) - now # (?? DURATION IS IN Hours??)
+		commoverdue    = (commreftime + needcomms*60*1000) - now
+		if -commoverdue / (60*1000) > 45:
 			nextcommtextcolor = 'st31'
+		if -timeoutoverdue / (60*1000) > 45:
+			timeouttextcolor = 'st31'
 		if DEBUG:
 			print("COMM-OVERDUE: " ,commoverdue/(60*1000), file=sys.stderr)
+			print("TIMEOUT-OVERDUE: " ,timeoutoverdue/(60*1000), file=sys.stderr)
 
 		cdd["color_nextcommstext"] = nextcommtextcolor # no color = black
+		cdd["color_timeouttext"] = timeouttextcolor # no color = black
+
 		### BATTERY INFO
 	
 		cdd["color_wavecolor"] = 'st0'

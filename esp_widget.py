@@ -173,7 +173,20 @@ def getESP(starttime):
 		retstring = qString
 	
 	return retstring
-	
+
+def checkAcoustic(starttime):
+	qString = ""
+	qString = runQuery(name="hs2dash",limit="20",match=".*LRAUVcntSamples.*",timeafter=starttime)
+	if DEBUG:
+		print("\n### ACOUSTIC ",qString,file=sys.stderr)
+	return qString
+
+def parseAcoustic(records):
+	for Record in records:
+		RecordText = Record.get("text","")
+		if DEBUG and RecordText:
+			print("#ACOUSTIC RECORD: ",RecordText)
+			
 def parseESP(recordlist,big_circle_list):
 	'''
 [sample #30] ESP log summary report (2 messages):
@@ -525,6 +538,9 @@ outlist = []
 pctlist = []
 sprlist = []
 if (not recovered) or DEBUG:
+	
+	parseAcoustic(checkAcoustic(startTime))
+	
 	esprecords = getESP(startTime)
 # 	if DEBUG:
 # 		print(esprecords,file=sys.stderr)

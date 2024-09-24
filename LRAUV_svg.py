@@ -195,7 +195,6 @@ svgtext = '''
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">{text_thrusttime}</text>
 <text desc="text_needcommstime" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">{text_needcomms}</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">{text_nextcomm}</text>
-<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">{text_logtime}</text>
 <text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">{text_logago}</text>
@@ -220,7 +219,10 @@ svgtext = '''
 <text desc="text_criticalerror" transform="matrix(1 0 0 1 352.0 300)" class="st9 st30 st31">{text_criticalerror}</text>
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13">{text_criticaltime}</text>
 <text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10 {color_satcommstext}">Sat comms</text>
-<text desc="text_nextcomms" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 {color_nextcommstext}">NextComm:</text>
+<text desc="text_cell_acoustic" transform="matrix(1 0 0 1 291.6499 211)" class="st9 st10">{text_celllabel}</text>
+<text desc="text_nextcommslabel" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 {color_nextcommstext}">NextComm:</text>
+<text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10 {color_timeouttext}">Timeout: </text>
+<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_version" transform="matrix(1 0 0 1 638 316)" text-anchor="end" class="st12 st9 st24">{text_version}</text>
 <text desc="text_thresh_volt" x="310" y="258" text-anchor="end" class="{color_voltthresh} st9 st13">{text_voltthresh}</text>
 <text desc="text_thresh_amph" x="304.5" y="270" text-anchor="end"  class="{color_ampthresh} st9 st13">{text_ampthresh}</text>
@@ -247,12 +249,10 @@ svglabels='''
 
 <text desc="text_amplabel" x="372" y="272" class="st12 st9 st24">amps</text>
 <text transform="matrix(1 0 0 1 285 300)" class="st12 st9 st13">DROP WEIGHT</text>
-<text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
 <text desc="" transform="matrix(1 0 0 1 551 244)" class="st9 st10">CTD</text>
 
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
-<text transform="matrix(1 0 0 1 291.6499 211)" class="st9 st10">Cell comms</text>
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
 '''
