@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.77  - DVL Error timeout after 6h. Drop weight gray if turned off
 	v 2.76  - Improved Water Leak location reporting
 	v 2.75  - Put Chiton/Ayeris indicator back on for Galene
 	v 2.74  - Support for docking ops - first working version
@@ -1652,6 +1653,8 @@ def parseImptMisc(recordlist,MissionN):
 	ampthresh  = 0
 	FullMission = ""
 	
+	DropOff = False
+	
 	Chiton=""
 	AcousticTime=0
 	
@@ -1715,7 +1718,15 @@ def parseImptMisc(recordlist,MissionN):
 		#	else:
 		#		StationLat = RecordText.split(".Lat ")[1]
 		#	StationLat = float(StationLat.split(" ")[0])
-		
+		#DropWeight.loadAtStartup=0 bool;
+		if not DropOff and RecordText.strip().startswith("DropWeight.loadAtStartup"):
+			if DEBUG:
+				print("\n## Got GOT DROPWEIGHT COMMAND", RecordText, file=sys.stderr)
+			if "=0" in RecordText:
+				DropOff =  Record["unixTime"]
+			else:
+				DropOff = 1
+			
 		# IBIT.batteryCapacityThreshold=20 ampere_hour;
 		# IBIT.batteryVoltageThreshold=10 volt;
 		if not Docking:
@@ -1909,7 +1920,7 @@ def parseImptMisc(recordlist,MissionN):
 		#	FlowTime   = Record["unixTime"]
 
 #	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,FullMission,Docking,DockTime,Chiton,AcousticTime
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,FullMission,Docking,DockTime,Chiton,AcousticTime,DropOff
 
 	
 
@@ -2525,10 +2536,11 @@ if (not recovered) or Opt.anyway or DEBUG:
 	missionName,missionTime = parseMission(important)
 	Ampthreshnum=0
 	Voltthreshnum = 0
+	DropWeightOff = -1
 	
 	nextLat,nextLon = getNewNextWaypoint()  # From the mission statement, in case Navigating To is not found
 	#  MOVE NavLat and ReachedWaypoint to after mission time
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission,DockStatus,DockingTime,ChitonVal,AcousticComms  = parseImptMisc(important,missionName)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission,DockStatus,DockingTime,ChitonVal,AcousticComms,DropWeightOff  = parseImptMisc(important,missionName)
 	
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
@@ -2677,7 +2689,7 @@ else:
 	CTDError = False
 	padded = False
 	PauseTime=9999999999999
-
+	DropWeightOff = -1
 	
 	
 	
@@ -2758,6 +2770,7 @@ else:   #not opt report
 
 	'''
 	cdd={}
+	
 	#	these are made white with black stroke
 	colornames=[
 	"color_drop",
@@ -3406,8 +3419,9 @@ else:   #not opt report
 			cdd["color_ctd"] = 'st5'
 		else:
 			cdd["color_ctd"] = 'st4'
-			
-		if DVLError and not GotDVL:
+		
+		#DVL Error times out after 6 h
+		if DVLError and ((now - DVLError)/3600000 < 6) and not GotDVL:
 			DVLcolor = 'st6'
 			cdd["text_dvlstatus"]="ERROR"
 		elif DVLon:
@@ -3512,7 +3526,12 @@ else:   #not opt report
 
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
-		if dropWeight > 100:
+		# if time for dropweight alert is older than the dropweight having been turned off
+		if dropWeight < DropWeightOff:
+			cdd["color_drop"] = 'st11'
+			if DropWeightOff > 100:
+				cdd["text_droptime"] = "OFF: " + elapsed(DropWeightOff-now)
+		elif dropWeight > 100:
 			cdd["text_droptime"] = elapsed(dropWeight-now)
 		else:
 			cdd["text_droptime"] =""

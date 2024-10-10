@@ -182,8 +182,9 @@ def checkAcoustic(starttime):
 	return qString
 
 def parseAcoustic(records):
+	# TODO!
 	for Record in records:
-		RecordText = Record.get("text","")
+		RecordText = Record.get("text","NA")
 		if DEBUG and RecordText:
 			print("#ACOUSTIC RECORD: ",RecordText)
 			
