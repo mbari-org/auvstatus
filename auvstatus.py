@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.78  - If vehicle is paused but a new command has been sent, show special icon
 	v 2.77  - DVL Error timeout after 6h. Drop weight gray if turned off
 	v 2.76  - Improved Water Leak location reporting
 	v 2.75  - Put Chiton/Ayeris indicator back on for Galene
@@ -426,8 +427,15 @@ def getCritical(starttime):
 	qString = runQuery(event="logCritical",limit="1000",timeafter=starttime)
 	retstring = ""
 	if qString:
-		retstring = qString
-	
+		retstring = qString	
+	return retstring
+
+def getCommands(starttime):
+	'''get commands which have been sent'''
+	qString = runQuery(event="command",limit="1000",timeafter=starttime)
+	retstring = ""
+	if qString:
+		retstring = qString	
 	return retstring
 	
 def getFaults(starttime):
@@ -1331,6 +1339,16 @@ def parseDrop(recordlist):
 		if Record["name"]=="DropWeight":
 			Drop=Record["unixTime"]
 	return Drop
+
+def parseCommands(recordlist):
+	Soon = 0
+	for Record in recordlist:
+		# Expand this to check other DropWeight associated messages?
+		RecordText = Record.get("text","NA")
+		if "resum" in Record["text"]:
+			Soon=Record["unixTime"]
+	return Soon
+
 	 
 def parseCritical(recordlist):
 	'''Maybe some of these are in logFault?'''
@@ -2353,6 +2371,7 @@ gflow=False
 Tracking = []
 TrackTime = []
 sparktext = ""
+ResumeSoon = 0
 
 if Opt.missions:
 	'''utility to show default values for selected missions'''
@@ -3490,17 +3509,29 @@ else:   #not opt report
 		if DEBUG:
 			print("\n### CRITICAL PAUSED ###  \nComparing Critical {}; to Pause {}; Paused {}; and PauseFault {}".format(CriticalTime,PauseTime,Paused,PauseFault),file=sys.stderr)
 			
-		# PaustTime starts as 9999+
+		# PauseTime starts as 9999+
 		# Trying again with Faults and Criticals coming after UnPausing
 		if not Paused: 
 			if ((PauseTime < CriticalTime) or (PauseTime < PauseFault)):
 				Paused=True
 		
 		if Paused:
-			'''draw orange pause button'''
+			ResumeSoon = parseCommands(getCommands(PauseTime-100000))
+			# if a resume command has been sent but not ack, then show pausesoon shape
 			if DEBUG:
-				print("#PAUSED INFO: ", PauseTime, CriticalTime, file=sys.stderr)
-			cdd["text_pauseshape"] = '''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
+				print("#RESUMESOON INFO: ", PauseTime, ResumeSoon, file=sys.stderr)
+
+			if PauseTime and (ResumeSoon > PauseTime):
+				cdd["text_pauseshape"] = '''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text><g transform="translate(110 155.5)">
+	<path class="purpleline" d="M347.4,37c0.1,0.1,0.1,0.3,0.1,0.5c0.1,0.5,0.1,1,0,1.5c-0.3,1.2-1.2,2.1-2.4,2.4c-0.5,0.1-1,0.1-1.5,0
+	c-1.2-0.3-2.1-1.2-2.4-2.4c-0.1-0.5-0.1-1,0-1.5c0.3-1.2,1.2-2.1,2.4-2.4c0.4-0.1,0.9-0.1,1.3,0"/>
+<polygon class="purplefill" points="343.9,33.2 344.6,36.8 349,34.8 "/></g>
+		'''
+			else:
+				'''draw orange pause button'''
+				if DEBUG:
+					print("#PAUSED INFO: ", PauseTime, CriticalTime, file=sys.stderr)
+				cdd["text_pauseshape"] = '''<text desc="pausedtext" transform="matrix(1 0 0 1 409 196)" class="st12 st9 st13">SCHEDULE:</text>
 	<rect x="450" y="189" class="st27" width="8.2" height="8.2"/>
 	<rect x="452" y="190.6" width="1.3" height="5"/>
 	<rect x="455" y="190.6" width="1.3" height="5"/>
