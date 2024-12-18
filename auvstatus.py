@@ -828,11 +828,11 @@ def getNewNavigating(missiontime):
 		RecordText = Record.get("text","NA")
 		# This will only parse the most recent event in the queue between Reached or Nav
 		if not NavigatingTo and not ReachedWaypoint: 
-			if Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
+			if RecordText.startswith("Navigating to") and not "box" in RecordText:
 				if DEBUG:
-					print("## Found Navigating To Event", Record["text"], file=sys.stderr)
+					print("## Found Navigating To Event", RecordText, file=sys.stderr)
 					'''Navigating to waypoint: 36.750000,-122.022003'''
-				NavRes = wayre.search(Record["text"].replace("arcdeg",""))
+				NavRes = wayre.search(RecordText.replace("arcdeg",""))
 				if NavRes:
 					textlat,textlon = NavRes.groups()
 					if textlat:
@@ -841,10 +841,10 @@ def getNewNavigating(missiontime):
 					if DEBUG:
 						print("## Got LatLon from Navigating To", StationLat,StationLon, file=sys.stderr)
 					NavigatingTo = Record["unixTime"]
-			if Record["text"].lower().startswith("reached waypoint"):
+			if RecordText.lower().startswith("reached waypoint"):
 				if DEBUG:
-					print("## Found Reached Event", Record["text"], Record["unixTime"], file=sys.stderr)
-				waresult = wayre.search(Record["text"])
+					print("## Found Reached Event", RecordText, Record["unixTime"], file=sys.stderr)
+				waresult = wayre.search(RecordText)
 				if waresult:
 					textlat,textlon=waresult.groups()
 					if textlat:
