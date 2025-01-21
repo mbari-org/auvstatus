@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.79  - WIP: adding indicator for Planktivore ROIs
 	v 2.78  - If vehicle is paused but a new command has been sent, show special icon
 	v 2.77  - DVL Error timeout after 6h. Drop weight gray if turned off
 	v 2.76  - Improved Water Leak location reporting
@@ -105,7 +106,7 @@ import json
 import math
 import re
 from collections import deque
-from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote,svgpiscivore   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote,svgpiscivore,svg_planktivore   # define the svg text?
 from config_auv import servername, basefilepath
 
 import ssl
@@ -975,6 +976,33 @@ def getNewLatLon(starttime=1676609209829):
 	# 		print("# Chop",i,chopt[i],hours(60000*chopt[i]), file=sys.stderr)
 	return chopt,chopd,padded
 
+def getNewROIs(starttime=1676609209829):
+	'''https://okeanids.mbari.org/TethysDash/api/data/_.planktivore_HM_AvgRois?vehicle=ahi&maxlen=20
+	https://okeanids.mbari.org/TethysDash/api/data/_.planktivore_LM_AvgRois?vehicle=ahi&maxlen=20
+	planktivore_HM_AvgRois'''
+	Ave_LM=-99
+	Ave_HM=-99
+	recent_LM=None
+	recent_HM=None
+	
+	record_LM = runNewStyleQuery(api="data/_.planktivore_LM_AvgRois",extrastring=f"&maxlen=20&from={starttime}")
+	record_HM = runNewStyleQuery(api="data/_.planktivore_HM_AvgRois",extrastring=f"&maxlen=20&from={starttime}")
+	if record_LM:
+		roi_LM    = record_LM['values'][:]
+		millis_LM = record_LM['times'][:]
+		Ave_LM    = sum(roi_LM)/len(roi_LM)
+		recent_LM = millis_LM[-1]
+		old_LM    = millis_LM[0]
+		
+	if record_HM:
+		roi_HM    = record_HM['values'][:]
+		millis_HM = record_HM['times'][:]
+		Ave_HM    = sum(roi_HM)/len(roi_HM)
+		recent_HM = millis_HM[-1]
+		old_HM    = millis_HM[0]
+
+	return Ave_LM,recent_LM,old_LM,Ave_HM,recent_HM,old_HM
+	
 def getNewDepth(starttime=1676609209829):
 	'''https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=pontus&maxlen=200
 	   https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=triton&maxlen=2&from=1676609209829
@@ -2372,6 +2400,7 @@ Tracking = []
 TrackTime = []
 sparktext = ""
 ResumeSoon = 0
+lTime = None
 
 if Opt.missions:
 	'''utility to show default values for selected missions'''
@@ -2623,7 +2652,13 @@ if (not recovered) or Opt.anyway or DEBUG:
 		camcat,camchangetime,pisctext = getNewCameraPower(startTime)
 		if DEBUG:
 			print("## PISCIVORE STATS:",camcat,camchangetime,pisctext, file=sys.stderr)
-
+	
+	# ADDING Ahi - Planktivore ROIs
+	if VEHICLE == "ahi":
+		lROI,lTime,lfTime,hROI,hTime,hfTime = getNewROIs(startTime)
+		if DEBUG:
+			print(f"## AHI Regions of Interest:\n\t{elapsed(lTime-now)},{elapsed(lfTime-now)},{lROI}\n\t{elapsed(hTime-now)},{hROI}", file=sys.stderr)
+		
 	if DEBUG:
 		print("# DURATION and timeout start", missionduration,timeoutstart, file=sys.stderr)
 	#NEW BATTERY PARSING
@@ -2709,6 +2744,7 @@ else:
 	padded = False
 	PauseTime=9999999999999
 	DropWeightOff = -1
+	lTime=False
 	
 	
 	
@@ -2912,8 +2948,7 @@ else:   #not opt report
 	"text_vehicle","text_lastupdate","text_flowago","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime","text_batteryunits",
 	"text_leak","text_leakago","text_missionago","text_cameraago","text_waypoint",
-	"text_criticalerror","text_camago","text_piscamp","text_argoago"
-	]
+	"text_criticalerror","text_camago","text_piscamp","text_argoago","text_roiago","text_LM","text_HM"]
 	for tname in specialnames:
 		cdd[tname]=''
 	
@@ -2951,6 +2986,10 @@ else:   #not opt report
 	###
 	###   GROUND FAULT DISPLAY
 	###
+	if VEHICLE=="ahi" and lTime:
+			cdd["text_roiago"] = elapsed(lTime-now)
+			cdd["text_LM"] = f"{lROI:.1f}"
+			cdd["text_HM"] = f"{hROI:.1f}"
 
 	cdd["color_gf"]= "st{}".format(gfnum)
 	if gf == "NA":
@@ -3604,7 +3643,14 @@ else:   #not opt report
 							text_camago = cdd["text_camago"], 
 							text_piscamp= cdd["text_piscamp"])
 						)
-
+				if VEHICLE == "ahi":
+					# Trying pre-formatted
+					outfile.write(svg_planktivore.format(
+						text_LM = cdd["text_LM"],
+						text_HM = cdd["text_HM"],
+						text_roiago = cdd["text_roiago"]
+					))
+						
 				if VEHICLE=="galene":
 					outfile.write(svggalene)
 			outfile.write(svgtail)

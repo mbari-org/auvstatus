@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Apr 25 2024 version  -->
+<!-- Dec 21 2024 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -163,6 +163,7 @@ svgtext = '''
 <circle desc="flow" class="{color_flow}" cx="544" cy="261" r="4"/>
 <!-- end shapes -->
 
+
 <!--galene camera specific -->
 <!--Use this to put the timeago below the label 
 <text desc="text_cameraago" transform="matrix(1 0 0 1 539 274)" class="st12 st9 st13">{text_cameraago}</text> -->
@@ -275,6 +276,14 @@ svgpontus='''
 <!-- vehicle-specific shapes -->
 <text desc="" transform="matrix(1 0 0 1 551.3628 254.5)" class="st9 st10">UBAT</text>
 <text desc="" transform="matrix(1 0 0 1 551.3628 264.5)" class="st9 st10">Flow</text>
+'''
+
+svg_planktivore='''
+<!-- ahi=planktivore-specific shapes -->
+<text desc="text_roiago" transform="matrix(1 0 0 1 532 272.0)" class="st12 st9 st13">{text_roiago}</text>
+<text desc="LM-text" transform="matrix(1 0 0 1 532 254.5)" class="st9 st10">LM:{text_LM}</text>
+<text desc="HM-text" transform="matrix(1 0 0 1 532 264.5)" class="st9 st10">HM:{text_HM}</text>
+
 '''
 
 svggalene='''
