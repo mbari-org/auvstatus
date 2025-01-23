@@ -367,7 +367,11 @@ def getNewMissionDefaults(missionn):
 				raw = connection.read()
 				structured = json.loads(raw)
 				connection.close()
-				result = structured['result']['scriptArgs']
+				try:
+					result = structured['result']['scriptArgs']
+				except KeyError:
+					#print("\n#=Key Error in Mission Defaults=\n",missionn, VEHICLE,structured, "\n", file=sys.stderr)
+					result = structured['result']['inserts'][0]['scriptArgs']
 			
 				# if DEBUG: 
 				# 	print(result, file=sys.stderr)
