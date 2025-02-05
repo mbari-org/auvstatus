@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-	v 2.79  - WIP: adding indicator for Planktivore ROIs
+	v 2.80  - Increased max depth for sparkline to 320 m instead of 240. 
+	v 2.79  - WIP: adding indicator for Planktivore ROIs - account for missing data
 	v 2.78  - If vehicle is paused but a new command has been sent, show special icon
 	v 2.77  - DVL Error timeout after 6h. Drop weight gray if turned off
 	v 2.76  - Improved Water Leak location reporting
@@ -217,7 +218,7 @@ def runNewStyleQuery(api="",extrastring=""):
 		if ssl.SSLError:
 			if DEBUG:
 				print("\n### HTTP ERROR:",URL, file=sys.stderr)
-			if not "PowerOnly" in URL and not "average_current" in URL and not "battery_voltage" in URL and not "battery_charge" in URL and not "data/depth" in URL:
+			if not "PowerOnly" in URL and not "AvgRois" in URL and not "average_current" in URL and not "battery_voltage" in URL and not "battery_charge" in URL and not "data/depth" in URL:
 				print("# NEW QUERY TIMEOUT:",URL, file=sys.stderr)
 				handleURLerror()
 		else:
@@ -988,6 +989,8 @@ def getNewROIs(starttime=1676609209829):
 	Ave_HM=-99
 	recent_LM=None
 	recent_HM=None
+	old_LM=None
+	old_HM=None
 	
 	record_LM = runNewStyleQuery(api="data/_.planktivore_LM_AvgRois",extrastring=f"&maxlen=20&from={starttime}")
 	record_HM = runNewStyleQuery(api="data/_.planktivore_HM_AvgRois",extrastring=f"&maxlen=20&from={starttime}")
@@ -1251,12 +1254,14 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	ymax = max(ylist)
 	if ymax > dep_to_show + 5:
 		dep_to_show = 80
-	if ymax > dep_to_show + 10:
+	if ymax > dep_to_show + 5:
 		dep_to_show = 120
-	if ymax > dep_to_show + 10:
+	if ymax > dep_to_show + 5:
 		dep_to_show = 160
-	if ymax > dep_to_show + 10:
+	if ymax > dep_to_show + 5:
 		dep_to_show = 240
+	if ymax > dep_to_show + 5:
+		dep_to_show = 320
 	
 	
 	ydiv = dep_to_show/h

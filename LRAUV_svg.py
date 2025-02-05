@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Dec 21 2024 version  -->
+<!-- Jan 28 2025 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -282,7 +282,7 @@ svg_planktivore='''
 <!-- ahi=planktivore-specific shapes -->
 <text desc="text_roiago" transform="matrix(1 0 0 1 532 272.0)" class="st12 st9 st13">{text_roiago}</text>
 <text desc="LM-text" transform="matrix(1 0 0 1 532 254.5)" class="st9 st10">LM:{text_LM}</text>
-<text desc="HM-text" transform="matrix(1 0 0 1 532 264.5)" class="st9 st10">HM:{text_HM}</text>
+<text desc="HM-text" transform="matrix(1 0 0 1 531 264.5)" class="st9 st10">HM:{text_HM}</text>
 
 '''
 
