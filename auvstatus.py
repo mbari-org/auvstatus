@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.81  - Omitted SpeedControl from Speed parsing. 
 	v 2.80  - Increased max depth for sparkline to 320 m instead of 240. 
 	v 2.79  - WIP: adding indicator for Planktivore ROIs - account for missing data
 	v 2.78  - If vehicle is paused but a new command has been sent, show special icon
@@ -2163,7 +2164,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 		## PARSE UBAT (make vehicle-specific
 		## PARSE SPEED # THis used to be ".Speed"
 		## .ApproachSpeedNotFirstTime
-		if Speed == 0 and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec')  and ("set" in RecordText) and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText or "ApproachSpeed" in RecordText or ".Speed " in RecordText) and RecordText.startswith("got"):
+		if Speed == 0 and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec')  and ("set" in RecordText) and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText or "ApproachSpeed" in RecordText or ".Speed " in RecordText) and (not "SpeedControl" in RecordText) and RecordText.startswith("got"):
 			if (".SpeedTransit" in RecordText):
 				Speed = "%.2f" % (float(Record["text"].split(".SpeedTransit")[1].strip().split(" ")[0]))
 			elif (".ApproachSpeedNotFirstTime" in RecordText):
