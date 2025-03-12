@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.82  - Added Camera and LED indicators for Galene. 
 	v 2.81  - Omitted SpeedControl from Speed parsing. 
 	v 2.80  - Increased max depth for sparkline to 320 m instead of 240. 
 	v 2.79  - WIP: adding indicator for Planktivore ROIs - account for missing data
@@ -1713,12 +1714,14 @@ def parseImptMisc(recordlist,MissionN):
 	
 	Chiton=""
 	AcousticTime=0
+	RedOn = ""
+	WhiteOn = ""
 	
 	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	missionre =  re.compile(r'Loaded ./Missions/(.+\.tl).?')
 	missionrunning= re.compile(r'Running ./Missions/(.+\.tl).?')
-	
+	lightre = re.compile(r'MultiRay (\w+) lights (\w+)')
 	
 
 	# CONFIGURE DVL config defaults
@@ -1810,12 +1813,29 @@ def parseImptMisc(recordlist,MissionN):
 			if DEBUG:
 				print("## Got VoltThresh from ImptMisc", voltthresh, file=sys.stderr)
 				
-		if VEHICLE == "galene" and not Chiton:
-			if "Running AyeRIS backseat app" in RecordText:
-				Chiton = "ON"
-			elif RecordText.startswith("got command set") and ("BackseatDriver.EnableBackseat" in RecordText):
-				ChitonVal = int(RecordText.replace("bool","").split("BackseatDriver.EnableBackseat")[1])
-				Chiton=["OFF","ON"][ChitonVal]
+		if VEHICLE == "galene": 
+			if not Chiton:
+			# if "Running AyeRIS backseat app" in RecordText:
+			# 	Chiton = "ON"
+			# elif RecordText.startswith("got command set") and ("BackseatDriver.EnableBackseat" in RecordText):
+			# 	ChitonVal = int(RecordText.replace("bool","").split("BackseatDriver.EnableBackseat")[1])
+			# 	Chiton=["OFF","ON"][ChitonVal]
+			# # new camera status stuff
+				if "PowerOnly.SampleLoad1" in RecordText:
+					ChitonVal = int(RecordText.replace("bool","").split("PowerOnly.SampleLoad1 ")[1])
+					Chiton=["OFF","ON"][ChitonVal]
+			if not WhiteOn or not RedOn:
+				if ("MultiRay" in RecordText) and ("lights" in RecordText):
+					LightResult = lightre.search(RecordText)
+					if not WhiteOn and "white" in RecordText:
+						WhiteOn = LightResult.groups()[1]
+					elif not RedOn and "red" in RecordText:
+						RedOn = LightResult.groups()[1]
+					if DEBUG:
+						print("LED STATUS",RecordText,WhiteOn,RedOn,LightResult,file=sys.stderr)
+					
+				
+			
 				
 		if not ampthresh and RecordText.startswith("IBIT.batteryCapacityThreshold="):
 			ampthresh = round(float(RecordText.split("IBIT.batteryCapacityThreshold=")[1].split(" ")[0]))
@@ -1976,7 +1996,7 @@ def parseImptMisc(recordlist,MissionN):
 		#	FlowTime   = Record["unixTime"]
 
 #	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,FullMission,Docking,DockTime,Chiton,AcousticTime,DropOff
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,FullMission,Docking,DockTime,Chiton,AcousticTime,DropOff,WhiteOn,RedOn
 
 	
 
@@ -2598,7 +2618,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	nextLat,nextLon = getNewNextWaypoint()  # From the mission statement, in case Navigating To is not found
 	#  MOVE NavLat and ReachedWaypoint to after mission time
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission,DockStatus,DockingTime,ChitonVal,AcousticComms,DropWeightOff  = parseImptMisc(important,missionName)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission,DockStatus,DockingTime,ChitonVal,AcousticComms,DropWeightOff,WhiteLightOn,RedLightOn  = parseImptMisc(important,missionName)
 	
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
@@ -2803,7 +2823,7 @@ else:   #not opt report
 	'''	
 	.st0{fill:#CFDEE2;} <!-- WaveColor -->
 	.st1{fill:none;stroke:#000000; }
-	.st2{fill:#D4D2D2;stroke:#000000; } <!-- Background wave -->
+	.st2{fill:#D4D2D2;stroke:#000000; } <!-- Vehicle Body Gray -->
 	.st3{fill:#FFFFFF;stroke:#000000; } <!--White Fill -->
 	.st4{fill:#5AC1A4;stroke:#000000; } <!--Green Fill -->
 	.st5{fill:#FFE850;stroke:#000000; } <!--Yellow Fill -->
@@ -2874,21 +2894,13 @@ else:   #not opt report
 		cdd[cname] = 'st3' # white fill black stroke
 	
 	cdd["color_arrow"] = "st16"
-	cdd["color_ubat"] = "st18"
-	cdd["color_flow"] = "st18"
-	cdd["color_duration"] = "st18"
-	cdd["color_satcommstext"]="st18" # invisible
-	cdd["color_nextcommstext"]="st18"
-	cdd["color_timeouttext"]="st18"
 	
-
-	cdd["color_ampthresh"] = "st18"  # start invisible
-	cdd["color_voltthresh"] = "st18"
+	
 	cdd["color_missiontext"] = ""  # no color = black. can make it red
 	cdd["text_celllabel"]= ""
 	
 	# These are made invisible
-	cartcolors=["color_bigcable",
+	invisiblecolors=["color_bigcable",
 	"color_smallcable",
 	"color_cart",
 	"color_cartcircle",
@@ -2907,11 +2919,25 @@ else:   #not opt report
 	"dock_tri",
 	"dock_line",
 	"dock_eye",
-	"dock_buoy"
+	"dock_buoy",
+	"color_ubat",
+	"color_flow",
+	"color_duration",
+	"color_satcommstext",
+	"color_nextcommstext",
+	"color_timeouttext",
+	"color_ampthresh",
+	"color_voltthresh",
+	"color_whitebeam",
+	"color_redbeam",
+	"color_whiteled",
+	"color_redled"
 ]
 
-	for cname in cartcolors:
+	for cname in invisiblecolors:
 		cdd[cname]='st18'
+		
+	# Show LEDs as off (dark gray) for galene
 
 	textnames=[
 	"text_mission",
@@ -3164,7 +3190,10 @@ else:   #not opt report
 
 		if DEBUG: 
 			print("\n# COMPARING MISSION to SCHEDULED, mN,S,mT,St",missionName,Scheduled,missionTime,scheduledtime, file=sys.stderr)
-			
+
+		if VEHICLE == 'galene':
+			cdd["color_whiteled"] = 'stledoff'
+			cdd["color_redled"] = 'stledoff'
 		# These Schedule parameters are set in parseDefaults and parseMission
 		#removed this  and (missionName not in Scheduled)
 		
@@ -3329,14 +3358,28 @@ else:   #not opt report
 		# THIS camera is not being used anymore
 		# calanus: Running AyeRIS backseat app
 		
-		if VEHICLE == 'galene' and ChitonVal:
-			cdd["color_cameralens"] = "st3"
+		if VEHICLE == 'galene':
+			if ChitonVal:
+				cdd["color_cameralens"] = "st3"
 			if ChitonVal=="ON":
 				cdd["text_cameraago"] = "ON " # + cdd["text_missionago"]
 				cdd["color_camerabody"] = "st4"
 			elif ChitonVal == "OFF":
 				cdd["color_camerabody"] = "st3"
 				cdd["text_cameraago"] = "OFF" # + cdd["text_missionago"]
+			if WhiteLightOn == "ON":
+				cdd["color_whiteled"]="whiteled"
+				cdd["color_whitebeam"]="whitebeam"
+			elif WhiteLightOn == "OFF":
+				cdd["color_whiteled"]="stledoff" # dark gray
+				cdd["color_whitebeam"]="st18" # invisible
+			if RedLightOn == "ON":
+				cdd["color_redled"]="redled"
+				cdd["color_redbeam"]="redbeam"
+			elif RedLightOn == "OFF":
+				cdd["color_redled"]="stledoff" # dark gray
+				cdd["color_redbeam"]="st18" # invisible
+			
 				
 		# ubatTime TO ADD?
 		

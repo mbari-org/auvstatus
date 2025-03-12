@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Jan 28 2025 version  -->
+<!-- March 12 2025 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -25,6 +25,7 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st19{fill:#555555;stroke:#000000;stroke-miterlimit:10;}  <!-- Cart color -->
 	.st20{fill:#e3cfa7;stroke:#000000;stroke-miterlimit:10;}  <!-- Circle color -->
 	.st21{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- old small cable color -->
+	.stwire{stroke:#000;stroke-width:.6px;} <!-- new Led lines-->
 	.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
 	.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
 	.st24{font-size:6px;}
@@ -50,6 +51,12 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.purpleline{fill:none;stroke:#9091C7;stroke-width:2;stroke-miterlimit:10;}
 	.purplefill{fill:#9091C7;}
 	.gridline{fill:none;stroke:#BBBBBB; stroke-width:0.3;}  
+	.redbeam {fill:#e04462;stroke:none;}  
+	.redled {fill:#e04462;stroke:#000;stroke-width:0.6;}  
+	.whitebeam {fill:#fff;stroke:none;} 
+	.whiteled {fill:#fff;stroke:#000;stroke-width:0.6;} 
+	.stledoff {fill:#555;stroke:#000;stroke-width:0.6;} 
+	
 	</style>
 '''
 
@@ -163,13 +170,22 @@ svgtext = '''
 <circle desc="flow" class="{color_flow}" cx="544" cy="261" r="4"/>
 <!-- end shapes -->
 
-
 <!--galene camera specific -->
 <!--Use this to put the timeago below the label 
 <text desc="text_cameraago" transform="matrix(1 0 0 1 539 274)" class="st12 st9 st13">{text_cameraago}</text> -->
 <text desc="text_cameraago" transform="matrix(1 0 0 1 558 258)" class="st12 st9 st13">{text_cameraago}</text>
 <rect desc="CameraBody" class="{color_camerabody}"    x="540"  y="250" width="16" height="10"/>
 <circle desc="CameraLens" class="{color_cameralens}" cx="548" cy="255" r="3"/>
+
+
+
+
+<!-- galene LEDs white and red -->
+<path class="{color_whitebeam}" d="M550,270l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
+<path class="{color_whiteled}" d="M542.5,270.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
+<path class="{color_redbeam}" d="M562,270l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
+<path class="{color_redled}" d="M554.8,270.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
+
 
 <!-- High and low side GF arrows -->
 <polygon desc="LowGF" class="{color_lowgf}" points="510,263 514,255 506,255 510,263"/>
@@ -287,8 +303,13 @@ svg_planktivore='''
 '''
 
 svggalene='''
-<!--galene camera specific -->
+<!--galene camera specific static elements-->
 <text transform="matrix(1 0 0 1 539 268)" class="st12 st9 st13">CAMERA</text>
+<line class="stwire" x1="542.6" y1="273.5" x2="539.9" y2="273.5"/>
+<line class="stwire" x1="552.5" y1="272" x2="555" y2="272"/>
+<line class="stwire" x1="552" y1="273.5" x2="555" y2="273.5"/>
+<line class="stwire" x1="542.7" y1="272" x2="540.5" y2="272"/>
+ 
 '''
 
 svgwaterleak='''<!--water leak-->
