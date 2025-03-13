@@ -181,10 +181,10 @@ svgtext = '''
 
 
 <!-- galene LEDs white and red -->
-<path desc="whitebeam" class="{color_whitebeam}" d="M550,270l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
-<path desc="whiteled" class="{color_whiteled}" d="M542.5,270.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
-<path desc="redbeam" class="{color_redbeam}" d="M562,270l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
-<path desc="redled" class="{color_redled}" d="M554.8,270.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
+<path desc="whitebeam" class="{color_whitebeam}" d="M569,270l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
+<path desc="whiteled" class="{color_whiteled}"   d="M562.5,270.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
+<path desc="redbeam" class="{color_redbeam}"     d="M569,276l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
+<path desc="redled" class="{color_redled}"       d="M562.5,276.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
 
 
 <!-- High and low side GF arrows -->
@@ -305,12 +305,13 @@ svg_planktivore='''
 svggalene='''
 <!--galene camera specific static elements-->
 <text transform="matrix(1 0 0 1 539 268)" class="st12 st9 st13">CAMERA</text>
-<line class="stwire" x1="542.6" y1="273.5" x2="539.9" y2="273.5"/>
-<line class="stwire" x1="552.5" y1="272" x2="555" y2="272"/>
-<line class="stwire" x1="552" y1="273.5" x2="555" y2="273.5"/>
-<line class="stwire" x1="542.7" y1="272" x2="540.5" y2="272"/>
-<circle desc="redhighlight" class="redbeam" cx="557.5" cy="272.2" r=".9"/>
-<circle desc="whitehighlight" class="whitebeam" cx="545" cy="272.2" r=".7"/>
+<line desc="whiteledwire1" class="stwire" x1="562.6" y1="272" x2="560" y2="272"/>
+<line desc="whiteledwire2" class="stwire" x1="562.6" y1="273.5" x2="559.7" y2="273.5"/>
+<line desc="redledwire1" class="stwire" x1="562.6" y1="278" x2="560" y2="278"/>
+<line desc="redledwire2" class="stwire" x1="562.6" y1="279.5" x2="559.7" y2="279.5"/>
+ 
+<circle desc="whitehighlight" class="whitebeam" cx="565.4" cy="272.2" r=".7"/>
+<circle desc="redhighlight" class="redbeam" cx="565.4" cy="278.2" r=".9"/>
 
 '''
 
