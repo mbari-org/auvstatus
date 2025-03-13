@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.83  - GPS orange if more than 3h old, and led tweaks
 	v 2.82  - Added Camera and LED indicators for Galene. 
 	v 2.81  - Omitted SpeedControl from Speed parsing. 
 	v 2.80  - Increased max depth for sparkline to 320 m instead of 240. 
@@ -3235,6 +3236,8 @@ else:   #not opt report
 		###
 		cdd["text_gps"] = hours(gpstime)
 		cdd["color_gps"] = ['st4','st5'][(now - gpstime > 3600000)]
+		if (now - gpstime > 3600000*3):   # greater than 3 hours old.
+			cdd["color_gps"] = 'st6'
 		if gpstime:
 			ago_gps = gpstime - now
 			cdd["text_gpsago"] = elapsed(ago_gps)
