@@ -1822,7 +1822,7 @@ def parseImptMisc(recordlist,MissionN):
 			# 	Chiton=["OFF","ON"][ChitonVal]
 			# # new camera status stuff
 				if "PowerOnly.SampleLoad1" in RecordText:
-					ChitonVal = int(RecordText.replace("bool","").split("PowerOnly.SampleLoad1 ")[1])
+					ChitonVal = int(RecordText.replace("bool","").split("PowerOnly.SampleLoad1 ")[1].split(";")[0])
 					Chiton=["OFF","ON"][ChitonVal]
 			if not WhiteOn or not RedOn:
 				if ("MultiRay" in RecordText) and ("lights" in RecordText):
