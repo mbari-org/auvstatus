@@ -181,10 +181,10 @@ svgtext = '''
 
 
 <!-- galene LEDs white and red -->
-<path class="{color_whitebeam}" d="M550,270l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
-<path class="{color_whiteled}" d="M542.5,270.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
-<path class="{color_redbeam}" d="M562,270l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
-<path class="{color_redled}" d="M554.8,270.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
+<path desc="whitebeam" class="{color_whitebeam}" d="M550,270l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
+<path desc="whiteled" class="{color_whiteled}" d="M542.5,270.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
+<path desc="redbeam" class="{color_redbeam}" d="M562,270l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
+<path desc="redled" class="{color_redled}" d="M554.8,270.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
 
 
 <!-- High and low side GF arrows -->
@@ -309,7 +309,9 @@ svggalene='''
 <line class="stwire" x1="552.5" y1="272" x2="555" y2="272"/>
 <line class="stwire" x1="552" y1="273.5" x2="555" y2="273.5"/>
 <line class="stwire" x1="542.7" y1="272" x2="540.5" y2="272"/>
- 
+<circle desc="redhighlight" class="redbeam" cx="557.5" cy="272.2" r=".9"/>
+<circle desc="whitehighlight" class="whitebeam" cx="545" cy="272.2" r=".7"/>
+
 '''
 
 svgwaterleak='''<!--water leak-->
