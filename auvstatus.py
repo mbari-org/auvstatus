@@ -1681,6 +1681,35 @@ Ground fault: Queue on RED on Low side ground fault detected - Yellow on any gro
 
 	
 '''
+
+def parseGaleneImpt(recordlist):
+	Chiton=""
+	ChitonTime=0
+	RedOn = ""
+	WhiteOn = ""
+	
+	lightre = re.compile(r'MultiRay (\w+) lights (\w+)')
+
+	for Record in recordlist:
+		RecordText = Record.get("text","NA")
+		if not Chiton:
+			if "PowerOnly.SampleLoad1" in RecordText:
+				ChitonVal = int(RecordText.replace("bool","").split("PowerOnly.SampleLoad1 ")[1].split(";")[0])
+				Chiton=["OFF","ON"][ChitonVal]
+				ChitonTime = Record["unixTime"]
+		if not WhiteOn or not RedOn:
+			if ("MultiRay" in RecordText) and ("lights" in RecordText):
+				LightResult = lightre.search(RecordText)
+				if not WhiteOn and "white" in RecordText:
+					WhiteOn = LightResult.groups()[1]
+				elif not RedOn and "red" in RecordText:
+					RedOn = LightResult.groups()[1]
+				if DEBUG:
+					print("LED STATUS",RecordText,WhiteOn,RedOn,LightResult,file=sys.stderr)
+	if DEBUG:
+		print(f"In parseGalene, Chiton {Chiton},Time {ChitonTime}, Red {RedOn}, White {WhiteOn}",file=sys.stderr)
+	return Chiton,ChitonTime,WhiteOn,RedOn
+
 def parseImptMisc(recordlist,MissionN):
 	'''Loads events that persist across missions'''
    #FORMER HOME OF GF SCANS
@@ -2626,6 +2655,13 @@ if (not recovered) or Opt.anyway or DEBUG:
 
 	NavLat,NavLon, ReachedWaypoint, WaypointName = getNewNavigating(missionTime-60000)
 	
+	if VEHICLE == "galene" and not 'DEFAULT' in missionName:
+		''' get only post-Mission log events '''
+		missionImpt = getImportant(missionTime-6000)
+		ChitonVal,ChitonTime,WhiteLightOn,RedLightOn=parseGaleneImpt(missionImpt)
+	else:
+		ChitonVal,ChitonTime,WhiteLightOn,RedLightOn = ["","","",""]
+		
 	if DEBUG:
 		print(f"FRESH PAUSE/RESUME: {Paused}",file=sys.stderr)
 		
@@ -3195,6 +3231,8 @@ else:   #not opt report
 		if VEHICLE == 'galene':
 			cdd["color_whiteled"] = 'stledoff'
 			cdd["color_redled"] = 'stledoff'
+			cdd["color_cameralens"] = "st3"
+			cdd["color_camerabody"] = "st11"
 		# These Schedule parameters are set in parseDefaults and parseMission
 		#removed this  and (missionName not in Scheduled)
 		
@@ -3362,8 +3400,6 @@ else:   #not opt report
 		# calanus: Running AyeRIS backseat app
 		
 		if VEHICLE == 'galene':
-			if ChitonVal:
-				cdd["color_cameralens"] = "st3"
 			if ChitonVal=="ON":
 				cdd["text_cameraago"] = "ON " # + cdd["text_missionago"]
 				cdd["color_camerabody"] = "st4"
@@ -3773,4 +3809,3 @@ else:   #not opt report
 				print(svgpontus)
 		print(sparktext)
 		print(svgtail)
-	
