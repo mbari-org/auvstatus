@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.85  - Updated depth sparkline to have max of 1280, for Opah (!)
+	v 2.84  - Separate post-Mission parser for Galene to check chiton+LEDs
 	v 2.83  - GPS orange if more than 3h old, and led tweaks
 	v 2.82  - Added Camera and LED indicators for Galene. 
 	v 2.81  - Omitted SpeedControl from Speed parsing. 
@@ -53,8 +55,8 @@
 	v 2.34  - Report piscivore cam amps instead of generic label
 	v 2.33  - Make Sat comm label red if last comm more than an hour overdue
 	v 2.32  - Don't pause schedule on ESP stop messages
-    v 2.31  - Adjusting range for piscivore camera current-to-status
-    v 2.3   - Added piscivore camera status widget
+	v 2.31  - Adjusting range for piscivore camera current-to-status
+	v 2.3   - Added piscivore camera status widget
 	v 2.28  - If Critical since last schedule resume, then schedule = paused
 	v 2.27  - Add Schedule Pause indicator (untested)
 	v 2.26  - Maybe fixed a lastlines empty parsing bug around 431
@@ -1265,6 +1267,10 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 		dep_to_show = 240
 	if ymax > dep_to_show + 5:
 		dep_to_show = 320
+	if ymax > dep_to_show + 5:
+		dep_to_show = 640
+	if ymax > dep_to_show + 5:
+		dep_to_show = 1280
 	
 	
 	ydiv = dep_to_show/h
@@ -2309,7 +2315,7 @@ def makeTrackSVG(Tracking,TrackTime):
 	return tracksvg	
 
 def printhtmlutility():
-	''' Print the html for the auv.html web page'''
+	''' Print the html for the auv.html web page. (Not updated for all vehicles).'''
 	
 	vehicles = ["daphne","pontus","tethys","galene","sim","triton","makai"]
 
@@ -2723,7 +2729,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	# ADDING Ahi - Planktivore ROIs
 	if VEHICLE == "ahi":
 		lROI,lTime,lfTime,hROI,hTime,hfTime = getNewROIs(startTime)
-		if DEBUG:
+		if DEBUG and lTime and lfTime and lROI:
 			print(f"## AHI Regions of Interest:\n\t{elapsed(lTime-now)},{elapsed(lfTime-now)},{lROI}\n\t{elapsed(hTime-now)},{hROI}", file=sys.stderr)
 		
 	if DEBUG:
