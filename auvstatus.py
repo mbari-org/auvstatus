@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.86  - Added makai to the piscivore hosts. Moved to GFScanner vs CBIT
 	v 2.85  - Updated depth sparkline to have max of 1280, for Opah (!)
 	v 2.84  - Separate post-Mission parser for Galene to check chiton+LEDs
 	v 2.83  - GPS orange if more than 3h old, and led tweaks
@@ -476,7 +477,7 @@ def getImportant(starttime,inputname=""):
 
 def getCBIT(starttime):
 	'''may also hold some DVL info'''
-	qString = runQuery(name="CBIT",timeafter=starttime)
+	qString = runQuery(name="GFScanner",timeafter=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
@@ -1769,6 +1770,7 @@ def parseImptMisc(recordlist,MissionN):
 		'brizo':True,
 		'ahi':True,
 		'galene':False,
+		'opah':False, #check this!!
 		'polaris':True,
 		'proxima':True,
 		'stella':True,
@@ -2721,7 +2723,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,batterydaysleft,colorduration = getNewBattery()
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
-	if VEHICLE == "pontus" or VEHICLE == "daphne" or VEHICLE == "ahi":
+	if VEHICLE == "pontus" or VEHICLE == "daphne" or VEHICLE == "makai":
 		camcat,camchangetime,pisctext = getNewCameraPower(startTime)
 		if DEBUG:
 			print("## PISCIVORE STATS:",camcat,camchangetime,pisctext, file=sys.stderr)
@@ -3367,7 +3369,7 @@ else:   #not opt report
 			cdd["text_celllabel"] = "Cell comms"
 	
 		# PARSE PISCIVORE CAMERA
-		if VEHICLE == 'pontus' or VEHICLE == 'daphne' or VEHICLE == 'ahi':	
+		if VEHICLE == 'pontus' or VEHICLE == 'daphne' or VEHICLE == 'makai':	
 			cdd["text_piscamp"]=pisctext
 			# parse piscivore camera
 			'''{text_camago}{color_cam1}{color_cam2} 2=gray, 3 white, 4 green 6 orange 11 dark gray'''
