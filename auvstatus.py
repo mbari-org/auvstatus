@@ -1,8 +1,9 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.87  - Changed OT to orange
 	v 2.86  - Added makai to the piscivore hosts. Moved to GFScanner vs CBIT
-	v 2.85  - Updated depth sparkline to have max of 1280, for Opah (!)
+	v 2.85  - Updated depth sparkline to have max of 1280, for Opah (!) Changed to 2560
 	v 2.84  - Separate post-Mission parser for Galene to check chiton+LEDs
 	v 2.83  - GPS orange if more than 3h old, and led tweaks
 	v 2.82  - Added Camera and LED indicators for Galene. 
@@ -390,7 +391,7 @@ def getNewMissionDefaults(missionn):
 						if subfield.get('unit',0)=='hour':
 							NCTime = int(NCTime)*60
 						if DEBUG:
-							print("FOUND NEEDCOMMS TIME:",subfield, file=sys.stderr)
+							print("FOUND NEEDCOMMS TIME in Defaults:",subfield, file=sys.stderr)
 					# Mission Timeout = DockedTime plus 5 mins
 					elif sfn=="DockedTime":
 						TimeOut = subfield.get('value',None)
@@ -689,7 +690,7 @@ def getNewUBATFlow(starttime):
 def ampToCat(val):
 	'''convert piscivore current draw to number of cameras'''
 	'''each camera draws 100, not 50, so upping ranges'''
-	'''Cameras now drawing 375 ma total. upping ranges again'''
+	'''Cameras now drawing 392 ma total. upping ranges again'''
 	cat = False
 	ival = int(val)
 	'''for piscivore, convert raw current to category'''
@@ -697,7 +698,7 @@ def ampToCat(val):
 		cat = 0
 	elif ival < 176:
 		cat = 1
-	elif ival > 390:
+	elif ival > 410:
 		cat = 3
 	elif ival > 175:
 		cat = 2
@@ -1272,6 +1273,10 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 		dep_to_show = 640
 	if ymax > dep_to_show + 5:
 		dep_to_show = 1280
+	if ymax > dep_to_show + 5:
+		dep_to_show = 1920
+	if ymax > dep_to_show + 5:
+		dep_to_show = 2560
 	
 	
 	ydiv = dep_to_show/h
@@ -1770,6 +1775,7 @@ def parseImptMisc(recordlist,MissionN):
 		'brizo':True,
 		'ahi':True,
 		'galene':False,
+		'triton':True,
 		'opah':False, #check this!!
 		'polaris':True,
 		'proxima':True,
@@ -1851,7 +1857,7 @@ def parseImptMisc(recordlist,MissionN):
 			if DEBUG:
 				print("## Got VoltThresh from ImptMisc", voltthresh, file=sys.stderr)
 				
-		if VEHICLE == "galene": 
+		if VEHICLE in ["galene","triton"]: 
 			if not Chiton:
 			# if "Running AyeRIS backseat app" in RecordText:
 			# 	Chiton = "ON"
@@ -2213,8 +2219,8 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 					print("#NeedComms but no split",Record["text"], VEHICLE, file=sys.stderr)
 			if NeedComms and "hour" in Record["text"]:
 				NeedComms = NeedComms * 60
-			if DEBUG:
-				print("#FOUND NEEDCOMMS",NeedComms, VEHICLE, file=sys.stderr)
+			if DEBUG and NeedComms:
+				print("#FOUND NEEDCOMMS In Record zzz",NeedComms, VEHICLE, "\n" , Record["text"], file=sys.stderr)
 			## ADD FLOW RATE FOR UBAT...
 			
 			### For the moment this will just go from the start of the mission, but once we get SatComms, use that time
@@ -2663,7 +2669,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 
 	NavLat,NavLon, ReachedWaypoint, WaypointName = getNewNavigating(missionTime-60000)
 	
-	if VEHICLE == "galene" and not 'DEFAULT' in missionName:
+	if VEHICLE in ["galene","triton"] and not 'DEFAULT' in missionName:
 		''' get only post-Mission log events '''
 		missionImpt = getImportant(missionTime-6000)
 		ChitonVal,ChitonTime,WhiteLightOn,RedLightOn=parseGaleneImpt(missionImpt)
@@ -2679,7 +2685,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 		logtime = startTime
 	
 	if missionTime > 60000: 
-		querytime = missionTime-60000
+		querytime = missionTime-120000
 		# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
 		# CHANGING FROM CommandLine to CommandExec
 		postmission = getImportant(querytime,inputname="CommandExec")
@@ -2691,8 +2697,9 @@ if (not recovered) or Opt.anyway or DEBUG:
 		print("REACHED WAYPOINT TIME AND RAW", hours(ReachedWaypoint),dates(ReachedWaypoint), ReachedWaypoint, file=sys.stderr)
 	
 	# Do we want station from here or not?	
+	# Changing missiontime to querytime (mission minus 2 minutes)
 	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot,scheduledtime  = \
-	          parseDefaults(postmission,mission_defaults,FullMission,missionTime)
+	          parseDefaults(postmission,mission_defaults,FullMission,querytime)
 			  
 	
 
@@ -2723,7 +2730,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,batterydaysleft,colorduration = getNewBattery()
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
-	if VEHICLE == "pontus" or VEHICLE == "daphne" or VEHICLE == "makai":
+	if VEHICLE in ["pontus","daphne","makai"]:
 		camcat,camchangetime,pisctext = getNewCameraPower(startTime)
 		if DEBUG:
 			print("## PISCIVORE STATS:",camcat,camchangetime,pisctext, file=sys.stderr)
@@ -3369,7 +3376,7 @@ else:   #not opt report
 			cdd["text_celllabel"] = "Cell comms"
 	
 		# PARSE PISCIVORE CAMERA
-		if VEHICLE == 'pontus' or VEHICLE == 'daphne' or VEHICLE == 'makai':	
+		if VEHICLE in ["pontus","daphne","makai"]:	
 			cdd["text_piscamp"]=pisctext
 			# parse piscivore camera
 			'''{text_camago}{color_cam1}{color_cam2} 2=gray, 3 white, 4 green 6 orange 11 dark gray'''
@@ -3568,7 +3575,7 @@ else:   #not opt report
 			cdd["color_hw"] = 'st5'
 			
 		if (OverloadError and ((now - OverloadError)/3600000 < 4)):
-			cdd["color_ot"] = 'st5'
+			cdd["color_ot"] = 'st6'
 			
 		if (CTDError and not CTDoffCommand and ((now - CTDError)/3600000 < 4)):
 			cdd["color_ctd"] = 'st6'
@@ -3735,7 +3742,7 @@ else:   #not opt report
 				outfile.write(svglabels)
 				if VEHICLE=="pontus":
 					outfile.write(svgpontus)
-				if VEHICLE=="pontus" or VEHICLE == "daphne" or VEHICLE == "ahi":
+				if VEHICLE in ["pontus","daphne","makai"]:
 					if (camcat < 998) and (camcat > -1):
 						outfile.write(svgpiscivore.format(
 							color_cam1  = cdd["color_cam1"],
