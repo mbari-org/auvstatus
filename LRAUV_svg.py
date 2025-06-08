@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Apr 25 2024 version  -->
+<!-- March 12 2025 version  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -25,6 +25,7 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st19{fill:#555555;stroke:#000000;stroke-miterlimit:10;}  <!-- Cart color -->
 	.st20{fill:#e3cfa7;stroke:#000000;stroke-miterlimit:10;}  <!-- Circle color -->
 	.st21{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- old small cable color -->
+	.stwire{stroke:#000;stroke-width:.6px;} <!-- new Led lines-->
 	.st22{fill:none;stroke:#555555;stroke-width:9;stroke-linecap:round;stroke-miterlimit:10;} <!-- big cablecolor -->
 	.st23{fill:none;stroke:#46A247;stroke-width:4;stroke-miterlimit:10;} <!-- small cable color2 -->
 	.st24{font-size:6px;}
@@ -47,7 +48,15 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.sparkline{fill:none;stroke:#000000; stroke-width:0.2;}  <!-- changed from black to invisible line -->
 	.sparkpoly{fill:#549fd4;stroke:none; } <!--seafoamgreen No Stroke -->	
 	.sparktext{font-size:6px; } 
+	.purpleline{fill:none;stroke:#9091C7;stroke-width:2;stroke-miterlimit:10;}
+	.purplefill{fill:#9091C7;}
 	.gridline{fill:none;stroke:#BBBBBB; stroke-width:0.3;}  
+	.redbeam {fill:#e04462;stroke:none;}  
+	.redled {fill:#e04462;stroke:#000;stroke-width:0.6;}  
+	.whitebeam {fill:#fff;stroke:none;} 
+	.whiteled {fill:#fff;stroke:#000;stroke-width:0.6;} 
+	.stledoff {fill:#555;stroke:#000;stroke-width:0.6;} 
+	
 	</style>
 '''
 
@@ -168,6 +177,16 @@ svgtext = '''
 <rect desc="CameraBody" class="{color_camerabody}"    x="540"  y="250" width="16" height="10"/>
 <circle desc="CameraLens" class="{color_cameralens}" cx="548" cy="255" r="3"/>
 
+
+
+
+<!-- galene LEDs white and red -->
+<path desc="whitebeam" class="{color_whitebeam}" d="M569,270l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
+<path desc="whiteled" class="{color_whiteled}"   d="M562.5,270.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
+<path desc="redbeam" class="{color_redbeam}"     d="M569,276l-4.7,2.7,4.7,2.7c.8-2,.8-3.3,0-5.5Z"/>
+<path desc="redled" class="{color_redled}"       d="M562.5,276.8h2.5c1,0,1.8.8,1.8,1.8h0c0,1-.8,1.8-1.8,1.8h-2.5v-3.5Z"/>
+
+
 <!-- High and low side GF arrows -->
 <polygon desc="LowGF" class="{color_lowgf}" points="510,263 514,255 506,255 510,263"/>
 <polygon desc="HighGF" class="{color_highgf}" points="510,255 514,263 506,263 510,255"/>
@@ -195,7 +214,6 @@ svgtext = '''
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">{text_thrusttime}</text>
 <text desc="text_needcommstime" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">{text_needcomms}</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">{text_nextcomm}</text>
-<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">{text_logtime}</text>
 <text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">{text_logago}</text>
@@ -220,7 +238,10 @@ svgtext = '''
 <text desc="text_criticalerror" transform="matrix(1 0 0 1 352.0 300)" class="st9 st30 st31">{text_criticalerror}</text>
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13">{text_criticaltime}</text>
 <text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10 {color_satcommstext}">Sat comms</text>
-<text desc="text_nextcomms" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 {color_nextcommstext}">NextComm:</text>
+<text desc="text_cell_acoustic" transform="matrix(1 0 0 1 291.6499 211)" class="st9 st10">{text_celllabel}</text>
+<text desc="text_nextcommslabel" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 {color_nextcommstext}">NextComm:</text>
+<text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10 {color_timeouttext}">Timeout: </text>
+<text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">{text_timeout}</text>
 <text desc="text_version" transform="matrix(1 0 0 1 638 316)" text-anchor="end" class="st12 st9 st24">{text_version}</text>
 <text desc="text_thresh_volt" x="310" y="258" text-anchor="end" class="{color_voltthresh} st9 st13">{text_voltthresh}</text>
 <text desc="text_thresh_amph" x="304.5" y="270" text-anchor="end"  class="{color_ampthresh} st9 st13">{text_ampthresh}</text>
@@ -247,12 +268,10 @@ svglabels='''
 
 <text desc="text_amplabel" x="372" y="272" class="st12 st9 st24">amps</text>
 <text transform="matrix(1 0 0 1 285 300)" class="st12 st9 st13">DROP WEIGHT</text>
-<text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10">Timeout: </text>
 <text desc="" transform="matrix(1 0 0 1 551 244)" class="st9 st10">CTD</text>
 
 <text transform="matrix(1 0 0 1 540.0956 283.4494)" class="st9 st10">DVL</text>
 <text transform="matrix(1 0 0 1 439.3514 226.8654)" class="st9 st10">Last GPS</text>
-<text transform="matrix(1 0 0 1 291.6499 211)" class="st9 st10">Cell comms</text>
 <text transform="matrix(1 0 0 1 144.0 221.6039)" class="st9 st10">Log start:</text>
 <text transform="matrix(1 0 0 1 193.9667 260.552)" class="st9 st10">Thruster</text>
 '''
@@ -275,9 +294,25 @@ svgpontus='''
 <text desc="" transform="matrix(1 0 0 1 551.3628 264.5)" class="st9 st10">Flow</text>
 '''
 
+svg_planktivore='''
+<!-- ahi=planktivore-specific shapes -->
+<text desc="text_roiago" transform="matrix(1 0 0 1 532 272.0)" class="st12 st9 st13">{text_roiago}</text>
+<text desc="LM-text" transform="matrix(1 0 0 1 532 254.5)" class="st9 st10">LM:{text_LM}</text>
+<text desc="HM-text" transform="matrix(1 0 0 1 531 264.5)" class="st9 st10">HM:{text_HM}</text>
+
+'''
+
 svggalene='''
-<!--galene camera specific -->
+<!--galene camera specific static elements-->
 <text transform="matrix(1 0 0 1 539 268)" class="st12 st9 st13">CAMERA</text>
+<line desc="whiteledwire1" class="stwire" x1="562.6" y1="272" x2="560" y2="272"/>
+<line desc="whiteledwire2" class="stwire" x1="562.6" y1="273.5" x2="559.7" y2="273.5"/>
+<line desc="redledwire1" class="stwire" x1="562.6" y1="278" x2="560" y2="278"/>
+<line desc="redledwire2" class="stwire" x1="562.6" y1="279.5" x2="559.7" y2="279.5"/>
+ 
+<circle desc="whitehighlight" class="whitebeam" cx="565.4" cy="272.2" r=".7"/>
+<circle desc="redhighlight" class="redbeam" cx="565.4" cy="278.2" r=".9"/>
+
 '''
 
 svgwaterleak='''<!--water leak-->
