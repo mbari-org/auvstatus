@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.88  - Added some docking WPs to the lookup
 	v 2.87  - Changed OT to orange
 	v 2.86  - Added makai to the piscivore hosts. Moved to GFScanner vs CBIT
 	v 2.85  - Updated depth sparkline to have max of 1280, for Opah (!) Changed to 2560
@@ -698,7 +699,7 @@ def ampToCat(val):
 		cat = 0
 	elif ival < 176:
 		cat = 1
-	elif ival > 410:
+	elif ival > 430:
 		cat = 3
 	elif ival > 175:
 		cat = 2
@@ -832,7 +833,11 @@ def getNewNavigating(missiontime):
 		"36.695,-122.187" : "Canon 2S",
 		"36.713,-122.209" : "Canon 2W",
 		"36.87,-121.96" : "Upper Soquel",
-		"36.903,-121.113" : "Dock Site" 
+		"36.903,-121.111" : "Dock Appr.",
+		"36.906,-122.116" : "Dock",
+		"36.910,-122.110" : "Dock",
+		"37.020,-122.270" : "NW",
+		"36.910,-121.900" : "East"
 		}
 	
 	if DEBUG:
@@ -1263,20 +1268,21 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 		dep_to_show = 80
 	if ymax > dep_to_show + 5:
 		dep_to_show = 120
-	if ymax > dep_to_show + 5:
-		dep_to_show = 160
-	if ymax > dep_to_show + 5:
-		dep_to_show = 240
-	if ymax > dep_to_show + 5:
-		dep_to_show = 320
-	if ymax > dep_to_show + 5:
-		dep_to_show = 640
-	if ymax > dep_to_show + 5:
-		dep_to_show = 1280
-	if ymax > dep_to_show + 5:
-		dep_to_show = 1920
-	if ymax > dep_to_show + 5:
-		dep_to_show = 2560
+	# COMMENTING OUT DEEP Sparklines to omit stray point.
+	# if ymax > dep_to_show + 5:
+	# 	dep_to_show = 160
+	# if ymax > dep_to_show + 5:
+	# 	dep_to_show = 240
+	# if ymax > dep_to_show + 5:
+	# 	dep_to_show = 320
+	# if ymax > dep_to_show + 5:
+	# 	dep_to_show = 640
+	# if ymax > dep_to_show + 5:
+	# 	dep_to_show = 1280
+	# if ymax > dep_to_show + 5:
+	# 	dep_to_show = 1920
+	# if ymax > dep_to_show + 5:
+	# 	dep_to_show = 2560
 	
 	
 	ydiv = dep_to_show/h
@@ -1748,6 +1754,8 @@ def parseImptMisc(recordlist,MissionN):
 	
 	Docking = False
 	DockTime = None
+	DockTimeout = None
+	
 	voltthresh = 0
 	ampthresh  = 0
 	FullMission = ""
@@ -1764,6 +1772,7 @@ def parseImptMisc(recordlist,MissionN):
 	missionre =  re.compile(r'Loaded ./Missions/(.+\.tl).?')
 	missionrunning= re.compile(r'Running ./Missions/(.+\.tl).?')
 	lightre = re.compile(r'MultiRay (\w+) lights (\w+)')
+	undockre = re.compile(r'.*OnDock.DockedTime ([\d\.]+) h')
 	
 
 	# CONFIGURE DVL config defaults
@@ -1838,11 +1847,12 @@ def parseImptMisc(recordlist,MissionN):
 					print("\n## Got UNDOCKING Event from ImptMisc", file=sys.stderr)
 				Docking = 2
 				DockTime = Record["unixTime"]
-			if RecordText.strip().startswith("Docking sequence complete"):
+			elif RecordText.strip().startswith("Docking sequence complete"):
 				if DEBUG:
 					print("\n## Got DOCKING Event from ImptMisc", file=sys.stderr)
 				Docking = 1
 				DockTime = Record["unixTime"]
+				 
 		
 		if not AcousticTime:
 			if RecordText.strip().startswith("Ac Comms: from"):
@@ -1909,7 +1919,20 @@ def parseImptMisc(recordlist,MissionN):
 		# Time for that is stored in PauseFault
 		# also Scheduling was paused by a command
 		# This assumes scheduler comes up running after app restart
-		
+		if not Docking and "lineCapture" in FullMission:
+			if DEBUG:
+				print("\n## Got DOCKING Mission but not docked", file=sys.stderr)
+			Docking = 3
+			DockTime = Record["unixTime"]
+			
+			
+		#OnDock.DockedTime 11 h
+		if Docking == 3 and not DockTimeout and "DockedTime" in RecordText:
+			# Looking in Undock mission, but only searches for hours
+			DockTimeoutResult = undockre.search(RecordText)
+			if DockTimeoutResult:
+				DockTimeout = float(DockTimeoutResult.groups()[0])
+
 		if NeedSched:
 			if bool(re.search('got command schedule resume|got command restart application|scheduling is resumed',RecordText.lower())):
 			# if "got command schedule resume" in RecordText or "Scheduling is resumed" in RecordText:
@@ -2040,7 +2063,7 @@ def parseImptMisc(recordlist,MissionN):
 		#	FlowTime   = Record["unixTime"]
 
 #	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,FullMission,Docking,DockTime,Chiton,AcousticTime,DropOff,WhiteOn,RedOn
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,FullMission,Docking,DockTime,DockTimeout,Chiton,AcousticTime,DropOff,WhiteOn,RedOn
 
 	
 
@@ -2051,6 +2074,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 	
 	TimeoutDuration=False
 	TimeoutStart   =False
+	
 	NeedComms = False
 	Scheduled = False
 	Cleared = False
@@ -2593,6 +2617,7 @@ argogoodtime=False
 
 DockStatus = False # 1 = on dock, 2 = undocked
 DockingTime = None
+DockingTimeout = None
 WaypointName = "Waypoint"
 
 # ========
@@ -2620,6 +2645,7 @@ if DEBUG:
 
 # vehicle not recovered
 if (not recovered) or Opt.anyway or DEBUG:
+	needcomms = 0
 	critical  = getCritical(startTime)
 	faults = getFaults(startTime)
 	gfrecords = getCBIT(startTime)
@@ -2653,7 +2679,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 
 # FULL RANGE OF RECORDS
 	important = getImportant(startTime)
-
+	querytime = 0
 	# mission time is off if schedule paused (default) and resumed. Detect this and go back further?
 	missionName,missionTime = parseMission(important)
 	Ampthreshnum=0
@@ -2662,7 +2688,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	nextLat,nextLon = getNewNextWaypoint()  # From the mission statement, in case Navigating To is not found
 	#  MOVE NavLat and ReachedWaypoint to after mission time
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission,DockStatus,DockingTime,ChitonVal,AcousticComms,DropWeightOff,WhiteLightOn,RedLightOn  = parseImptMisc(important,missionName)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission,DockStatus,DockingTime,DockingTimeout,ChitonVal,AcousticComms,DropWeightOff,WhiteLightOn,RedLightOn  = parseImptMisc(important,missionName)
 	
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
@@ -2690,6 +2716,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 		# CHANGING FROM CommandLine to CommandExec
 		postmission = getImportant(querytime,inputname="CommandExec")
 	else:
+		querytime = missionTime
 		postmission = ''
 	
 	if DEBUG:
@@ -2698,8 +2725,11 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	# Do we want station from here or not?	
 	# Changing missiontime to querytime (mission minus 2 minutes)
-	missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot,scheduledtime  = \
-	          parseDefaults(postmission,mission_defaults,FullMission,querytime)
+	StationLat=0
+	StationLon=0
+	if querytime:
+		missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot,scheduledtime  = \
+				parseDefaults(postmission,mission_defaults,FullMission,querytime)
 			  
 	
 
@@ -3112,10 +3142,14 @@ else:   #not opt report
 	# cdd["text_timeout"] = hours(timeoutstart+missionduration*3600*1000)
 
 	cdd["text_timeout"] = hours(missionTime+missionduration*3600*1000) + " - " + elapsed((missionTime+missionduration*3600*1000) - now )
-
+	if DockingTimeout:
+		# elapsed((commreftime+needcomms*60*1000) - now)
+		cdd["text_timeout"] = hours(missionTime+float(DockingTimeout)*3600*1000) + " - " + elapsed((missionTime+float(DockingTimeout)*3600*1000) - now )
+		cdd["text_nextcomm"]= "Unclear - Docking"
 	# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
-	cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
-	cdd["text_needcomms"] = f"{needcomms} min"
+	else:
+		cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
+		cdd["text_needcomms"] = f"{needcomms} min"
 	battsvg=""
 	'''
 <rect desc="cuorange" x="365.5" y="250.8" class="st27" width="4" height="21"/>
@@ -3642,6 +3676,16 @@ else:   #not opt report
 			cdd["text_arrivestation"] = "On Dock"
 			if DockingTime:
 				cdd["text_waypoint"]= "Docked "+ elapsed(DockingTime-now)
+		elif DockStatus ==3: # Trying to dock
+			cdd["dock_buoy"]="st5"
+			cdd["dock_line"]="stbuoyline"
+			cdd["dock_eye"]="st3"
+			cdd["dock_tri"]="st11"
+			cdd["text_arrivestation"] = "Dock no Comms"
+			if DockingTimeout:
+				cdd["text_arrivestation"]= "Expect " + elapsed((missionTime+float(DockingTimeout)*3600*1000) - now )
+			if DockingTime:
+				cdd["text_waypoint"]= "Try started "+ elapsed(DockingTime-now)		
 		elif DockStatus ==2: # Undocked
 			cdd["dock_buoy"]="semitrans"
 			cdd["dock_line"]="semitransline"
