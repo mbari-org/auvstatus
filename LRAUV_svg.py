@@ -212,7 +212,7 @@ svgtext = '''
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
 <text desc="text_bearing" transform="matrix(1 0 0 1 605 262.3)" text-anchor="middle" class="st9 st13">{text_bearing}</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">{text_thrusttime}</text>
-<text desc="text_needcommstime" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">{text_needcomms}</text>
+<text desc="text_needcomms time" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">{text_needcomms}</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">{text_nextcomm}</text>
 <text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">{text_logtime}</text>

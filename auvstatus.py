@@ -3153,8 +3153,11 @@ else:   #not opt report
 	cdd["text_timeout"] = hours(missionTime+missionduration*3600*1000) + " - " + elapsed((missionTime+missionduration*3600*1000) - now )
 	if DockingTimeout:
 		# elapsed((commreftime+needcomms*60*1000) - now)
+		# TODO: Maybe add 0.25 or 0.5 hours to missiontime here
+		# to give it a chance to dock and start OnDock mission
 		cdd["text_timeout"] = hours(missionTime+float(DockingTimeout)*3600*1000) + " - " + elapsed((missionTime+float(DockingTimeout)*3600*1000) - now )
 		cdd["text_nextcomm"]= "Unclear - Docking"
+		cdd["text_needcomms"] = f"maybe {DockingTimeout} h"
 	# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
 	else:
 		cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
