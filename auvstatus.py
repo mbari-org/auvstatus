@@ -1932,11 +1932,13 @@ def parseImptMisc(recordlist,MissionN):
 			
 			
 		#OnDock.DockedTime 11 h
-		if Docking == 3 and not DockTimeout and "DockedTime" in RecordText:
+		if not DockTimeout and "DockedTime" in RecordText:
 			# Looking in Undock mission, but only searches for hours
 			DockTimeoutResult = undockre.search(RecordText)
 			if DockTimeoutResult:
 				DockTimeout = float(DockTimeoutResult.groups()[0])
+			if DEBUG:
+				print("\n## Not Docked found UndockTime", RecordText, file=sys.stderr)
 
 		if NeedSched:
 			if bool(re.search('got command schedule resume|got command restart application|scheduling is resumed',RecordText.lower())):
