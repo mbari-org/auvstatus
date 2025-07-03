@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.89  - Made dock yellow if lineCapture. reset voltage threshold if reboot
 	v 2.88  - Added some docking WPs to the lookup
 	v 2.87  - Changed OT to orange
 	v 2.86  - Added makai to the piscivore hosts. Moved to GFScanner vs CBIT
@@ -1497,6 +1498,7 @@ def parseFaults(recordlist):
 	WaterFault    = False
 	CTDError = False
 	PauseFault = False
+	IgnoreOverride = False
 	# Do we parse this:
 	# LCB fault: LCB Watchdog Reset. Hardware Overcurrent Shutdown. Current Limiter Activated
 	# if DEBUG:
@@ -1548,12 +1550,15 @@ def parseFaults(recordlist):
 				
 		if Record["text"].upper().startswith("WATER ALARM AUX"):
 			WaterFault = Record["unixTime"]
-		
+		if "Ignoring configuration overrides" in Record["text"]:
+			IgnoreOverride = Record["unixTime"]
+			if DEBUG: 
+				print("\n\n## FOUND PERSISTED OVERRIDE",elapsed(IgnoreOverride-now), file=sys.stderr)
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 		# Water linked??
 		if not DVLError and Record["name"] in ["DVL_Micro", "Waterlinked","RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
 			DVLError=Record["unixTime"]
-	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock,CTDError,PauseFault
+	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock,CTDError,PauseFault,IgnoreOverride
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -1758,6 +1763,7 @@ def parseImptMisc(recordlist,MissionN):
 	
 	voltthresh = 0
 	ampthresh  = 0
+	ampthreshtime = 0
 	FullMission = ""
 	
 	DropOff = False
@@ -1888,13 +1894,12 @@ def parseImptMisc(recordlist,MissionN):
 					if DEBUG:
 						print("LED STATUS",RecordText,WhiteOn,RedOn,LightResult,file=sys.stderr)
 					
-				
-			
-				
+
 		if not ampthresh and RecordText.startswith("IBIT.batteryCapacityThreshold="):
 			ampthresh = round(float(RecordText.split("IBIT.batteryCapacityThreshold=")[1].split(" ")[0]))
+			ampthreshtime=Record["unixTime"]
 			if DEBUG:
-				print("## Got AmpThresh from ImptMisc", ampthresh, file=sys.stderr)
+				print("## Got AmpThresh from ImptMisc", ampthresh, elapsed(ampthreshtime-now),file=sys.stderr)
 
 		if not FullMission and not (MissionN=="Default"):
 			'''Loaded ./Missions/Transport/keepstation.tl id=keepstation'''
@@ -2063,7 +2068,7 @@ def parseImptMisc(recordlist,MissionN):
 		#	FlowTime   = Record["unixTime"]
 
 #	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,FullMission,Docking,DockTime,DockTimeout,Chiton,AcousticTime,DropOff,WhiteOn,RedOn
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,ampthreshtime,FullMission,Docking,DockTime,DockTimeout,Chiton,AcousticTime,DropOff,WhiteOn,RedOn
 
 	
 
@@ -2684,11 +2689,13 @@ if (not recovered) or Opt.anyway or DEBUG:
 	missionName,missionTime = parseMission(important)
 	Ampthreshnum=0
 	Voltthreshnum = 0
+	IgnoreOverride = 0
+	AmpthreshTime = 0
 	DropWeightOff = -1
 	
 	nextLat,nextLon = getNewNextWaypoint()  # From the mission statement, in case Navigating To is not found
 	#  MOVE NavLat and ReachedWaypoint to after mission time
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,FullMission,DockStatus,DockingTime,DockingTimeout,ChitonVal,AcousticComms,DropWeightOff,WhiteLightOn,RedLightOn  = parseImptMisc(important,missionName)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ChitonVal,AcousticComms,DropWeightOff,WhiteLightOn,RedLightOn  = parseImptMisc(important,missionName)
 	
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
@@ -2819,7 +2826,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	PauseFault = False
 	
 	if faults:
-		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock,CTDError,PauseFault = parseFaults(faults)
+		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock,CTDError,PauseFault,IgnoreOverride = parseFaults(faults)
 
 	
 # vehicle has been recovered
@@ -3589,7 +3596,8 @@ else:   #not opt report
 		#
 		cdd["color_ampthresh"] = "st12"
 		cdd["color_voltthresh"] = "st12"
-
+		
+			
 		if Ampthreshnum:
 			cdd["text_ampthresh"] = f"{Ampthreshnum}"
 			cdd["color_ampthresh"] = ['st12','st31'][amphr - Ampthreshnum < 5]
@@ -3597,6 +3605,18 @@ else:   #not opt report
 		if Voltthreshnum:
 			cdd["text_voltthresh"] = f"{Voltthreshnum:.1f}"
 			cdd["color_voltthresh"] = ['st12','st31'][volt - Voltthreshnum < 1.0]
+		
+		# IgnoreOverride is a time that an ignoring persisted message came through
+		# If it is more recent than the Amp thresh then they are back to default.
+		# Make them red
+		if IgnoreOverride > AmpthreshTime:
+			if DEBUG:
+				print("THRESHOLD OVERRIDE: " ,(now-IgnoreOverride)/3600000, file=sys.stderr)
+			cdd["text_voltthresh"]='13.7'
+			cdd["text_ampthresh"]='50'
+			cdd["color_voltthresh"] = ['st31']
+			cdd["color_ampthresh"] = ['st31']
+
 
 		if DEBUG and SWError:
 			print("SOFTWARE ERROR: " ,(now-SWError)/3600000, file=sys.stderr)
