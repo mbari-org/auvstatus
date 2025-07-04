@@ -1705,6 +1705,20 @@ Ground fault: Queue on RED on Low side ground fault detected - Yellow on any gro
 	
 '''
 
+def ScheduleTimeToLocalTime(ts=""):
+	# Convert timestring to local unix time
+	# '2025-07-05T04:15:00Z'
+	# t1=time.localtime(unixtime/1000)
+	timetup = None
+	localt = ""
+	tt = time.strptime(ts,"%Y-%m-%dT%H:%M:%SZ")
+	# HARDCODING THIS FOR now
+	offset = 7
+	# (ss/1000-(7*3600)-now
+	scheduledseconds = 1000 * (time.mktime(tt) - (offset * 3600))
+	return scheduledseconds
+	
+
 def parseGaleneImpt(recordlist):
 	Chiton=""
 	ChitonTime=0
@@ -1760,6 +1774,7 @@ def parseImptMisc(recordlist,MissionN):
 	Docking = False
 	DockTime = None
 	DockTimeout = None
+	SchedT = None
 	
 	voltthresh = 0
 	ampthresh  = 0
@@ -1778,7 +1793,6 @@ def parseImptMisc(recordlist,MissionN):
 	missionre =  re.compile(r'Loaded ./Missions/(.+\.tl).?')
 	missionrunning= re.compile(r'Running ./Missions/(.+\.tl).?')
 	lightre = re.compile(r'MultiRay (\w+) lights (\w+)')
-	undockre = re.compile(r'.*OnDock.DockedTime ([\d\.]+) h')
 	
 
 	# CONFIGURE DVL config defaults
@@ -1858,7 +1872,9 @@ def parseImptMisc(recordlist,MissionN):
 					print("\n## Got DOCKING Event from ImptMisc", file=sys.stderr)
 				Docking = 1
 				DockTime = Record["unixTime"]
-				 
+				
+		
+			 
 		
 		if not AcousticTime:
 			if RecordText.strip().startswith("Ac Comms: from"):
@@ -1930,15 +1946,38 @@ def parseImptMisc(recordlist,MissionN):
 			Docking = 3
 			DockTime = Record["unixTime"]
 			
-			
+		undockre = re.compile(r'.*OnDock.DockedTime ([\d\.]+) h')
+		# dockrangere = re.compile(r'.*OnDock.RangeTimeout ([\d\.]+) h')
+	
 		#OnDock.DockedTime 11 h
 		if not DockTimeout and "DockedTime" in RecordText:
-			# Looking in Undock mission, but only searches for hours
-			DockTimeoutResult = undockre.search(RecordText)
-			if DockTimeoutResult:
-				DockTimeout = float(DockTimeoutResult.groups()[0])
-			if DEBUG:
-				print("\n## Not Docked found UndockTime", RecordText, file=sys.stderr)
+				# Looking in Undock mission, but only searches for hours
+				DockTimeoutResult = undockre.search(RecordText)
+				if DockTimeoutResult:
+					DockTimeout = float(DockTimeoutResult.groups()[0])
+				if DEBUG:
+					print("\n## Not Docked found UndockTime", RecordText, file=sys.stderr)
+			# if "RangeTimeout" in RecordText:
+			# 	RangeTimeoutResult = dockrangere.search(RecordText)
+			# 	if RangeTimeoutResult:
+			# 		RangeTimeout = float(RangeTimeoutResult.groups()[0])
+			# if DEBUG:
+			# 	print(f"\n## Docked Timeout: {DockTimeout}\n## RangeTimeout:{RangeTimeout}", file=sys.stderr)
+			# if RangeTimeout and DockTimeout:
+			# 	if RangeTimeout < DockTimeout:
+			# 		if DEBUG:
+			# 			print("\n## RangeTimeout less than DockTimeout", RecordText, file=sys.stderr)
+			# 		DockTimeout = RangeTimeout
+			# elif RangeTimeout:
+			# 	DockTimeout = RangeTimeout
+				
+		if not SchedT:
+			if 	"Scheduled" in RecordText and "Engineering/undock.tl" in RecordText and "AT TIME" in RecordText:
+				# Scheduled #12: "load Engineering/undock.tl;set undock.TransitLat 36.91 degree;set undock.TransitLon -122.11 degree;run", AT TIME: 2025-07-05T04:15:00Z
+				ts = RecordText.split("TIME: ")[1]
+				SchedT = ScheduleTimeToLocalTime(ts)
+				if DEBUG:
+					print("\n## Found Scheduled undock", RecordText, elapsed(SchedT-now), file=sys.stderr)
 
 		if NeedSched:
 			if bool(re.search('got command schedule resume|got command restart application|scheduling is resumed',RecordText.lower())):
@@ -2070,7 +2109,7 @@ def parseImptMisc(recordlist,MissionN):
 		#	FlowTime   = Record["unixTime"]
 
 #	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,ampthreshtime,FullMission,Docking,DockTime,DockTimeout,Chiton,AcousticTime,DropOff,WhiteOn,RedOn
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,ampthreshtime,FullMission,Docking,DockTime,DockTimeout,SchedT,Chiton,AcousticTime,DropOff,WhiteOn,RedOn
 
 	
 
@@ -2625,6 +2664,7 @@ argogoodtime=False
 DockStatus = False # 1 = on dock, 2 = undocked
 DockingTime = None
 DockingTimeout = None
+ScheduledUndock = None
 WaypointName = "Waypoint"
 
 # ========
@@ -2697,7 +2737,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	nextLat,nextLon = getNewNextWaypoint()  # From the mission statement, in case Navigating To is not found
 	#  MOVE NavLat and ReachedWaypoint to after mission time
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ChitonVal,AcousticComms,DropWeightOff,WhiteLightOn,RedLightOn  = parseImptMisc(important,missionName)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ScheduledUndock,ChitonVal,AcousticComms,DropWeightOff,WhiteLightOn,RedLightOn  = parseImptMisc(important,missionName)
 	
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
@@ -3151,14 +3191,39 @@ else:   #not opt report
 	# cdd["text_timeout"] = hours(timeoutstart+missionduration*3600*1000)
 
 	cdd["text_timeout"] = hours(missionTime+missionduration*3600*1000) + " - " + elapsed((missionTime+missionduration*3600*1000) - now )
+	
+	# if Both are set then use whichever is earlier
+	if (DockingTimeout and ScheduledUndock):
+		DockProjection = missionTime + float((DockingTimeout+0.5)*3600*1000)
+		if DEBUG: 
+			print("## Have both DockTimeout and ScheduledTime) : " + 
+			hours(DockProjection)+ " " + 
+			hours(ScheduledUndock), file=sys.stderr)
+		if DockProjection < ScheduledUndock:
+			ScheduledUndock = None
+			if DEBUG:
+				print("## Using Dock Timeout for undock", file=sys.stderr)
+		else:
+			if DEBUG:
+				print("## Using Scheduled time for undock", file=sys.stderr)
+			DockingTimeout = None
+		
 	if DockingTimeout:
 		# elapsed((commreftime+needcomms*60*1000) - now)
 		# TODO: Maybe add 0.25 or 0.5 hours to missiontime here
 		# to give it a chance to dock and start OnDock mission
-		cdd["text_timeout"] = hours(missionTime+float(DockingTimeout)*3600*1000) + " - " + elapsed((missionTime+float(DockingTimeout)*3600*1000) - now )
+		ProjectedUndock = float(DockingTimeout)*3600*1000
+		cdd["text_timeout"] = hours(missionTime+ProjectedUndock) + " - " + elapsed((missionTime+ProjectedUndock) - now )
 		cdd["text_nextcomm"]= "Unclear - Docking"
 		cdd["text_needcomms"] = f"maybe {DockingTimeout} h"
 	# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
+	
+	if ScheduledUndock:
+		cdd["text_timeout"] = hours(ScheduledUndock) + " - " + elapsed(ScheduledUndock - now )
+		cdd["text_nextcomm"]= hours(ScheduledUndock)		
+		cdd["text_needcomms"] = f"Sched Undock: " + elapsed(ScheduledUndock - now )
+		
+		
 	else:
 		cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
 		cdd["text_needcomms"] = f"{needcomms} min"
@@ -3708,7 +3773,9 @@ else:   #not opt report
 			cdd["dock_tri"]="st11"
 			cdd["text_arrivestation"] = "Dock no Comms"
 			if DockingTimeout:
-				cdd["text_arrivestation"]= "Expect " + elapsed((missionTime+float(DockingTimeout)*3600*1000) - now )
+				cdd["text_arrivestation"]= "Expect " + elapsed((missionTime+(float(DockingTimeout)+0.5)*3600*1000) - now )
+			elif ScheduledUndock:
+				cdd["text_arrivestation"]= "Sched " + elapsed(ScheduledUndock - now )
 			if DockingTime:
 				cdd["text_waypoint"]= "Try started "+ elapsed(DockingTime-now)		
 		elif DockStatus ==2: # Undocked
@@ -3718,7 +3785,9 @@ else:   #not opt report
 			cdd["dock_tri"] ="semitrans"
 			if cdd["text_arrivestation"] == "Nav missing":
 				cdd["text_arrivestation"] = "Undocked " + elapsed(DockingTime-now)
-
+		if CriticalError and "dock" in CriticalError.lower():
+			cdd["dock_buoy"]="st6"
+			
 		# If there was a critical since the last schedule pause or schedule resume event, 
 		# then the schedule is effectively paused.
 		if DEBUG:
