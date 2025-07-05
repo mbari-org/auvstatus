@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.90  - Improved parsing of docking events including charge status
 	v 2.89  - Made dock yellow if lineCapture. reset voltage threshold if reboot
 	v 2.88  - Added some docking WPs to the lookup
 	v 2.87  - Changed OT to orange
@@ -793,12 +794,13 @@ def getNewCameraPower(starttime):
 	return nowcat,nowpowtime,nowpow
 	
 def getNewNavigating(missiontime):
-	recordlist = getImportant(missiontime)
+	recordlist = getImportant(missiontime-6000)
 	StationLat = False
 	StationLon = False
 	ReachedWaypoint = False
 	NavigatingTo    = False
 	WaypointName = "Waypoint"
+	# Navigating to waypoint: 37.020001,-122.270003
 	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 
@@ -1645,8 +1647,12 @@ def parseCBIT(recordlist):
 				if RecordText.startswith("Ground fault detected") or RecordText.startswith("Low side ground fault detected"):
 					# print "\n####\n",Record["text"]
 					GF,GF_low = parseGF(RecordText)
+						
 					if "Low side" in RecordText or GF_low:
 						GFLow = True
+						# Probably on dock
+						if float(GF) > 0.9:
+							GF="CHG"
 					GFtime = Record["unixTime"]
 			
 				elif RecordText.startswith("No ground fault"):
@@ -1709,6 +1715,8 @@ def ScheduleTimeToLocalTime(ts=""):
 	# Convert timestring to local unix time
 	# '2025-07-05T04:15:00Z'
 	# t1=time.localtime(unixtime/1000)
+	from pytz import timezone
+	
 	timetup = None
 	localt = ""
 	tt = time.strptime(ts,"%Y-%m-%dT%H:%M:%SZ")
@@ -1917,7 +1925,7 @@ def parseImptMisc(recordlist,MissionN):
 			if DEBUG:
 				print("## Got AmpThresh from ImptMisc", ampthresh, elapsed(ampthreshtime-now),file=sys.stderr)
 
-		if not FullMission and not (MissionN=="Default"):
+		if not FullMission and not (MissionN=="Default") and not (MissionN=="DefaultWithUndock"):
 			'''Loaded ./Missions/Transport/keepstation.tl id=keepstation'''
 			if RecordText.startswith("Loaded ./Mission") or RecordText.startswith("Running ./Mission"):
 				extrat="NONE"
@@ -1940,17 +1948,17 @@ def parseImptMisc(recordlist,MissionN):
 		# Time for that is stored in PauseFault
 		# also Scheduling was paused by a command
 		# This assumes scheduler comes up running after app restart
-		if not Docking and "lineCapture" in FullMission:
+		if ("lineCapture" in FullMission or "OnDock" in FullMission):
 			if DEBUG:
-				print("\n## Got DOCKING Mission but not docked", file=sys.stderr)
-			Docking = 3
-			DockTime = Record["unixTime"]
+				print("\n## Got DOCKING Mission but not docked message", file=sys.stderr)
+			if not DockTime:
+				DockTime = Record["unixTime"]
 			
-		undockre = re.compile(r'.*OnDock.DockedTime ([\d\.]+) h')
-		# dockrangere = re.compile(r'.*OnDock.RangeTimeout ([\d\.]+) h')
-	
-		#OnDock.DockedTime 11 h
-		if not DockTimeout and "DockedTime" in RecordText:
+			undockre = re.compile(r'.*OnDock.DockedTime ([\d\.]+) h')
+			# dockrangere = re.compile(r'.*OnDock.RangeTimeout ([\d\.]+) h')
+		
+			#OnDock.DockedTime 11 h
+			if not DockTimeout and "DockedTime" in RecordText:
 				# Looking in Undock mission, but only searches for hours
 				DockTimeoutResult = undockre.search(RecordText)
 				if DockTimeoutResult:
@@ -1958,26 +1966,33 @@ def parseImptMisc(recordlist,MissionN):
 				if DEBUG:
 					print("\n## Not Docked found UndockTime", RecordText, file=sys.stderr)
 			# if "RangeTimeout" in RecordText:
-			# 	RangeTimeoutResult = dockrangere.search(RecordText)
-			# 	if RangeTimeoutResult:
-			# 		RangeTimeout = float(RangeTimeoutResult.groups()[0])
-			# if DEBUG:
-			# 	print(f"\n## Docked Timeout: {DockTimeout}\n## RangeTimeout:{RangeTimeout}", file=sys.stderr)
-			# if RangeTimeout and DockTimeout:
-			# 	if RangeTimeout < DockTimeout:
-			# 		if DEBUG:
-			# 			print("\n## RangeTimeout less than DockTimeout", RecordText, file=sys.stderr)
-			# 		DockTimeout = RangeTimeout
-			# elif RangeTimeout:
-			# 	DockTimeout = RangeTimeout
-				
-		if not SchedT:
-			if 	"Scheduled" in RecordText and "Engineering/undock.tl" in RecordText and "AT TIME" in RecordText:
-				# Scheduled #12: "load Engineering/undock.tl;set undock.TransitLat 36.91 degree;set undock.TransitLon -122.11 degree;run", AT TIME: 2025-07-05T04:15:00Z
-				ts = RecordText.split("TIME: ")[1]
-				SchedT = ScheduleTimeToLocalTime(ts)
-				if DEBUG:
-					print("\n## Found Scheduled undock", RecordText, elapsed(SchedT-now), file=sys.stderr)
+				# 	RangeTimeoutResult = dockrangere.search(RecordText)
+				# 	if RangeTimeoutResult:
+				# 		RangeTimeout = float(RangeTimeoutResult.groups()[0])
+				# if DEBUG:
+				# 	print(f"\n## Docked Timeout: {DockTimeout}\n## RangeTimeout:{RangeTimeout}", file=sys.stderr)
+				# if RangeTimeout and DockTimeout:
+				# 	if RangeTimeout < DockTimeout:
+				# 		if DEBUG:
+				# 			print("\n## RangeTimeout less than DockTimeout", RecordText, file=sys.stderr)
+				# 		DockTimeout = RangeTimeout
+				# elif RangeTimeout:
+				# 	DockTimeout = RangeTimeout
+					
+			if not SchedT:
+				if 	"Scheduled" in RecordText and "Engineering/undock.tl" in RecordText and "AT TIME" in RecordText:
+					# Scheduled #12: "load Engineering/undock.tl;set undock.TransitLat 36.91 degree;set undock.TransitLon -122.11 degree;run", AT TIME: 2025-07-05T04:15:00Z
+					ts = RecordText.split("TIME: ")[1]
+					SchedT = ScheduleTimeToLocalTime(ts)
+					if DEBUG:
+						print("\n## Found Scheduled undock", RecordText, elapsed(SchedT-now), file=sys.stderr)
+		if "OnDock" in FullMission:
+			# Transition from lineCapture (3) to OnDock (1)
+			# only do once.
+			Docking = 1
+			
+		elif "LineCapture" in FullMission:
+			Docking = 3
 
 		if NeedSched:
 			if bool(re.search('got command schedule resume|got command restart application|scheduling is resumed',RecordText.lower())):
@@ -2743,7 +2758,9 @@ if (not recovered) or Opt.anyway or DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
 
 	NavLat,NavLon, ReachedWaypoint, WaypointName = getNewNavigating(missionTime-60000)
-	
+	if DEBUG:
+		print(f"EXITING NAVIGATION SECTION: {NavLat}",file=sys.stderr)
+
 	if VEHICLE in ["galene","triton"] and not 'DEFAULT' in missionName:
 		''' get only post-Mission log events '''
 		missionImpt = getImportant(missionTime-6000)
@@ -3145,6 +3162,8 @@ else:   #not opt report
 	
 	if gf=="NA":
 		gfnum = 3
+	elif gf=="CHG":
+		gfnum=4
 	elif gf and gf != "OK":
 		gfnum=int(4+ 1*(abs(float(gf))>0.08) + 1*(abs(float(gf))>0.2))
 	else:
@@ -3163,7 +3182,7 @@ else:   #not opt report
 		cdd["text_gftime"] = "no scan"
 		cdd["color_highgf"]="st18"
 		cdd["color_lowgf"]="st18"
-	elif gf == "OK":
+	elif gf == "OK" or gf=="CHG":
 		cdd["color_highgf"]="st18"
 		cdd["color_lowgf"]="st18"
 		ago_gftime = gftime - now 
@@ -3193,36 +3212,36 @@ else:   #not opt report
 	cdd["text_timeout"] = hours(missionTime+missionduration*3600*1000) + " - " + elapsed((missionTime+missionduration*3600*1000) - now )
 	
 	# if Both are set then use whichever is earlier
-	if (DockingTimeout and ScheduledUndock):
-		DockProjection = missionTime + float((DockingTimeout+0.5)*3600*1000)
-		if DEBUG: 
-			print("## Have both DockTimeout and ScheduledTime) : " + 
-			hours(DockProjection)+ " " + 
-			hours(ScheduledUndock), file=sys.stderr)
-		if DockProjection < ScheduledUndock:
-			ScheduledUndock = None
-			if DEBUG:
-				print("## Using Dock Timeout for undock", file=sys.stderr)
-		else:
-			if DEBUG:
-				print("## Using Scheduled time for undock", file=sys.stderr)
-			DockingTimeout = None
+	if "lineCapture" in missionName or "OnDock" in missionName:
+		if (DockingTimeout and ScheduledUndock):
+			DockProjection = missionTime + float((DockingTimeout+0.5)*3600*1000)
+			if DEBUG: 
+				print("## Have both DockTimeout and ScheduledTime) : " + 
+				hours(DockProjection)+ " " + 
+				hours(ScheduledUndock), file=sys.stderr)
+			if DockProjection < ScheduledUndock:
+				ScheduledUndock = None
+				if DEBUG:
+					print("## Using Dock Timeout for undock", file=sys.stderr)
+			else:
+				if DEBUG:
+					print("## Using Scheduled time for undock", file=sys.stderr)
+				DockingTimeout = None
 		
-	if DockingTimeout:
-		# elapsed((commreftime+needcomms*60*1000) - now)
-		# TODO: Maybe add 0.25 or 0.5 hours to missiontime here
-		# to give it a chance to dock and start OnDock mission
-		ProjectedUndock = float(DockingTimeout)*3600*1000
-		cdd["text_timeout"] = hours(missionTime+ProjectedUndock) + " - " + elapsed((missionTime+ProjectedUndock) - now )
-		cdd["text_nextcomm"]= "Unclear - Docking"
-		cdd["text_needcomms"] = f"maybe {DockingTimeout} h"
-	# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
-	
-	if ScheduledUndock:
-		cdd["text_timeout"] = hours(ScheduledUndock) + " - " + elapsed(ScheduledUndock - now )
-		cdd["text_nextcomm"]= hours(ScheduledUndock)		
-		cdd["text_needcomms"] = f"Sched Undock: " + elapsed(ScheduledUndock - now )
+		if DockingTimeout:
+			# elapsed((commreftime+needcomms*60*1000) - now)
+			# TODO: Maybe add 0.25 or 0.5 hours to missiontime here
+			# to give it a chance to dock and start OnDock mission
+			ProjectedUndock = float(DockingTimeout)*3600*1000
+			cdd["text_timeout"] = hours(missionTime+ProjectedUndock) + " - " + elapsed((missionTime+ProjectedUndock) - now )
+			cdd["text_nextcomm"]= "Unclear - Docking"
+			cdd["text_needcomms"] = f"maybe {DockingTimeout} h"
+		# cdd["text_nextcomm"] = hours(timeoutstart+needcomms*60*1000)
 		
+		if ScheduledUndock:
+			cdd["text_timeout"] = hours(ScheduledUndock) + " - " + elapsed(ScheduledUndock - now )
+			cdd["text_nextcomm"]= hours(ScheduledUndock)		
+			cdd["text_needcomms"] = f"Sched Undock: " + elapsed(ScheduledUndock - now )
 		
 	else:
 		cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
@@ -3783,7 +3802,7 @@ else:   #not opt report
 			cdd["dock_line"]="semitransline"
 			cdd["dock_eye"] ="semitrans"
 			cdd["dock_tri"] ="semitrans"
-			if cdd["text_arrivestation"] == "Nav missing":
+			if (cdd["text_arrivestation"] == "Nav missing") or (not (NavLat)):
 				cdd["text_arrivestation"] = "Undocked " + elapsed(DockingTime-now)
 		if CriticalError and "dock" in CriticalError.lower():
 			cdd["dock_buoy"]="st6"
