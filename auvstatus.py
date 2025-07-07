@@ -1648,12 +1648,16 @@ def parseCBIT(recordlist):
 					# print "\n####\n",Record["text"]
 					GF,GF_low = parseGF(RecordText)
 						
+					GFtime = Record["unixTime"]
+					
 					if "Low side" in RecordText or GF_low:
 						GFLow = True
 						# Probably on dock
-						if float(GF) > 0.9:
+						if DEBUG:
+							print("now and GFtime",now,GFtime,now-GFtime, file=sys.stderr)
+
+						if float(GF) > 0.9 and (now-GFtime)<(1.5*3600*1000):
 							GF="CHG"
-					GFtime = Record["unixTime"]
 			
 				elif RecordText.startswith("No ground fault"):
 					GF = "OK"
@@ -3209,7 +3213,10 @@ else:   #not opt report
 	# This in in hours
 	# cdd["text_timeout"] = hours(timeoutstart+missionduration*3600*1000)
 
-	cdd["text_timeout"] = hours(missionTime+missionduration*3600*1000) + " - " + elapsed((missionTime+missionduration*3600*1000) - now )
+	if missionduration:
+		cdd["text_timeout"] = hours(missionTime+missionduration*3600*1000) + " - " + elapsed((missionTime+missionduration*3600*1000) - now )
+	else:
+		cdd["text_timeout"] = "na"
 	
 	# if Both are set then use whichever is earlier
 	if "lineCapture" in missionName or "OnDock" in missionName:
@@ -3232,7 +3239,7 @@ else:   #not opt report
 			# elapsed((commreftime+needcomms*60*1000) - now)
 			# TODO: Maybe add 0.25 or 0.5 hours to missiontime here
 			# to give it a chance to dock and start OnDock mission
-			ProjectedUndock = float(DockingTimeout)*3600*1000
+			ProjectedUndock = float(DockingTimeout+0.5)*3600*1000
 			cdd["text_timeout"] = hours(missionTime+ProjectedUndock) + " - " + elapsed((missionTime+ProjectedUndock) - now )
 			cdd["text_nextcomm"]= "Unclear - Docking"
 			cdd["text_needcomms"] = f"maybe {DockingTimeout} h"
