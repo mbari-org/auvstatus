@@ -1742,10 +1742,18 @@ def parseGaleneImpt(recordlist):
 	for Record in recordlist:
 		RecordText = Record.get("text","NA")
 		if not Chiton:
-			if "PowerOnly.SampleLoad1" in RecordText:
+			if RecordText.startswith("got command set") and ("BackseatDriver.EnableBackseat" in RecordText):
+				ChitonVal = int(RecordText.replace("bool","").split("BackseatDriver.EnableBackseat")[1])
+				Chiton=["OFF","ON"][ChitonVal]
+				ChitonTime = Record["unixTime"]
+				if DEBUG:
+					print("Found BACKSEAT in parseGalene",RecordText,file=sys.stderr)
+					
+			elif "PowerOnly.SampleLoad1" in RecordText:
 				ChitonVal = int(RecordText.replace("bool","").split("PowerOnly.SampleLoad1 ")[1].split(";")[0])
 				Chiton=["OFF","ON"][ChitonVal]
 				ChitonTime = Record["unixTime"]
+				
 		if not WhiteOn or not RedOn:
 			if ("MultiRay" in RecordText) and ("lights" in RecordText):
 				LightResult = lightre.search(RecordText)
@@ -1794,11 +1802,11 @@ def parseImptMisc(recordlist,MissionN):
 	FullMission = ""
 	
 	DropOff = False
-	
-	Chiton=""
 	AcousticTime=0
-	RedOn = ""
-	WhiteOn = ""
+	
+	# Chiton=""
+	# RedOn = ""
+	# WhiteOn = ""
 	
 	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
@@ -1901,26 +1909,31 @@ def parseImptMisc(recordlist,MissionN):
 			if DEBUG:
 				print("## Got VoltThresh from ImptMisc", voltthresh, file=sys.stderr)
 				
-		if VEHICLE in ["galene","triton"]: 
-			if not Chiton:
-			# if "Running AyeRIS backseat app" in RecordText:
-			# 	Chiton = "ON"
-			# elif RecordText.startswith("got command set") and ("BackseatDriver.EnableBackseat" in RecordText):
-			# 	ChitonVal = int(RecordText.replace("bool","").split("BackseatDriver.EnableBackseat")[1])
-			# 	Chiton=["OFF","ON"][ChitonVal]
-			# # new camera status stuff
-				if "PowerOnly.SampleLoad1" in RecordText:
-					ChitonVal = int(RecordText.replace("bool","").split("PowerOnly.SampleLoad1 ")[1].split(";")[0])
-					Chiton=["OFF","ON"][ChitonVal]
-			if not WhiteOn or not RedOn:
-				if ("MultiRay" in RecordText) and ("lights" in RecordText):
-					LightResult = lightre.search(RecordText)
-					if not WhiteOn and "white" in RecordText:
-						WhiteOn = LightResult.groups()[1]
-					elif not RedOn and "red" in RecordText:
-						RedOn = LightResult.groups()[1]
-					if DEBUG:
-						print("LED STATUS",RecordText,WhiteOn,RedOn,LightResult,file=sys.stderr)
+		# This should be in parseGaleneImpt		
+		# if VEHICLE in ["galene","triton"]: 
+		# 	#TRITON: got command set sci2:BackseatDriver.EnableBackseat 1 bool
+		# 	if not Chiton:
+		# 		if "Running AyeRIS backseat app" in RecordText:
+		# 			Chiton = "ON"
+		# 		elif RecordText.startswith("got command set") and ("BackseatDriver.EnableBackseat" in RecordText):
+		# 			# Assume it is turned off at the start of mission
+		# 			# and needs to specifically be turned on
+		# 			if Record["unixTime"]> missionTime:
+		# 				ChitonVal = int(RecordText.replace("bool","").split("BackseatDriver.EnableBackseat")[1])
+		# 				Chiton=["OFF","ON"][ChitonVal]
+		# 		# # new camera status stuff
+		# 		if "PowerOnly.SampleLoad1" in RecordText:
+		# 			ChitonVal = int(RecordText.replace("bool","").split("PowerOnly.SampleLoad1 ")[1].split(";")[0])
+		# 			Chiton=["OFF","ON"][ChitonVal]
+		# 	if not WhiteOn or not RedOn:
+		# 		if ("MultiRay" in RecordText) and ("lights" in RecordText):
+		# 			LightResult = lightre.search(RecordText)
+		# 			if not WhiteOn and "white" in RecordText:
+		# 				WhiteOn = LightResult.groups()[1]
+		# 			elif not RedOn and "red" in RecordText:
+		# 				RedOn = LightResult.groups()[1]
+		# 			if DEBUG:
+		# 				print("LED STATUS",RecordText,WhiteOn,RedOn,LightResult,file=sys.stderr)
 					
 
 		if not ampthresh and RecordText.startswith("IBIT.batteryCapacityThreshold="):
@@ -2128,7 +2141,7 @@ def parseImptMisc(recordlist,MissionN):
 		#	FlowTime   = Record["unixTime"]
 
 #	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,ampthreshtime,FullMission,Docking,DockTime,DockTimeout,SchedT,Chiton,AcousticTime,DropOff,WhiteOn,RedOn
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,ampthreshtime,FullMission,Docking,DockTime,DockTimeout,SchedT,DropOff,AcousticTime
 
 	
 
@@ -2756,7 +2769,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	nextLat,nextLon = getNewNextWaypoint()  # From the mission statement, in case Navigating To is not found
 	#  MOVE NavLat and ReachedWaypoint to after mission time
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ScheduledUndock,ChitonVal,AcousticComms,DropWeightOff,WhiteLightOn,RedLightOn  = parseImptMisc(important,missionName)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ScheduledUndock,AcousticComms,DropWeightOff  = parseImptMisc(important,missionName)
 	
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
@@ -2767,7 +2780,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 
 	if VEHICLE in ["galene","triton"] and not 'DEFAULT' in missionName:
 		''' get only post-Mission log events '''
-		missionImpt = getImportant(missionTime-6000)
+		missionImpt = getImportant(missionTime-60000)
 		ChitonVal,ChitonTime,WhiteLightOn,RedLightOn=parseGaleneImpt(missionImpt)
 	else:
 		ChitonVal,ChitonTime,WhiteLightOn,RedLightOn = ["","","",""]
@@ -3216,7 +3229,7 @@ else:   #not opt report
 	if missionduration:
 		cdd["text_timeout"] = hours(missionTime+missionduration*3600*1000) + " - " + elapsed((missionTime+missionduration*3600*1000) - now )
 	else:
-		cdd["text_timeout"] = "na"
+		cdd["text_timeout"] = "NA"
 	
 	# if Both are set then use whichever is earlier
 	if "lineCapture" in missionName or "OnDock" in missionName:
@@ -3379,12 +3392,13 @@ else:   #not opt report
 
 		if DEBUG: 
 			print("\n# COMPARING MISSION to SCHEDULED, mN,S,mT,St",missionName,Scheduled,missionTime,scheduledtime, file=sys.stderr)
+		if VEHICLE in ['galene','triton']:
+			cdd["color_cameralens"] = "st3"
+			cdd["color_camerabody"] = "st11"
 
 		if VEHICLE == 'galene':
 			cdd["color_whiteled"] = 'stledoff'
 			cdd["color_redled"] = 'stledoff'
-			cdd["color_cameralens"] = "st3"
-			cdd["color_camerabody"] = "st11"
 		# These Schedule parameters are set in parseDefaults and parseMission
 		#removed this  and (missionName not in Scheduled)
 		
@@ -3551,25 +3565,26 @@ else:   #not opt report
 		# THIS camera is not being used anymore
 		# calanus: Running AyeRIS backseat app
 		
-		if VEHICLE == 'galene':
+		if VEHICLE in ['galene','triton']:
 			if ChitonVal=="ON":
 				cdd["text_cameraago"] = "ON " # + cdd["text_missionago"]
 				cdd["color_camerabody"] = "st4"
 			elif ChitonVal == "OFF":
 				cdd["color_camerabody"] = "st3"
 				cdd["text_cameraago"] = "OFF" # + cdd["text_missionago"]
-			if WhiteLightOn == "ON":
-				cdd["color_whiteled"]="whiteled"
-				cdd["color_whitebeam"]="whitebeam"
-			elif WhiteLightOn == "OFF":
-				cdd["color_whiteled"]="stledoff" # dark gray
-				cdd["color_whitebeam"]="st18" # invisible
-			if RedLightOn == "ON":
-				cdd["color_redled"]="redled"
-				cdd["color_redbeam"]="redbeam"
-			elif RedLightOn == "OFF":
-				cdd["color_redled"]="stledoff" # dark gray
-				cdd["color_redbeam"]="st18" # invisible
+			if VEHICLE == 'galene':
+				if WhiteLightOn == "ON":
+					cdd["color_whiteled"]="whiteled"
+					cdd["color_whitebeam"]="whitebeam"
+				elif WhiteLightOn == "OFF":
+					cdd["color_whiteled"]="stledoff" # dark gray
+					cdd["color_whitebeam"]="st18" # invisible
+				if RedLightOn == "ON":
+					cdd["color_redled"]="redled"
+					cdd["color_redbeam"]="redbeam"
+				elif RedLightOn == "OFF":
+					cdd["color_redled"]="stledoff" # dark gray
+					cdd["color_redbeam"]="st18" # invisible
 			
 				
 		# ubatTime TO ADD?
