@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.91  - Implemented Waypoint lookup for non-Navigating-To missions
 	v 2.90  - Improved parsing of docking events including charge status
 	v 2.89  - Made dock yellow if lineCapture. reset voltage threshold if reboot
 	v 2.88  - Added some docking WPs to the lookup
@@ -792,27 +793,9 @@ def getNewCameraPower(starttime):
 		nowpow="PISC"
 		nowpowtime=False
 	return nowcat,nowpowtime,nowpow
-	
-def getNewNavigating(missiontime):
-	recordlist = getImportant(missiontime-6000)
-	StationLat = False
-	StationLon = False
-	ReachedWaypoint = False
-	NavigatingTo    = False
-	WaypointName = "Waypoint"
-	# Navigating to waypoint: 37.020001,-122.270003
-	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
-	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 
-	
-	RawWaypoints={"C1"    : "-121.847,36.797",
-		"M1"    : "-122.022,36.750",
-		"M2"    : "-122.375999,36.691",
-		"3km"   : "-121.824326,36.806965",
-		"Sta.N" : "-121.9636,36.9026",
-		"Sta.S" : "-121.8934,36.6591",
-		"NEreal" : "-121.900002,36.919998",
-		"NE"    : "-121.9,36.9"}
+def LookupWaypoint(StationLat,StationLon):
+	WaypointName = "Station."
 	TruncatedWaypoints = {
   		"36.797,-121.847": "C1"    ,
   		"36.797,-121.850": "C1 profile",
@@ -840,8 +823,39 @@ def getNewNavigating(missiontime):
 		"36.906,-122.116" : "Dock",
 		"36.910,-122.110" : "Dock",
 		"37.020,-122.270" : "NW",
-		"36.910,-121.900" : "East"
+		"36.910,-121.900" : "East",
+		"36.696,-122.047" : "Ahi_tr0",
+		"36.695,-122.051" : "Ahi_tr1"
 		}
+	if StationLat:
+		LookupLL = f"{round(StationLat,3):.3f},{round(StationLon,3):.3f}"
+		if DEBUG:
+			print("## Looking up waypoint name for Station", LookupLL, file=sys.stderr)
+		
+		WaypointName = TruncatedWaypoints.get(LookupLL,"Station.")
+	return WaypointName 	
+	
+def getNewNavigating(missiontime):
+	recordlist = getImportant(missiontime-6000)
+	StationLat = False
+	StationLon = False
+	ReachedWaypoint = False
+	NavigatingTo    = False
+	WaypointName = "Waypoint"
+	# Navigating to waypoint: 37.020001,-122.270003
+	myre  =  re.compile(r'WP ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
+	wayre =  re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
+
+	
+	RawWaypoints={"C1"    : "-121.847,36.797",
+		"M1"    : "-122.022,36.750",
+		"M2"    : "-122.375999,36.691",
+		"3km"   : "-121.824326,36.806965",
+		"Sta.N" : "-121.9636,36.9026",
+		"Sta.S" : "-121.8934,36.6591",
+		"NEreal" : "-121.900002,36.919998",
+		"NE"    : "-121.9,36.9"}
+
 	
 	if DEBUG:
 		print(f"Parsing Waypoints for current mission",file=sys.stderr)
@@ -874,13 +888,8 @@ def getNewNavigating(missiontime):
 				if DEBUG:
 					print("## Got ReachedWaypoint", StationLat,StationLon, file=sys.stderr)
 				ReachedWaypoint = Record["unixTime"]
-				
-			if StationLat:
-				LookupLL = f"{round(StationLat,3):.3f},{round(StationLon,3):.3f}"
-				if DEBUG:
-					print("## Looking up Station", LookupLL, file=sys.stderr)
-				
-				WaypointName = TruncatedWaypoints.get(LookupLL,"Station.")  # if not found, use "Station"
+			WaypointName = LookupWaypoint(StationLat,StationLon)	
+ # if not found, use "Station."
 	return StationLat, StationLon, ReachedWaypoint, WaypointName
 
 def getNewNextWaypoint():
@@ -2773,8 +2782,12 @@ if (not recovered) or Opt.anyway or DEBUG:
 	
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
+		
 
 	NavLat,NavLon, ReachedWaypoint, WaypointName = getNewNavigating(missionTime-60000)
+	if nextLat and WaypointName in ["Station.","Waypoint"]:
+		WaypointName = LookupWaypoint(nextLat, nextLon)
+		
 	if DEBUG:
 		print(f"EXITING NAVIGATION SECTION: {NavLat}",file=sys.stderr)
 
@@ -2824,7 +2837,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 		ReachedWaypoint = False
 		if nextLat and not NavLat:
 			if DEBUG: 
-				print("## Using mission WAYPOINT {nextLat},{nextLon} instead of Navigating to",file=sys.stderr)
+				print(f"## Using mission WAYPOINT {nextLat},{nextLon} instead of Navigating to",file=sys.stderr)
 			NavLat = nextLat
 			NavLon = nextLon
 		if abs(NavLon) > 0:
