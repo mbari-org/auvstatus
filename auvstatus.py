@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.92  - First time needComms set in fractional hour. Need to remove the int()
 	v 2.91  - Implemented Waypoint lookup for non-Navigating-To missions
 	v 2.90  - Improved parsing of docking events including charge status
 	v 2.89  - Made dock yellow if lineCapture. reset voltage threshold if reboot
@@ -1281,20 +1282,20 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	if ymax > dep_to_show + 5:
 		dep_to_show = 120
 	# COMMENTING OUT DEEP Sparklines to omit stray point.
-	# if ymax > dep_to_show + 5:
-	# 	dep_to_show = 160
-	# if ymax > dep_to_show + 5:
-	# 	dep_to_show = 240
-	# if ymax > dep_to_show + 5:
-	# 	dep_to_show = 320
-	# if ymax > dep_to_show + 5:
-	# 	dep_to_show = 640
-	# if ymax > dep_to_show + 5:
-	# 	dep_to_show = 1280
-	# if ymax > dep_to_show + 5:
-	# 	dep_to_show = 1920
-	# if ymax > dep_to_show + 5:
-	# 	dep_to_show = 2560
+	if ymax > dep_to_show + 5:
+		dep_to_show = 160
+	if ymax > dep_to_show + 5:
+		dep_to_show = 240
+	if ymax > dep_to_show + 5:
+		dep_to_show = 300
+	if ymax > dep_to_show + 5:
+		dep_to_show = 600
+	if ymax > dep_to_show + 5:
+		dep_to_show = 1200
+	if ymax > dep_to_show + 5:
+		dep_to_show = 1600
+	if ymax > dep_to_show + 5:
+		dep_to_show = 2500
 	
 	
 	ydiv = dep_to_show/h
@@ -1309,7 +1310,7 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 		sublist = xlist[:-3]
 	else:
 		# subplist = xplist
-		sublist = xlist
+		sublist = xlist  
 # if DEBUG:
 	# 	print("xplist",xplist, file=sys.stderr)
 	# 	print("yplist",yplist, file=sys.stderr)
@@ -2320,10 +2321,10 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			if DEBUG:
 				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 			try:
-				NeedComms = int(float(re.split("SurfacingIntervalDuringListening |NeedCommsTimeProfileStation |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait |NeedCommsTime ",Record["text"])[1].split(" ")[0]))
+				NeedComms = float(re.split("SurfacingIntervalDuringListening |NeedCommsTimeProfileStation |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait |NeedCommsTime ",Record["text"])[1].split(" ")[0])
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
-					NeedComms = int(float(Record["text"].split("NeedCommsTimeVeryLong ")[1].split(" ")[0])) 
+					NeedComms = float(Record["text"].split("NeedCommsTimeVeryLong ")[1].split(" ")[0]) 
 					if DEBUG:
 						print("#Long NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 				except IndexError:	
@@ -3278,7 +3279,7 @@ else:   #not opt report
 		
 	else:
 		cdd["text_nextcomm"] = hours(commreftime+needcomms*60*1000) + " - " + elapsed((commreftime+needcomms*60*1000) - now)
-		cdd["text_needcomms"] = f"{needcomms} min"
+		cdd["text_needcomms"] = f"{needcomms:.0f} min"
 	battsvg=""
 	'''
 <rect desc="cuorange" x="365.5" y="250.8" class="st27" width="4" height="21"/>
