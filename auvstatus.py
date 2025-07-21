@@ -856,8 +856,7 @@ def LookupWaypoint(StationLat,StationLon):
 		WaypointName = TruncatedWaypoints.get(LookupLL,"Station.")
 	return WaypointName 	
 	
-def getNewNavigating(missiontime):
-	recordlist = getImportant(missiontime-6000)
+def getNewNavigating(recordlist=[]):
 	StationLat = False
 	StationLon = False
 	ReachedWaypoint = False
@@ -2803,33 +2802,17 @@ if (not recovered) or Opt.anyway:
 	
 	nextLat,nextLon = getNewNextWaypoint()  # From the mission statement, in case Navigating To is not found
 	#  MOVE NavLat and ReachedWaypoint to after mission time
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ScheduledUndock,AcousticComms,DropWeightOff  = parseImptMisc(important,missionName)
-	
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
-		
 
-	NavLat,NavLon, ReachedWaypoint, WaypointName = getNewNavigating(missionTime-60000)
-	if nextLat and WaypointName in ["Station.","Waypoint"]:
-		WaypointName = LookupWaypoint(nextLat, nextLon)
-		
-	if DEBUG:
-		print(f"EXITING NAVIGATION SECTION: {NavLat}",file=sys.stderr)
-
-	if VEHICLE in ["galene","triton"] and not 'DEFAULT' in missionName:
-		''' get only post-Mission log events '''
-		missionImpt = getImportant(missionTime-60000)
-		ChitonVal,ChitonTime,WhiteLightOn,RedLightOn=parseGaleneImpt(missionImpt)
-	else:
-		ChitonVal,ChitonTime,WhiteLightOn,RedLightOn = ["","","",""]
-		
-	if DEBUG:
-		print(f"FRESH PAUSE/RESUME: {Paused}",file=sys.stderr)
-		
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ScheduledUndock,AcousticComms,DropWeightOff  = parseImptMisc(important,missionName)
+			
 	gf,gftime,gflow = parseCBIT(gfrecords)
 
 	if not logtime:
 		logtime = startTime
+	
+	# GETTING IMPORTANT RECORDS
 	
 	if missionTime > 60000: 
 		# changed the offset to 2 minutes
@@ -2842,6 +2825,23 @@ if (not recovered) or Opt.anyway:
 	else:
 		querytime = missionTime
 		postmission = ''
+	
+	if VEHICLE in ["galene","triton"] and not 'DEFAULT' in missionName:
+		ChitonVal,ChitonTime,WhiteLightOn,RedLightOn=parseGaleneImpt(postmission)
+	else:
+		ChitonVal,ChitonTime,WhiteLightOn,RedLightOn = ["","","",""]
+		
+	if DEBUG:
+		print(f"FRESH PAUSE/RESUME: {Paused}",file=sys.stderr)
+	
+	NavLat,NavLon, ReachedWaypoint, WaypointName = getNewNavigating(postmission)
+	
+	if nextLat and WaypointName in ["Station.","Waypoint"]:
+		WaypointName = LookupWaypoint(nextLat, nextLon)
+		
+	if DEBUG:
+		print(f"EXITING NAVIGATION SECTION: {NavLat}",file=sys.stderr)
+
 	
 	if DEBUG:
 		print("MISSION          TIME AND RAW", hours(missionTime),dates(missionTime),missionTime, file=sys.stderr)
