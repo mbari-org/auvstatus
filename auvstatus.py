@@ -261,6 +261,8 @@ def getDeployment():
 
 def getNewDeployment():
 	'''return start time for deployment and deploymentID. Starts too early!'''
+		#https://okeanids.mbari.org/TethysDash/api/deployments/last?vehicle=opah
+
 	startTime = 0
 	deployID = ""
 	try:
@@ -268,15 +270,15 @@ def getNewDeployment():
 		if launchData:
 			startTime = launchData.get('startEvent',{}).get('unixTime',0)
 			deployID = launchData.get('deploymentId',"")
+			recoverTime = launchData.get('recoverEvent',{}).get('unixTime',0)
 	except ssl.SSLError:
 		print("# DEPLOYMENT TIMEOUT",VEHICLE, file=sys.stderr)
 	if DEBUG:
 		print("### DEPLOYMENT TIME:",startTime, file=sys.stderr)
 		print("### DEPLOYMENT ID:",deployID, file=sys.stderr)
 		print("### New Deploy String:",launchData, file=sys.stderr)
-	return startTime,deployID
-
-
+	return startTime,deployID,recoverTime
+	
 def getRecovery(starttime):
 	launchString = runQuery(event="recover",limit="1",timeafter=starttime)
 	recover = False
@@ -2689,7 +2691,7 @@ mission_defaults = {
 now = 1000 * time.mktime(time.localtime())  # (*1000?)
 
 startTime = getDeployment()   
-# newdeploy,deployID = getNewDeployment() 
+newdeploy,deployID,newrecover = getNewDeployment() 
 # reverting to launch instead of start, but getNewDeployment() can be a template for other new queries
 
 if not startTime:
@@ -2699,7 +2701,6 @@ if not startTime:
 		sys.exit()
 
 recovered = getRecovery(starttime=startTime)
-
 plugged = getPlugged(recovered)
 
 text_note,text_noteago = parseNotes(getNotes(startTime))
