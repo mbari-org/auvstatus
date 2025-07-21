@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.93  - Increased look-behind for mission parameters to 10 minutes
 	v 2.92  - First time needComms set in fractional hour. Need to remove the int()
 	v 2.91  - Implemented Waypoint lookup for non-Navigating-To missions
 	v 2.90  - Improved parsing of docking events including charge status
@@ -175,14 +176,17 @@ def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 	if not timeafter or int(timeafter) < 1234567890123:
 		timeafter="1234567890123"
 		
-	BaseQuery = "https://{ser}/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
+	if "tethysdash" in servername:
+		BaseQuery = "http://{ser}/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
+	else:
+		BaseQuery = "https://{ser}/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
 	URL = BaseQuery.format(ser=servername,v=vehicle,e=event,n=name,tm=match,l=limit_str,t=timeafter)
 	
 	if DEBUG:
 		print("### QUERY:",URL, file=sys.stderr)
 
 	try:
-		connection = urllib.request.urlopen(URL,timeout=8)		
+		connection = urllib.request.urlopen(URL,timeout=12)		
 		if connection:
 			raw = connection.read()
 			structured = json.loads(raw)
@@ -211,7 +215,11 @@ def runNewStyleQuery(api="",extrastring=""):
 		
 	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
 
-	NewBaseQuery = "https://{ser}/TethysDash/api/{apistring}{e}"
+	if "tethysdash" in servername:
+		NewBaseQuery = "http://{ser}/TethysDash/api/{apistring}{e}"
+	else:
+		NewBaseQuery = "https://{ser}/TethysDash/api/{apistring}{e}"
+		
 	URL = NewBaseQuery.format(ser=servername,apistring=apistring,e=extrastring)
 	
 	if DEBUG:
@@ -337,7 +345,10 @@ def getMissionDefaults():
 	missions=["Science/profile_station","Science/sci2","Science/mbts_sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
 	missions=["Science/mbts_sci2","Science/profile_station"]
 	for mission in missions:
-		URL = "https://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)
+		if "tethysdash" in servername:
+			URL = "http://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)
+		else:
+			URL = "https://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)			
 		print("\n#===========================\n",mission, "\n", file=sys.stderr)
 		try:
 			connection = urllib.request.urlopen(URL,timeout=8)
@@ -369,7 +380,12 @@ def getNewMissionDefaults(missionn):
 	missions=["Science/mbts_sci2.tl","Transport/keepstation.tl"]
 	# TEMPORARY FOR DEBUGGING
 	# missionn=missions[1]
-	URL = "https://{}/TethysDash/api/commands/script?path={}".format(servername,missionn)
+	if "tethysdash" in servername:
+		URL = "http://{}/TethysDash/api/commands/script?path={}".format(servername,missionn)
+	else:
+		URL = "https://{}/TethysDash/api/commands/script?path={}".format(servername,missionn)
+
+
 	if DEBUG: 
 		print("\n#===========================\n",missionn, "\n", file=sys.stderr)
 		print("\n#===========================\n",URL, "\n", file=sys.stderr)
@@ -411,7 +427,7 @@ def getNewMissionDefaults(missionn):
 						if subfield.get('unit',0)=='minute':
 							TimeOut = int(TimeOut)/60
 						if DEBUG:
-							print("FOUND MISSION TIMEOUT:", subfield, file=sys.stderr)
+							print("FOUND DEFAULT MISSION TIMEOUT:", subfield, file=sys.stderr)
 					elif sfn=="Speed":
 						Speed = subfield.get('value',None)
 						if DEBUG:
@@ -535,8 +551,11 @@ def getDataAsc(starttime,mission):
 '''
 
 	Bailout=False
+	if 'tethysdash' in servername:
+		DataURL='http://{ser}/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
+	else:
+		DataURL='https://{ser}/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
 	
-	DataURL='https://{ser}/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
 	volt = 0
 	amp  = 0
 	volttime = 0
@@ -584,8 +603,9 @@ def getDataAsc(starttime,mission):
 			print("# DATA ASC URL",NewURL, file=sys.stderr)
 		datacon = urllib.request.urlopen(NewURL,timeout=8)
 		content =  datacon.read().decode('utf-8').splitlines()
-		# if DEBUG:
-		# 	print("# DATA content",content[:10], file=sys.stderr)
+		
+		if DEBUG:
+			print("# OLD DATA QUERY",NewURL, file=sys.stderr)
 		# pull last X lines from queue. This was causing problems on some missions so increased it
 		lastlines = list(deque(content))
 		#lastlines = list(deque(content))
@@ -2189,10 +2209,12 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 		## NOTE / TODO: When schedule is stopped or goes to default mission and you do schedule resume, does the timeout start at zero then?
 		## Widget fails to pick up duration that was set long ago in the schedule.
 		# if goes to default and then resumes: got command resume 
-		
+		# got command set CircleSample.MissionTimeout 75 hour
 		# TODO: Add DockedTime to this parsing as a sub for MissionTimeout
 		if TimeoutDuration == False and \
 		     ".MissionTimeout" in RecordText and RecordText.startswith("got") and not ("chedule" in RecordText):
+			if DEBUG:
+					print("# NOTE: FOUND Timeout in ",RecordText, file=sys.stderr)
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			'''got command set sci2.MissionTimeout 24.000000 hour'''
 			TimeoutDuration = float(Record["text"].split("MissionTimeout ")[1].split(" ")[0])
@@ -2238,8 +2260,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			if Scheduled and "ASAP" in RecordText.upper():
 				Scheduled += ' [ASAP]'
 				# Scheduled = ''  # Blanking out schedule if ASAP
-
-			else:
+			else: # Not ASAP
 			#'''got command schedule "run Science/mbts_sci2.xml"'''
 			#'''## failed to parse schedule: brizo got command schedule "run" 4d401 4 4.000000'''
 			#	'''got command schedule "load Science/circle_acoustic_contact.xml'''
@@ -2604,7 +2625,8 @@ if Opt.newmissions:
 if Opt.inst == 'whoi':
 	servername = 'lrauv.whoi.edu'
 else:
-	servername = 'okeanids.mbari.org'
+	servername = 'tethysdash2.shore.mbari.org'
+	# servername = 'okeanids.mbari.org'
 	
 if Opt.printhtml:
 	'''print format of auv.html auto-refreshing file'''
@@ -2733,7 +2755,7 @@ if DEBUG:
 	print("## ARGO TIME AND LASTGOODTIME:", argobatt,argotime,argogoodtime,elapsed(argogoodtime-argotime),argoet, file=sys.stderr)
 
 # vehicle not recovered
-if (not recovered) or Opt.anyway or DEBUG:
+if (not recovered) or Opt.anyway:
 	needcomms = 0
 	critical  = getCritical(startTime)
 	faults = getFaults(startTime)
@@ -2771,6 +2793,8 @@ if (not recovered) or Opt.anyway or DEBUG:
 	querytime = 0
 	# mission time is off if schedule paused (default) and resumed. Detect this and go back further?
 	missionName,missionTime = parseMission(important)
+	if DEBUG:
+		print(f"## MISSION AND TIME {missionName},{missionTime}", dates(missionTime),hours(missionTime),file=sys.stderr)
 	Ampthreshnum=0
 	Voltthreshnum = 0
 	IgnoreOverride = 0
@@ -2808,9 +2832,12 @@ if (not recovered) or Opt.anyway or DEBUG:
 		logtime = startTime
 	
 	if missionTime > 60000: 
-		querytime = missionTime-120000
+		# changed the offset to 2 minutes
+		querytime = missionTime-10*60000
 		# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
 		# CHANGING FROM CommandLine to CommandExec
+		if DEBUG:
+			print("\n##Getting Important from ",elapsed(now-querytime), "date",hours(missionTime))
 		postmission = getImportant(querytime,inputname="CommandExec")
 	else:
 		querytime = missionTime
@@ -2874,6 +2901,7 @@ if (not recovered) or Opt.anyway or DEBUG:
 		print("# NewBatteryData: ",newvolt,newamp,newavgcurrent,newvolttime,batteryduration, file=sys.stderr)
 
 	#this is volt, amp, time
+	# TODO Get rid of the old inference.
 	volt,amphr,batttime,flowdat,flowtime,Tracking,TrackTime = getDataAsc(startTime,missionName)
 	# COMMENTED this out to get battery data from the old data-file method instead of new API
 	# if VEHICLE!='ahi' and newvolt>0:
@@ -3536,7 +3564,7 @@ else:   #not opt report
 			cdd["color_flow"] = 'st18'
 		
 		if AcousticComms:
-			cdd["text_celllabel"] = "ACOUSTIC"
+			cdd["text_celllabel"] = "Acoustic"
 		else:
 			cdd["text_celllabel"] = "Cell comms"
 	
