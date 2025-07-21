@@ -622,7 +622,7 @@ if Opt.testout:
 
 if Opt.savefile and (not recovered):
 	deployID="none"
-	deploytime,deployID = getNewDeployment()
+	deploytime,deployID,recovertime = getNewDeployment()
 	if DEBUG:
 		print (sys.stderr, "#Saving file ", OutPath.format(VEHICLE))		
 		print (sys.stderr, "#DEPLOYMENT: ", deployID)
