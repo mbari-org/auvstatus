@@ -4,11 +4,9 @@
 *.svg
 *.png
 *.csv
-!*archive.svg
+!auv_*archive.svg
 !legend.svg
-charge/startcharge.csv
-charge/settings.py
-charge/chargepoint.py
+archive/
 charge/
 startcharge.csv
 .nova
