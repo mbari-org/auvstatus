@@ -9,13 +9,12 @@
 charge/startcharge.csv
 charge/settings.py
 charge/chargepoint.py
-charge/chargepoint2.py
-charge/*
+charge/
 startcharge.csv
 .nova
 *.gif
 *-archive
-older_examples
+older_examples/
 esp_daphne-archive.svg
 esp_pontus-archive.svg
 hovertest.html
