@@ -56,7 +56,14 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.whitebeam {fill:#fff;stroke:none;} 
 	.whiteled {fill:#fff;stroke:#000;stroke-width:0.6;} 
 	.stledoff {fill:#555;stroke:#000;stroke-width:0.6;} 
-	
+	.storange{fill:#EF9D3088;stroke:none; } <!--PaleOrange No Stroke -->
+	.stgreen{fill:#5AC1A488;stroke:none; } <!--PaleGreen No Stroke -->
+	.stpurple{fill:#9091C788;stroke:none; } <!--PalePurple No Stroke -->
+	.stblue{fill:#549fd488;stroke:none; } <!--PaleBlue No Stroke -->
+	.stsat{fill:#EF9D3088;stroke:none; } <!--PaleOrange No Stroke -->
+	.starg{fill:#549fd488;stroke:none; } <!--PaleBlue No Stroke -->
+	.stcel{fill:#5AC1A488;stroke:none; } <!--PaleGreen No Stroke -->
+	.stgps{fill:#9091C788;stroke:none; } <!--PalePurple No Stroke -->
 	</style>
 '''
 
@@ -93,8 +100,8 @@ svgtext = '''
 <path class="st2" d="M554.57,292.12l-279.27,0l0-60.4l279.27,0c16.68,0,30.2,13.52,30.2,30.2v0
 	C584.77,278.6,571.25,292.12,554.57,292.12z"/>
 	
-<polygon class="st3" points="154.9,269.51 275.29,292.12 275.29,231.72 154.9,254.33 "/>
-<polygon class="st3" points="255.42,235.44 244.05,237.4 244.8,189.82 255.99,186.82 "/>
+<polygon desc="tailcone" class="st3" points="154.9,269.51 275.29,292.12 275.29,231.72 154.9,254.33 "/>
+<polygon desc="antenna" class="st3" points="255.42,235.44 244.05,237.4 244.8,196.82 255.99,193.82 "/>
 
 <!-- add new overcurrent lights -->
 <text desc="HardwareLabel" text-anchor="end" transform="matrix(1 0 0 1 260 254)" class="st9 st10">HW</text>
@@ -142,11 +149,11 @@ svgtext = '''
 <circle desc="CTD" class="{color_ctd}" cx="544" cy="241" r="4" /> 
 <circle desc="missiondefault"   class="{color_missiondefault}" cx="405" cy="183" r="2"/>
 <circle desc="scheduleddefault" class="{color_scheduled}"      cx="405" cy="193.5" r="1.6"/>
-<circle desc="commoverdue"     class="{color_commago}"         cx="138.5" cy="295.5" r="2"/>
+<circle desc="commoverdue"     class="{color_commago}"         cx="138.5" cy="295.0" r="2"/>
 <circle desc="logoverdue"      class="{color_logago}"          cx="138.5" cy="219" r="2"/>
 <circle desc="missionoverdue"     class="{color_missionago}"     cx="138.5" cy="306" r="2"/>
-<rect desc="satcomm" x="261.49" y="182.98" class="{color_satcomm}" width="24.43" height="11.5"/>
-<rect desc="cell"    x="260.15" y="202" class="{color_cell}" width="26.43" height="11.31"/>
+<rect desc="satcomm" x="261.49" y="185.48" class="{color_satcomm}" width="24.43" height="11.5"/>
+<rect desc="cell"    x="260.15" y="204" class="{color_cell}" width="26.43" height="11.31"/>
 <rect desc="gps"     x="407.76" y="221.71" class="{color_gps}" width="26.93" height="10.17"/>
 <rect desc="amps"    x="336.28" y="261.76" class="{color_amps}" width="25.5" height="10.5"/>
 <rect desc="volts"   x="336.28" y="249.85" class="{color_volts}" width="25.5" height="10.5"/>
@@ -207,17 +214,17 @@ svgtext = '''
 <text desc="mission" transform="matrix(1 0 0 1 452.0 186)" class="st9 st10 st12 {color_missiontext}">{text_mission}</text>
 <text desc="text_missionago" transform="matrix(1 0 0 1 452 177)" class="st12 st9 sparktext">{text_missionago}</text>
 <text desc="missionsched" transform="matrix(1 0 0 1 460 196)" class="st12 st9 st13">{text_scheduled}</text>
-<text desc="text_cell" transform="matrix(1 0 0 1 262.2472 211)" class="st9 st10">{text_cell}</text>
-<text desc="text_sat" transform="matrix(1 0 0 1 262.2478 192.1254)" class="st9 st10">{text_sat}</text>
+<text desc="text_cell" transform="matrix(1 0 0 1 262.2472 213)" class="st9 st10">{text_cell}</text>
+<text desc="text_sat" transform="matrix(1 0 0 1 262.2478 194.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
 <text desc="text_bearing" transform="matrix(1 0 0 1 605 262.3)" text-anchor="middle" class="st9 st13">{text_bearing}</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">{text_thrusttime}</text>
 <text desc="text_needcomms time" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">{text_needcomms}</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">{text_nextcomm}</text>
-<text desc="text_commago" transform="matrix(1 0 0 1 339.0 191.2224)" class="st12 st9 st13">{text_commago}</text>
+<text desc="text_commago" transform="matrix(1 0 0 1 339.0 193.7224)" class="st12 st9 st13">{text_commago}</text>
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">{text_logtime}</text>
 <text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">{text_logago}</text>
-<text desc="text_cellago" transform="matrix(1 0 0 1 342.0 211)" class="st12 st9 st13">{text_cellago}</text>
+<text desc="text_cellago" transform="matrix(1 0 0 1 342.0 213)" class="st12 st9 st13">{text_cellago}</text>
 <text desc="text_argoago" transform="matrix(1 0 0 1 258 227)" class="st12 st9 st13">{text_argoago}</text>
 <text desc="text_volts" transform="matrix(1 0 0 1 338.0 257.9931)" class="st9 st10">{text_volts}</text>
 <text desc="text_amps" transform="matrix(1 0 0 1 338.0 270.4917)" class="st9 st10">{text_amps}</text>
@@ -237,8 +244,8 @@ svgtext = '''
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">{text_dvlstatus}</text>
 <text desc="text_criticalerror" transform="matrix(1 0 0 1 352.0 300)" class="st9 st30 st31">{text_criticalerror}</text>
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13">{text_criticaltime}</text>
-<text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 191.2224)" class="st9 st10 {color_satcommstext}">Sat comms</text>
-<text desc="text_cell_acoustic" transform="matrix(1 0 0 1 291.6499 211)" class="st9 st10">{text_celllabel}</text>
+<text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 193.7224)" class="st9 st10 {color_satcommstext}">Sat comms</text>
+<text desc="text_cell_acoustic" transform="matrix(1 0 0 1 291.6499 213)" class="st9 st10">{text_celllabel}</text>
 <text desc="text_nextcommslabel" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 {color_nextcommstext}">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10 {color_timeouttext}">Timeout: </text>
 <text desc="text_timeout"  transform="matrix(1 0 0 1 195 309.1899)" class="st9 st10">{text_timeout}</text>

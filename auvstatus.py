@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.94  - Added comms and gps tick boxes above the depth timeline. TODO: Play with decimation
 	v 2.93  - Increased look-behind for mission parameters to 10 minutes
 	v 2.92  - First time needComms set in fractional hour. Need to remove the int()
 	v 2.91  - Implemented Waypoint lookup for non-Navigating-To missions
@@ -308,7 +309,7 @@ def getGPS(starttime,mylimit="1"):
 def getArgo(starttime,mylimit="1"):
 	''' extract the most recent GPS entry'''
 	if DEBUG:
-		print("###\n### RUNNING ARGO LIMIT 50 starttime:",starttime, file=sys.stderr)
+		print("###\n### RUNNING ARGO not limited starttime:",starttime, file=sys.stderr)
 	qString = runQuery(event="argoReceive",limit=mylimit,timeafter=starttime)
 	retstring=""
 	if qString:
@@ -328,7 +329,7 @@ def getArgo50(starttime,mylimit="100"):
 def newGetOldGPS(starttime,mylimit="2"):
 	''' extract the most recent GPS entry'''
 	if DEBUG:
-		print("###\n### RUNNING NEW OLD GPS LIMIT 2 starttime:",starttime, file=sys.stderr)
+		print("###\n### RUNNING NEW OLD GPS LIMIT ",mylimit," starttime:",starttime, file=sys.stderr)
 	qString = runQuery(event="gpsFix",limit=mylimit,timeafter=starttime)
 	retstring=""
 	if qString and len(qString) > 1:
@@ -337,6 +338,16 @@ def newGetOldGPS(starttime,mylimit="2"):
 		if DEBUG:
 			print ("###\n### NEW OLD GPS:",retstring, file=sys.stderr)
 	return retstring
+	
+def newGetEightHourArgoGPS(starttime=""):
+	if DEBUG:
+		print("###\n### QUERY Combined GPS and ARGO LIMIT starttime:",elapsed(starttime-now), file=sys.stderr)
+	records = runQuery(event="gpsFix,argoReceive",limit="",timeafter=starttime)
+	# if DEBUG:
+	# 	print ("###\n### NEW ARGO+GPS:",records, file=sys.stderr)
+	return records
+
+
 
 def getMissionDefaults():
 	'''https://okeanids.mbari.org/TethysDash/api/commands/script?path=Science/altitudeServo_approach_backseat_poweronly.tl'''
@@ -515,8 +526,8 @@ def getDrop(starttime):
 	return retstring
 
 	
-def getComms(starttime):
-	qString = runQuery(event="sbdReceive",limit="2000",timeafter=starttime)
+def getComms(starttime,mylimit="2000"):
+	qString = runQuery(event="sbdReceive",limit=mylimit,timeafter=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
@@ -1279,8 +1290,52 @@ def parseARGO50(recordlist):
 			argotime = argobadtime
 			argobatt = "Low"
 		return argobatt,argotime,argogoodtime
-		
-def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mins=60,lastcomm=1684547199000):
+
+
+def extractCommHistory(argoHistory=[],commHistory=[],starttime=1684547199000):
+	''' For the top of the sparkline, extrace times from recent comms and fix records '''
+	argo_D = {'gpsFix':[],'argoReceive':[],'NA':[]}
+	comm_D = {'sat':[],'cell':[],'NA':[]}
+	
+	for aR in argoHistory:
+		argo_D[aR.get("eventType","NA")].append(aR['unixTime'])
+	
+	for cR in commHistory:
+				# Any event that starts with Received.
+		if cR["eventType"]=="sbdReceive" and cR['state'] == 0:
+			comm_D['sat'].append(cR["unixTime"])
+		elif cR["eventType"]=="sbdReceive" and cR['state'] == 2:
+			comm_D['cell'].append(cR["unixTime"])
+	
+	return argo_D,comm_D
+	
+	'''
+	StartTime = now - 8 hours
+	#ARGO:
+	http://tethysdash2.shore.mbari.org/TethysDash/api/events?vehicles=ahi&eventTypes=argoReceive&from=1753125226638
+	#GPS and Argo both: 
+	http://tethysdash2.shore.mbari.org/TethysDash/api/events?vehicles=ahi&eventTypes=gpsFix,argoReceive&from=1753125226638
+	http://tethysdash2.shore.mbari.org/TethysDash/api/events?vehicles=ahi&eventTypes=sbdReceive&limit=2000&from=1753125226638
+	'''
+	return False
+
+def decimateTimes(tl,xdiv,boxr,resolution=1):
+	'''resolution in pixels not minutes? maybe play with that'''
+	nowmin = (now/1000)/60
+	offset = 0.5
+	if tl:
+		xlist = [(x/1000)/60 for x in tl]
+		#xmax=max(xlist)
+		#xplist = [(boxr-(xmax-x)/xdiv) for x in xlist] 
+		# use nowmin instead
+		xplist = [(boxr-(nowmin-x)/xdiv) for x in xlist] 
+		xpdecim = set([(((y-offset)//resolution)*resolution) for y in xplist])
+	else:
+		xpdecim=[]
+	return xpdecim
+
+def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mins=60,lastcomm=1684547199000,celT=[],satT=[],gpsT=[],argT=[]):
+	
 	''' 
 	TODO: make orange region from now back to the start of the time
 	h0 362 for near the middle of the vehicle
@@ -1289,7 +1344,10 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 		width and desired range of values.
 		xrange is 480 minutes. yrange is 150 meters (or 200)
 		xdivider = 480/96 = 5
-		ydivider = 200/20 = 10'''
+		ydivider = 200/20 = 10
+		xdiv = 480 minutes / 120 divisions = 4-minute bins
+		Maybe decimate comms data to 8- or 12-minute bins'''
+	sparkD = {}  # for comms rows
 	min_to_show = 480
 	dep_to_show = 40
 	xdiv = min_to_show/w
@@ -1298,6 +1356,25 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	boxr = x0+w
 	xmax = max(xlist)
 	ymax = max(ylist)
+	
+	sparkD["cel"] = decimateTimes(tl=celT,xdiv=xdiv,boxr=boxr)
+	sparkD["sat"] = decimateTimes(tl=satT,xdiv=xdiv,boxr=boxr)
+	sparkD["gps"] = decimateTimes(tl=gpsT,xdiv=xdiv,boxr=boxr)
+	sparkD["arg"] = decimateTimes(tl=argT,xdiv=xdiv,boxr=boxr)
+	
+	historyString = ''
+	yspots={"cel":166,"sat":166,"gps":163,"arg":163}
+	for k in sparkD:
+		ypos = yspots.get(k,"")
+		plist = sparkD[k]
+		for hpos in plist:
+			if hpos>x0-1:
+				historyString+=f'''<rect desc="tiny-{k}" class="st{k}" x="{hpos}"  y="{ypos}" width="2" height="2.5"/>\n'''
+
+	if DEBUG:
+		print("SPARKD: ",sparkD,file=sys.stderr)
+		print("HISTORY STRING:",historyString,file=sys.stderr)
+	
 	if ymax > dep_to_show + 5:
 		dep_to_show = 80
 	if ymax > dep_to_show + 5:
@@ -1332,10 +1409,10 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	else:
 		# subplist = xplist
 		sublist = xlist  
-# if DEBUG:
-	# 	print("xplist",xplist, file=sys.stderr)
-	# 	print("yplist",yplist, file=sys.stderr)
-	# 	print("ylist",ylist, file=sys.stderr)
+	if DEBUG:
+			print("xplist",xplist, file=sys.stderr)
+			print("xlist",xlist, file=sys.stderr)
+			# print("ylist",ylist, file=sys.stderr)
 	
 	faked=10
 	pliststring = ''
@@ -1362,7 +1439,7 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	elif sublist: 
 		agecolor = "st25"
 		padcolor = "st16"  # padded values if recent
-	else: # last records are older than 8 hours
+	else: # last records are older than 8 hours  (One hour?)
 		sublist = [lastcomm/60000]
 		agecolor = "st27"
 		padcolor = "st27" # padded values if more than an hour: orange
@@ -1402,7 +1479,8 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.50} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.50)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.75} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.75)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-1} {y0+h+5.5})" class="st12 st9 sparktext">{min_to_show/60:n}h</text>
-	<circle desc="spr_is_old" class="{agecolor}" cx="272" cy="168" r="2"/>'''
+	<circle desc="spr_is_old" class="{agecolor}" cx="272" cy="172" r="2"/>
+	''' + historyString
 	
 	depstr = f'''<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>'''
 	if DEBUG:
@@ -1622,7 +1700,7 @@ def parseComms(recordlist):
 		# Any event that starts with Received.
 		if satCommTime == False and Record["eventType"]=="sbdReceive" and Record['state'] == 0:
 			satCommTime=Record["unixTime"]
-		if directCommTime == False and Record["eventType"]=="sbdReceive" and Record['eventType'] == 'sbdReceive' and Record['state'] == 2:
+		if directCommTime == False and Record['eventType'] == 'sbdReceive' and Record['state'] == 2:
 			directCommTime=Record["unixTime"]
 		if directCommTime and satCommTime:
 			break
@@ -1630,7 +1708,6 @@ def parseComms(recordlist):
 		# Direct Comms event type for cell comms
 	return satCommTime,directCommTime 
 	
-
 
 def parseMission(recordlist):
 	'''NOTE: this does not search back far enough to find original time when mission parameter were defined'''
@@ -2419,7 +2496,7 @@ def handleURLerror():
 			with open(OutPath.format(bas=basefilepath,veh=VEHICLE),'w') as outfile:
 				outfile.write(svgerrorhead)
 				outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
-			print("URL ACCESS ERROR:",VEHICLE, file=sys.stderr)
+			print("OUTFILE WRITE ERROR:",VEHICLE, file=sys.stderr)
 		except KeyError:
 			sys.exit("URL ACCESS ERROR and Key Error:"+VEHICLE)
 
@@ -2852,10 +2929,12 @@ if (not recovered) or Opt.anyway:
 	# Changing missiontime to querytime (mission minus 2 minutes)
 	StationLat=0
 	StationLon=0
+	missionduration = False
 	if querytime:
 		missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot,scheduledtime  = \
 				parseDefaults(postmission,mission_defaults,FullMission,querytime)
-			  
+	else: 
+		missionduration,timeoutstart,needcomms,speed,Scheduled,StationLat,StationLon,missiondot,scheduledtime = (False,False,False,False,False,False,False,False,False)
 	
 
 	# Time to waypoint:
@@ -2885,6 +2964,8 @@ if (not recovered) or Opt.anyway:
 	
 	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,batterydaysleft,colorduration = getNewBattery()
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
+	if DEBUG: 
+		print("# SPARK time and DEPTH", depthdepth,depthtime, file=sys.stderr)
 	if VEHICLE in ["pontus","daphne","makai"]:
 		camcat,camchangetime,pisctext = getNewCameraPower(startTime)
 		if DEBUG:
@@ -2921,6 +3002,22 @@ if (not recovered) or Opt.anyway:
 		if DEBUG: 
 			print("# No NEEDCOMS found. Using default  ", file=sys.stderr)
 		needcomms = 60  #default
+	
+	start8 = int(now - 8*60*61*1000)
+	
+	commHist = getComms(starttime=start8,mylimit="")
+	argoHist = newGetEightHourArgoGPS(starttime=start8)
+	
+	
+	if DEBUG:
+		print("START8: ",start8,file=sys.stderr)
+		# print("ARGO HIST:",argoHist,file=sys.stderr)
+	
+	argoD,commD = extractCommHistory(argoHistory=argoHist,commHistory=commHist,starttime=start8)
+	if DEBUG: 
+		print("## ARGO DICT: ",argoD, file=sys.stderr)
+		print("## COMM DICT: ",commD, file=sys.stderr)
+
 	
 	CriticalError=False
 	EnvirCritical=False
@@ -3646,7 +3743,11 @@ else:   #not opt report
 				print("# COMMREFTIME: ", commreftime, file=sys.stderr)
 				print("# NOW: ", now, file=sys.stderr)
 				#print("# SPARKINFO: ",depthtime,sparkpad, file=sys.stderr)
-			sparktext = addSparkDepth(depthdepth,depthtime,padded=sparkpad,x0=131,y0=166,need_comm_mins = needcomms,lastcomm=commreftime)
+				# ADD 2 (or 4??) to y0 to move this down
+			sparktext = addSparkDepth(depthdepth,depthtime,padded=sparkpad,x0=131,y0=170,need_comm_mins = needcomms,
+				lastcomm=commreftime,
+				celT=commD.get("cell",[]),satT=commD.get("sat",[]),
+				gpsT=argoD.get("gpsFix",[]),argT=argoD.get("argoReceive",[]))
 
 		###
 		###   SAT COMM DISPLAY
