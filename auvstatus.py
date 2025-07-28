@@ -1363,13 +1363,21 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	sparkD["arg"] = decimateTimes(tl=argT,xdiv=xdiv,boxr=boxr)
 	
 	historyString = ''
-	yspots={"cel":166,"sat":166,"gps":163,"arg":163}
+	
+	barstart = y0-2.75
+	bargap = 2
+	
+	yspots={"cel":barstart,
+			"sat":barstart-bargap,
+			"gps":barstart-bargap * 2,
+			"arg":barstart-bargap * 3}
+	
 	for k in sparkD:
 		ypos = yspots.get(k,"")
 		plist = sparkD[k]
 		for hpos in plist:
 			if hpos>x0-1:
-				historyString+=f'''<rect desc="tiny-{k}" class="st{k}" x="{hpos}"  y="{ypos}" width="2" height="2.5"/>\n'''
+				historyString+=f'''<rect desc="tiny-{k}" class="st{k}" x="{hpos}"  y="{ypos}" width="2" height="1.5"/>\n'''
 
 	if DEBUG:
 		print("SPARKD: ",sparkD,file=sys.stderr)
@@ -3744,7 +3752,7 @@ else:   #not opt report
 				print("# NOW: ", now, file=sys.stderr)
 				#print("# SPARKINFO: ",depthtime,sparkpad, file=sys.stderr)
 				# ADD 2 (or 4??) to y0 to move this down
-			sparktext = addSparkDepth(depthdepth,depthtime,padded=sparkpad,x0=131,y0=170,need_comm_mins = needcomms,
+			sparktext = addSparkDepth(depthdepth,depthtime,padded=sparkpad,x0=131,y0=172,need_comm_mins = needcomms,
 				lastcomm=commreftime,
 				celT=commD.get("cell",[]),satT=commD.get("sat",[]),
 				gpsT=argoD.get("gpsFix",[]),argT=argoD.get("argoReceive",[]))

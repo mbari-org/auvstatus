@@ -60,10 +60,10 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.stgreen{fill:#5AC1A488;stroke:none; } <!--PaleGreen No Stroke -->
 	.stpurple{fill:#9091C788;stroke:none; } <!--PalePurple No Stroke -->
 	.stblue{fill:#549fd488;stroke:none; } <!--PaleBlue No Stroke -->
-	.stsat{fill:#EF9D3088;stroke:none; } <!--PaleOrange No Stroke -->
-	.starg{fill:#549fd488;stroke:none; } <!--PaleBlue No Stroke -->
-	.stcel{fill:#5AC1A488;stroke:none; } <!--PaleGreen No Stroke -->
-	.stgps{fill:#9091C788;stroke:none; } <!--PalePurple No Stroke -->
+	.stsat{fill:#EF9D30AA;stroke:none; } <!--PaleOrange No Stroke -->
+	.starg{fill:#549fd4AA;stroke:none; } <!--PaleBlue No Stroke -->
+	.stcel{fill:#5AC1A4AA;stroke:none; } <!--PaleGreen No Stroke -->
+	.stgps{fill:#9091C7AA;stroke:none; } <!--PalePurple No Stroke -->
 	</style>
 '''
 
