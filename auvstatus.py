@@ -1372,6 +1372,14 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 			"gps":barstart-bargap * 2,
 			"arg":barstart-bargap * 3}
 	
+	historyString = f"""
+	<rect desc="legend-arg" class="starg" x="{x0+w+24}"  y="{barstart-bargap*2.75}" width="2" height="1.5"/>
+	<rect desc="legend-arg" class="stgps" x="{x0+w+4}"  y="{barstart-bargap*2}" width="2" height="1.5"/>
+	<rect desc="legend-arg" class="stsat" x="{x0+w+24}"  y="{barstart-bargap*.75}" width="2" height="1.5"/>
+	<rect desc="legend-arg" class="stcel" x="{x0+w+4}"  y="{barstart-bargap*0}" width="2" height="1.5"/>
+		<text desc="hist-legend" transform="matrix(1 0 0 1 {x0+w+6.5} {barstart-bargap})" class="st12 st9 stfont5">gps-arg</text>
+		<text desc="hist-legend" transform="matrix(1 0 0 1 {x0+w+6.5} {y0-1})" class="st12 st9 stfont5">cel-sat</text>
+	"""
 	for k in sparkD:
 		ypos = yspots.get(k,"")
 		plist = sparkD[k]
@@ -1487,7 +1495,7 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.50} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.50)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-2+w*.75} {y0+h+5.5})" class="st12 st9 sparktext">{(1-0.75)*min_to_show/60:n}h</text>
 	<text desc="axislabel" transform="matrix(1 0 0 1 {x0-1} {y0+h+5.5})" class="st12 st9 sparktext">{min_to_show/60:n}h</text>
-	<circle desc="spr_is_old" class="{agecolor}" cx="272" cy="172" r="2"/>
+	<circle desc="spr_is_old" class="{agecolor}" cx="272" cy="{y0+2}" r="2"/>
 	''' + historyString
 	
 	depstr = f'''<text desc="sparknote" transform="matrix(1 0 0 1 {x0+1} {y0+h-1})" class="st12 st9 sparktext">{dep_to_show:n}m</text>'''

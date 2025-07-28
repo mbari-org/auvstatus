@@ -14,6 +14,7 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st8{fill:#C6C4C4;stroke:#000000;stroke-linecap:round; }
 	.st9{font-family:HelveticaNeue, Helvetica, Arial, sans-serif;}
 	.st10{font-size:9px;}
+	.stfont5{font-size:5px;}
 	.st11{fill:#6D6E6E;stroke:#000000; } <!-- DarkGray Fill-->
 	.st12{fill:#606060;}  <!--MidGray text -->
 	.st13{font-size:7px;}
@@ -152,7 +153,7 @@ svgtext = '''
 <circle desc="commoverdue"     class="{color_commago}"         cx="138.5" cy="295.0" r="2"/>
 <circle desc="logoverdue"      class="{color_logago}"          cx="138.5" cy="219" r="2"/>
 <circle desc="missionoverdue"     class="{color_missionago}"     cx="138.5" cy="306" r="2"/>
-<rect desc="satcomm" x="261.49" y="185.48" class="{color_satcomm}" width="24.43" height="11.5"/>
+<rect desc="satcomm" x="261.49" y="186.48" class="{color_satcomm}" width="24.43" height="11.5"/>
 <rect desc="cell"    x="260.15" y="204" class="{color_cell}" width="26.43" height="11.31"/>
 <rect desc="gps"     x="407.76" y="221.71" class="{color_gps}" width="26.93" height="10.17"/>
 <rect desc="amps"    x="336.28" y="261.76" class="{color_amps}" width="25.5" height="10.5"/>
@@ -215,13 +216,13 @@ svgtext = '''
 <text desc="text_missionago" transform="matrix(1 0 0 1 452 177)" class="st12 st9 sparktext">{text_missionago}</text>
 <text desc="missionsched" transform="matrix(1 0 0 1 460 196)" class="st12 st9 st13">{text_scheduled}</text>
 <text desc="text_cell" transform="matrix(1 0 0 1 262.2472 213)" class="st9 st10">{text_cell}</text>
-<text desc="text_sat" transform="matrix(1 0 0 1 262.2478 194.1254)" class="st9 st10">{text_sat}</text>
+<text desc="text_sat" transform="matrix(1 0 0 1 262.2478 195.1254)" class="st9 st10">{text_sat}</text>
 <text desc="text_gps" transform="matrix(1 0 0 1 410.1005 229.6799)" class="st9 st10">{text_gps}</text>
 <text desc="text_bearing" transform="matrix(1 0 0 1 605 262.3)" text-anchor="middle" class="st9 st13">{text_bearing}</text>
 <text desc="text_thrusttime" transform="matrix(1 0 0 1 592 276.3205)" class="st9 st10">{text_thrusttime}</text>
 <text desc="text_needcomms time" transform="matrix(1 0 0 1 143 290)" class="st12 st9 st13">{text_needcomms}</text>
 <text desc="text_nextcomm" transform="matrix(1 0 0 1 195 298.3899)" class="st9 st10">{text_nextcomm}</text>
-<text desc="text_commago" transform="matrix(1 0 0 1 339.0 193.7224)" class="st12 st9 st13">{text_commago}</text>
+<text desc="text_commago" transform="matrix(1 0 0 1 339.0 194.7224)" class="st12 st9 st13">{text_commago}</text>
 <text desc="text_logtime" transform="matrix(1 0 0 1 185.0 221.6039)" class="st9 st10">{text_logtime}</text>
 <text desc="text_logago" transform="matrix(1 0 0 1 145.0 231.2224)" class="st12 st9 st13">{text_logago}</text>
 <text desc="text_cellago" transform="matrix(1 0 0 1 342.0 213)" class="st12 st9 st13">{text_cellago}</text>
@@ -244,7 +245,7 @@ svgtext = '''
 <text desc="text_dvlstatus" transform="matrix(1 0 0 1 542 304)" class="st12 st9 st13">{text_dvlstatus}</text>
 <text desc="text_criticalerror" transform="matrix(1 0 0 1 352.0 300)" class="st9 st30 st31">{text_criticalerror}</text>
 <text desc="text_criticaltime" transform="matrix(1 0 0 1 354 307)" class="st12 st9 st13">{text_criticaltime}</text>
-<text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 193.7224)" class="st9 st10 {color_satcommstext}">Sat comms</text>
+<text desc="text_satcomms" transform="matrix(1 0 0 1 289.4541 194.7224)" class="st9 st10 {color_satcommstext}">Sat comms</text>
 <text desc="text_cell_acoustic" transform="matrix(1 0 0 1 291.6499 213)" class="st9 st10">{text_celllabel}</text>
 <text desc="text_nextcommslabel" transform="matrix(1 0 0 1 143.5453 298.3899)" class="st9 st10 {color_nextcommstext}">NextComm:</text>
 <text transform="matrix(1 0 0 1 143.0 309.1899)" class="st9 st10 {color_timeouttext}">Timeout: </text>
