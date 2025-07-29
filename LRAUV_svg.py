@@ -1,6 +1,6 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- March 12 2025 version  -->
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<!-- July 28 2025 version  -->
+<svg version="1.2" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#CFDEE2;} <!-- WaveColor -->
@@ -304,6 +304,8 @@ svgpontus='''
 
 svg_planktivore='''
 <!-- ahi=planktivore-specific shapes -->
+<polygon desc="planktivore_body" class="st26" points="408.6 101.5 445.8 101.5 450.6 96.5 462.3 96.5 471.3 106.4 462.3 116.1 450.6 116.1 445.8 111.1 408.6 111.1 408.6 101.5"/>
+<circle desc="planktivore_lens" class="st23" cx="456.8" cy="106" r="3.1"/> 
 <text desc="text_roiago" transform="matrix(1 0 0 1 532 272.0)" class="st12 st9 st13">{text_roiago}</text>
 <text desc="LM-text" transform="matrix(1 0 0 1 532 254.5)" class="st9 st10">LM:{text_LM}</text>
 <text desc="HM-text" transform="matrix(1 0 0 1 531 264.5)" class="st9 st10">HM:{text_HM}</text>
