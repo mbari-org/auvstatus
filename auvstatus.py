@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.95  - Refinements of spark history positioning and mini-legend
 	v 2.94  - Added comms and gps tick boxes above the depth timeline. TODO: Play with decimation
 	v 2.93  - Increased look-behind for mission parameters to 10 minutes
 	v 2.92  - First time needComms set in fractional hour. Need to remove the int()
