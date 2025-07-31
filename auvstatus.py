@@ -1081,7 +1081,7 @@ def getNewDepth(starttime=1676609209829):
 	# if we are constraining with a from statement
 	howlongago = int(now - 10+maxdepthseconds*60*1000)  
 
-	record = runNewStyleQuery(api="data/depth",extrastring=f"&maxlen=400&from={starttime}")
+	record = runNewStyleQuery(api="data/depth",extrastring=f"&maxlen=2000&from={starttime}")
 	# if DEBUG:
 	# 	print("# DEPTH RECORD",record, file=sys.stderr)
 	if not record:
@@ -1320,10 +1320,10 @@ def extractCommHistory(argoHistory=[],commHistory=[],starttime=1684547199000):
 	'''
 	return False
 
-def decimateTimes(tl,xdiv,boxr,resolution=1):
+def decimateTimes(tl,xdiv,boxr,resolution=2):
 	'''resolution in pixels not minutes? maybe play with that'''
 	nowmin = (now/1000)/60
-	offset = 0.5
+	offset = 0.25
 	if tl:
 		xlist = [(x/1000)/60 for x in tl]
 		#xmax=max(xlist)
@@ -1374,6 +1374,7 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 			"arg":barstart-bargap * 3}
 	
 	historyString = f"""
+	<!-- LEGEND FOR COMM HISTORY BARS -->
 	<rect desc="legend-arg" class="starg" x="{x0+w+15.5}"  y="{barstart-bargap*2 - 1.5}" width="2" height="1.5"/>
 	<rect desc="legend-gps" class="stgps" x="{x0+w+4}"  y="{barstart-bargap*2}" width="2" height="1.5"/>
 	<rect desc="legend-sat" class="stsat" x="{x0+w+15.5}"  y="{barstart-1.5}" width="2" height="1.5"/>
@@ -2980,7 +2981,9 @@ if (not recovered) or Opt.anyway:
 	
 	
 	newvolt,newamp,newavgcurrent,newvolttime,batteryduration,batterydaysleft,colorduration = getNewBattery()
+	
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
+	
 	if DEBUG: 
 		print("# SPARK time and DEPTH", depthdepth,depthtime, file=sys.stderr)
 	if VEHICLE in ["pontus","daphne","makai"]:
