@@ -65,6 +65,8 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.starg{fill:#549fd4AA;stroke:none; } <!--PaleBlue No Stroke -->
 	.stcel{fill:#5AC1A4AA;stroke:none; } <!--PaleGreen No Stroke -->
 	.stgps{fill:#9091C7AA;stroke:none; } <!--PalePurple No Stroke -->
+	.stplanklens {fill: #d4d2d2;stroke:none;} <!-- Light Gray-->
+	.stplankbody {fill: #a2a0a0;stroke:none;}  <!-- Dark Gray-->
 	</style>
 '''
 
@@ -304,8 +306,8 @@ svgpontus='''
 
 svg_planktivore='''
 <!-- ahi=planktivore-specific shapes -->
-<polygon desc="planktivore_body" class="st26" points="408.6 101.5 445.8 101.5 450.6 96.5 462.3 96.5 471.3 106.4 462.3 116.1 450.6 116.1 445.8 111.1 408.6 111.1 408.6 101.5"/>
-<circle desc="planktivore_lens" class="st23" cx="456.8" cy="106" r="3.1"/> 
+<polygon desc="planktivore_body" class="stplankbody" points="527.6 256.5 564.8 256.5 569.6 251.5 581.3 251.5 590.3 261.4 581.3 271.1 569.6 271.1 564.8 266.1 527.6 266.1 527.6 256.5"/>
+<circle desc="planktivore_lens" class="stplanklens" cx="575.8" cy="261" r="3.1"/> 
 <text desc="text_roiago" transform="matrix(1 0 0 1 532 272.0)" class="st12 st9 st13">{text_roiago}</text>
 <text desc="LM-text" transform="matrix(1 0 0 1 532 254.5)" class="st9 st10">LM:{text_LM}</text>
 <text desc="HM-text" transform="matrix(1 0 0 1 531 264.5)" class="st9 st10">HM:{text_HM}</text>
