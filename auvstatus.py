@@ -266,6 +266,7 @@ def getNewDeployment():
 		#https://okeanids.mbari.org/TethysDash/api/deployments/last?vehicle=opah
 
 	startTime = 0
+	recoverTime = 0
 	deployID = ""
 	try:
 		launchData = runNewStyleQuery(api="deployments/last")
@@ -615,7 +616,14 @@ def getDataAsc(starttime,mission):
 		NewURL = DataURL.format(ser=servername,vehicle=VEHICLE,extrapath=extrapath)
 		if DEBUG:
 			print("# DATA ASC URL",NewURL, file=sys.stderr)
-		datacon = urllib.request.urlopen(NewURL,timeout=8)
+		try:
+			datacon = urllib.request.urlopen(NewURL,timeout=8)
+		except urllib.error.HTTPError: 
+			flow=None
+			flowtime=None
+			Tracking=""
+			TrackTime=""
+			break
 		content =  datacon.read().decode('utf-8').splitlines()
 		
 		if DEBUG:
@@ -1294,7 +1302,7 @@ def parseARGO50(recordlist):
 
 
 def extractCommHistory(argoHistory=[],commHistory=[],starttime=1684547199000):
-	''' For the top of the sparkline, extrace times from recent comms and fix records '''
+	''' For the top of the sparkline, extract times from recent comms and fix records '''
 	argo_D = {'gpsFix':[],'argoReceive':[],'NA':[]}
 	comm_D = {'sat':[],'cell':[],'NA':[]}
 	
@@ -1375,12 +1383,14 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	
 	historyString = f"""
 	<!-- LEGEND FOR COMM HISTORY BARS -->
-	<rect desc="legend-arg" class="starg" x="{x0+w+15.5}"  y="{barstart-bargap*2 - 1.5}" width="2" height="1.5"/>
+	<rect desc="legend-arg" class="starg" x="{x0+w+17.5}"  y="{barstart-bargap*2 - 1.0}" width="2" height="1.5"/>
 	<rect desc="legend-gps" class="stgps" x="{x0+w+4}"  y="{barstart-bargap*2}" width="2" height="1.5"/>
-	<rect desc="legend-sat" class="stsat" x="{x0+w+15.5}"  y="{barstart-1.5}" width="2" height="1.5"/>
+	<rect desc="legend-sat" class="stsat" x="{x0+w+17.5}"  y="{barstart-1.0}" width="2" height="1.5"/>
 	<rect desc="legend-cel" class="stcel" x="{x0+w+4}"  y="{barstart}" width="2" height="1.5"/>
-		<text desc="hist-legend" transform="matrix(1 0 0 1 {x0+w+6.75} {barstart-bargap-.25})" class="st12 st9 stfont5">G A</text>
-		<text desc="hist-legend" transform="matrix(1 0 0 1 {x0+w+6.755} {y0-1})" class="st12 st9 stfont5">C S</text>
+		<text desc="hist-legend" transform="matrix(1 0 0 1 {x0+w+6.75} {barstart-bargap-.25})" class="st12 st9 stfont5">gps</text>
+		<text desc="hist-legend" transform="matrix(1 0 0 1 {x0+w+6.755} {y0-1})" class="st12 st9 stfont5">cell</text>
+		<text desc="hist-legend" transform="matrix(1 0 0 1 {x0+w+20} {barstart-bargap-.25})" class="st12 st9 stfont5">argo</text>
+		<text desc="hist-legend" transform="matrix(1 0 0 1 {x0+w+20} {y0-1})" class="st12 st9 stfont5">sat</text>
 	"""
 	for k in sparkD:
 		ypos = yspots.get(k,"")
@@ -1561,10 +1571,12 @@ def parseCritical(recordlist):
 		RecordText = Record.get("text","NA")
 		# if DEBUG:
 		#	print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
-		if Record["name"]=="DropWeight":
+		if Record["name"]=="DropWeight" and not "loadAtStartup" in RecordText:
 			Drop=Record["unixTime"]
 		if RecordText.startswith("Dropped weight"):
 			Drop=Record["unixTime"]
+			if DEBUG:
+				print("## FOUND DropRecord",RecordText, file=sys.stderr)
 		
 		"""WATER DETECTED IN PRESSURE HULL: AUX"""
 		if RecordText.startswith("WATER DETECTED"):
@@ -1923,7 +1935,7 @@ def parseImptMisc(recordlist,MissionN):
 	SchedT = None
 	
 	voltthresh = 0
-	ampthresh  = 0
+	ampthresh  = -999
 	ampthreshtime = 0
 	FullMission = ""
 	
@@ -1998,12 +2010,12 @@ def parseImptMisc(recordlist,MissionN):
 		#	StationLat = float(StationLat.split(" ")[0])
 		#DropWeight.loadAtStartup=0 bool;
 		if not DropOff and RecordText.strip().startswith("DropWeight.loadAtStartup"):
-			if DEBUG:
-				print("\n## Got GOT DROPWEIGHT COMMAND", RecordText, file=sys.stderr)
 			if "=0" in RecordText:
 				DropOff =  Record["unixTime"]
 			else:
 				DropOff = 1
+			if DEBUG:
+				print("\n## Got DROPWEIGHT OFF/ON COMMAND", RecordText, DropOff, file=sys.stderr)
 			
 		# IBIT.batteryCapacityThreshold=20 ampere_hour;
 		# IBIT.batteryVoltageThreshold=10 volt;
@@ -2062,11 +2074,11 @@ def parseImptMisc(recordlist,MissionN):
 		# 				print("LED STATUS",RecordText,WhiteOn,RedOn,LightResult,file=sys.stderr)
 					
 
-		if not ampthresh and RecordText.startswith("IBIT.batteryCapacityThreshold="):
+		if  ampthresh < -100 and RecordText.startswith("IBIT.batteryCapacityThreshold"):
 			ampthresh = round(float(RecordText.split("IBIT.batteryCapacityThreshold=")[1].split(" ")[0]))
 			ampthreshtime=Record["unixTime"]
 			if DEBUG:
-				print("## Got AmpThresh from ImptMisc", ampthresh, elapsed(ampthreshtime-now),file=sys.stderr)
+				print("## Got AmpThresh from ImptMisc", float(ampthresh), elapsed(ampthreshtime-now),file=sys.stderr)
 
 		if not FullMission and not (MissionN=="Default") and not (MissionN=="DefaultWithUndock"):
 			'''Loaded ./Missions/Transport/keepstation.tl id=keepstation'''
@@ -2367,8 +2379,13 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 					'''got command schedule "set circle_acoustic_contact'''
 					try:
 						Scheduled = RecordText.split('"')[1].split(' ')[1].split('.')[0]
+						if ";" in Scheduled:
+							Scheduled = Scheduled.split(";")[0]
 					except IndexError:
-						print("## failed to parse schedule:",VEHICLE, RecordText, file=sys.stderr)
+						if not '''"run"''' in RecordText:
+							print("## failed to parse schedule:",VEHICLE, RecordText, file=sys.stderr)
+						else:
+							Scheduled=""
 				if Scheduled and "ASAP" in RecordText.upper():
 					Scheduled += ' [ASAP]'
 					#Scheduled = ''    # Something amiss with the parsing. Blanking schedule if ASAP
@@ -2429,6 +2446,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			'''got command set trackPatchChl_yoyo.NeedCommsTimeInTransit 45.000000'''
 			'''got command set trackPatch_yoyo.NeedCommsTimePatchTracking 120.000000 minute 
+			CircleSample.NeedCommsTimeYoYo
 			; set PAM.SurfacingIntervalDuringListening 300 min
 			NeedCommsTimeVeryLong
 			NeedCommsMaxWait'''
@@ -2438,7 +2456,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			if DEBUG:
 				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 			try:
-				NeedComms = float(re.split("SurfacingIntervalDuringListening |NeedCommsTimeProfileStation |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |FrontSampling.NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait |NeedCommsTime ",Record["text"])[1].split(" ")[0])
+				NeedComms = float(re.split("SurfacingIntervalDuringListening |NeedCommsTimeProfileStation |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait |NeedCommsTime |NeedCommsTimeYoYo ",Record["text"])[1].split(" ")[0])
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
 					NeedComms = float(Record["text"].split("NeedCommsTimeVeryLong ")[1].split(" ")[0]) 
@@ -2853,6 +2871,8 @@ if DEBUG:
 if (not recovered) or Opt.anyway:
 	needcomms = 0
 	critical  = getCritical(startTime)
+	if DEBUG:
+		print("## PARSING CRITICAL FROM:", elapsed(startTime-now), file=sys.stderr)
 	faults = getFaults(startTime)
 	gfrecords = getCBIT(startTime)
 	
@@ -2890,8 +2910,8 @@ if (not recovered) or Opt.anyway:
 	missionName,missionTime = parseMission(important)
 	if DEBUG:
 		print(f"## MISSION AND TIME {missionName},{missionTime}", dates(missionTime),hours(missionTime),file=sys.stderr)
-	Ampthreshnum=0
-	Voltthreshnum = 0
+	Ampthreshnum=-999
+	Voltthreshnum = -999
 	IgnoreOverride = 0
 	AmpthreshTime = 0
 	DropWeightOff = -1
@@ -2912,15 +2932,19 @@ if (not recovered) or Opt.anyway:
 	
 	if missionTime > 60000: 
 		# changed the offset to 2 minutes
-		querytime = missionTime-10*60000
+		querytime = missionTime-(10*60000)
 		# ONLY RECORDS AFTER MISSION ## SUBTRACT A LITTLE OFFSET?
 		# CHANGING FROM CommandLine to CommandExec
 		if DEBUG:
 			print("\n##Getting Important from ",elapsed(now-querytime), "date",hours(missionTime))
-		postmission = getImportant(querytime,inputname="CommandExec")
+		# This had CommandExec for some reason, which is not right!
+		postmission = getImportant(querytime,inputname="")
 	else:
 		querytime = missionTime
 		postmission = ''
+		if DEBUG:
+			print("\n##missionTime lt 60000 ",elapsed(now-querytime), "POSTMISSION BLANK",hours(missionTime))
+		
 	
 	if VEHICLE in ["galene","triton"] and not 'DEFAULT' in missionName:
 		ChitonVal,ChitonTime,WhiteLightOn,RedLightOn=parseGaleneImpt(postmission)
@@ -3873,11 +3897,11 @@ else:   #not opt report
 		cdd["color_voltthresh"] = "st12"
 		
 			
-		if Ampthreshnum:
+		if Ampthreshnum > -100:
 			cdd["text_ampthresh"] = f"{Ampthreshnum}"
 			cdd["color_ampthresh"] = ['st12','st31'][amphr - Ampthreshnum < 5]
 		
-		if Voltthreshnum:
+		if Voltthreshnum > -100:
 			cdd["text_voltthresh"] = f"{Voltthreshnum:.1f}"
 			cdd["color_voltthresh"] = ['st12','st31'][volt - Voltthreshnum < 1.0]
 		
@@ -4047,10 +4071,10 @@ else:   #not opt report
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
 		# if time for dropweight alert is older than the dropweight having been turned off
-		if dropWeight < DropWeightOff:
+		if DropWeightOff > 1 and (dropWeight > DropWeightOff):
 			cdd["color_drop"] = 'st11'
-			if DropWeightOff > 100:
-				cdd["text_droptime"] = "OFF: " + elapsed(DropWeightOff-now)
+		if DropWeightOff > 100:
+			cdd["text_droptime"] = "OFF: " + elapsed(DropWeightOff-now)
 		elif dropWeight > 100:
 			cdd["text_droptime"] = elapsed(dropWeight-now)
 		else:
