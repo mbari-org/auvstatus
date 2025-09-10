@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.96  - BatteryThreshold parsing and DefaultWithUndock
 	v 2.95  - Refinements of spark history positioning and mini-legend
 	v 2.94  - Added comms and gps tick boxes above the depth timeline. TODO: Play with decimation
 	v 2.93  - Increased look-behind for mission parameters to 10 minutes
@@ -3547,8 +3548,10 @@ else:   #not opt report
 		# CriticalError = False                        # unicode bullet
 		if missionName and missionTime:
 			missionNameText = missionName
-			if missionName == "Default":
+			if missionName in ["Default","DefaultWithUndock"]:
 				missionNameText = "DEFAULT"
+				if "Undock" in missionName:
+					missionNameText += " (UNDOCK)"
 				# minutes DEFAULT has been running
 				ago_default = missionTime - now 
 				# if in default more than 15 minutes, make mission name red
