@@ -1935,7 +1935,7 @@ def parseImptMisc(recordlist,MissionN):
 	DockTimeout = None
 	SchedT = None
 	
-	voltthresh = 0
+	voltthresh = -999
 	ampthresh  = -999
 	ampthreshtime = 0
 	FullMission = ""
@@ -2018,8 +2018,8 @@ def parseImptMisc(recordlist,MissionN):
 			if DEBUG:
 				print("\n## Got DROPWEIGHT OFF/ON COMMAND", RecordText, DropOff, file=sys.stderr)
 			
-		# IBIT.batteryCapacityThreshold=20 ampere_hour;
-		# IBIT.batteryVoltageThreshold=10 volt;
+		
+		
 		if not Docking:
 			if RecordText.strip().startswith("Undocking sequence complete"):
 				if DEBUG:
@@ -2042,7 +2042,7 @@ def parseImptMisc(recordlist,MissionN):
 				AcousticTime = Record["unixTime"]
 			
 
-		if not voltthresh and RecordText.startswith("IBIT.batteryVoltageThreshold="):
+		if voltthresh < -100 and RecordText.startswith("IBIT.batteryVoltageThreshold="):
 			voltthresh = float(RecordText.split("IBIT.batteryVoltageThreshold=")[1].split(" ")[0])
 
 			if DEBUG:
@@ -2457,7 +2457,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			if DEBUG:
 				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
 			try:
-				NeedComms = float(re.split("SurfacingIntervalDuringListening |NeedCommsTimeProfileStation |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait |NeedCommsTime |NeedCommsTimeYoYo ",Record["text"])[1].split(" ")[0])
+				NeedComms = float(re.split("SurfacingIntervalDuringListening |NeedCommsTimeSampling |NeedCommsTimeProfileStation |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait |NeedCommsTime |NeedCommsTimeYoYo ",Record["text"])[1].split(" ")[0])
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
 					NeedComms = float(Record["text"].split("NeedCommsTimeVeryLong ")[1].split(" ")[0]) 
