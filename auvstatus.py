@@ -136,6 +136,7 @@ def get_options():
 	parser.add_argument("-b", "--DEBUG",	action="store_true", help="Print debug info")
 	parser.add_argument("-r", "--report",	action="store_true", help="print results")
 	parser.add_argument("-f", "--savefile",	action="store_true", help="save to SVG named by vehicle at default location")
+	parser.add_argument("--archive", action="store_true"	  , help="save archive files also")
 	parser.add_argument("-v", "--vehicle",	default="pontus"  , help="specify vehicle")
 	parser.add_argument("--printhtml",action="store_true"  , help="print auv.html web links")
 	parser.add_argument("-m", "--missions",action="store_true"  , help="spit out mission defaults")
@@ -1659,7 +1660,7 @@ def parseFaults(recordlist):
 				print("## BAD BATTERY in FAULT", file=sys.stderr)
 		'''Failed to receive data from 6 sticks prior to timeout. Missing stick IDs are: 21, 22, 48, 49, 50, 51. [BPC1]'''
 		if Record["name"]=="BPC1" and not BadBatteryText and RT.startswith("Failed to receive data"):
-			ma = re.search("from (\d+) sticks",RT)
+			ma = re.search(r"from (\d+) sticks",RT)
 			if not BadBattery > 100:
 				BadBattery=Record["unixTime"]
 			if ma:  
@@ -3342,19 +3343,9 @@ else:   #not opt report
 		print("## CRITICAL STATUS (after cdd def) : ",CriticalError, file=sys.stderr)
 
 
-	'''
-	
-	 _            _       
-	| |_ ___   __| | ___  
-	| __/ _ \ / _` |/ _ \ 
-	| || (_) | (_| | (_) |
-	 \__\___/ \__,_|\___/ 
-
+	 # TODO: Warning: Battery Data not active. Expected only when running primaries
+	 # Change GPS calculation to look over a longer time scale
 	 
-	 TODO: Warning: Battery Data not active. Expected only when running primaries
-	 Change GPS calculation to look over a longer time scale
-	 
-	 '''
 	versionnumber = __doc__.split('v')[1].split("-")[0].strip()
 	cdd["text_version"]="v"+versionnumber
 	
@@ -4144,8 +4135,9 @@ else:   #not opt report
 				To retrieve, take unixtime //100'''
 			roundtime = int(now) // 100000
 			Archivename = "{bas}/archive/auv_{veh}".format(bas=basefilepath, veh=VEHICLE) +  "-"  +  str(roundtime) + ".json"	
-			with open(Archivename,'w') as archivefile:
-				archivefile.write(json.dumps(cdd))
+			if Opt.archive: 
+				with open(Archivename,'w') as archivefile:
+					archivefile.write(json.dumps(cdd))
 				
 			ArchiveImage = False
 			
