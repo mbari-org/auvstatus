@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- July 28 2025 version  -->
+<!-- Oct 16 2025 version  -->
 <svg version="1.2" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -35,6 +35,7 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.st27{fill:#EF9D30;stroke:none; } <!--Orange No Stroke -->	
 	.stwhite{fill:#FFFFFF;stroke:none; } <!--White No Stroke -->	
 	.st28{fill:#333333; } <!-- DarkGray Fill-->
+	.stBlack{fill:#000;stroke:none; } <!-- Black Fill already here? -->
 	.st30{font-size:8px;} 
 	.st31{fill:#B4372D;} <!-- Maroon text-->
 	.st32{fill:#aaaaaa;stroke:#000000; } <!-- LighterGray Fill-->
@@ -105,6 +106,10 @@ svgtext = '''
 	
 <polygon desc="tailcone" class="st3" points="154.9,269.51 275.29,292.12 275.29,231.72 154.9,254.33 "/>
 <polygon desc="antenna" class="st3" points="255.42,235.44 244.05,237.4 244.8,196.82 255.99,193.82 "/>
+
+<rect desc="reserve_rect" x="300" y="234" class="{color_reserve}" width="88" height="48" rx="4"/>
+<!--<text desc="reserve_text" x="302" y="280"  class="{color_reservetext} st9 st24">RESERVE</text>-->
+<text desc="reserve_text" text-anchor="start" transform="rotate(90,390,255)" x="390" y="255"  class="{color_reservetext} st9 st24">RESERVE</text>
 
 <!-- add new overcurrent lights -->
 <text desc="HardwareLabel" text-anchor="end" transform="matrix(1 0 0 1 260 254)" class="st9 st10">HW</text>

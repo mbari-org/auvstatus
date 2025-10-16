@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.97  - Added Battery onReserve indicator and gave AmpH its own color
 	v 2.96  - BatteryThreshold parsing and DefaultWithUndock
 	v 2.95  - Refinements of spark history positioning and mini-legend
 	v 2.94  - Added comms and gps tick boxes above the depth timeline. TODO: Play with decimation
@@ -1642,6 +1643,7 @@ def parseFaults(recordlist):
 	CTDError = False
 	PauseFault = False
 	IgnoreOverride = False
+	Reserve = False
 	# Do we parse this:
 	# LCB fault: LCB Watchdog Reset. Hardware Overcurrent Shutdown. Current Limiter Activated
 	# if DEBUG:
@@ -1673,6 +1675,10 @@ def parseFaults(recordlist):
 		if (not Overload) and "overload error" in RT.lower():
 			Overload = Record["unixTime"]
 		
+		if (not Reserve) and "Main Battery Failure" in RT:
+			Reserve = Record["unixTime"]
+		
+		
 		# CHECK this parsefault. Used to say if "overload error" in RT, but I think that was copy/paste
 		if (not PauseFault) and "paused" in RT.lower():
 			PauseFault = Record["unixTime"]
@@ -1701,7 +1707,7 @@ def parseFaults(recordlist):
 		# Water linked??
 		if not DVLError and Record["name"] in ["DVL_Micro", "Waterlinked","RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
 			DVLError=Record["unixTime"]
-	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock,CTDError,PauseFault,IgnoreOverride
+	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock,CTDError,PauseFault,IgnoreOverride,Reserve
 
 def parseDVL(recordlist):
 	'''2020-03-06T00:30:17.769Z,1583454617.769 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
@@ -3086,9 +3092,10 @@ if (not recovered) or Opt.anyway:
 	MotorLock = False
 	CTDError = False
 	PauseFault = False
+	OnReserve = False
 	
 	if faults:
-		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock,CTDError,PauseFault,IgnoreOverride = parseFaults(faults)
+		BadBattery,BadBatteryText,DVLError,SWError,OverloadError,HWError,WaterFault,MotorLock,CTDError,PauseFault,IgnoreOverride,OnReserve = parseFaults(faults)
 
 	
 # vehicle has been recovered
@@ -3282,7 +3289,9 @@ else:   #not opt report
 	"color_whitebeam",
 	"color_redbeam",
 	"color_whiteled",
-	"color_redled"
+	"color_redled",
+	"color_reserve",
+	"color_reservetext"
 ]
 
 	for cname in invisiblecolors:
@@ -3863,6 +3872,7 @@ else:   #not opt report
 		cdd["text_amps"]= "%.1f" % amphr 
 
 		voltnum=int(4 + 1*(volt<15) + 1*(volt<14.2))
+		ampnum =int(4 + 1*(amphr<25) + 1*(amphr<10)) 
 
 		if BadBattery > 100: # this is the unixtine
 			if DEBUG:
@@ -3872,7 +3882,6 @@ else:   #not opt report
 			LowBattColor='st11'
 
 		if volt > 0:
-			cdd["color_amps"]  = "st{}".format(voltnum)  # change this to independent amp range 360-170
 			# Changed to be more relevant to 13.7 v
 			cdd["color_volts"] = "st{}".format(voltnum)
 			cdd["color_bat1"] = ['st4',LowBattColor][volt < 13.0]
@@ -3883,7 +3892,12 @@ else:   #not opt report
 			cdd["color_bat6"] = ['st4',LowBattColor][volt < 15.5]
 			cdd["color_bat7"] = ['st4',LowBattColor][volt < 16.0]
 			cdd["color_bat8"] = ['st4',LowBattColor][volt < 16.5]
-
+		
+		if amphr > -1:
+			cdd["color_amps"]  = "st{}".format(ampnum)  # change this to independent amp range 360-170
+		else:
+			cdd["color_amps"]  = "st6"
+		
 		#
 		# Find battery thresholds for critical errors
 		#
@@ -3960,6 +3974,11 @@ else:   #not opt report
 		
 		cdd["color_dvl"] = DVLcolor
 		
+		if (OnReserve):
+			cdd["color_reserve"] = "st27" # (orange no stroke)
+			cdd["color_reservetext"] = "st31" # Maroon text
+			cdd["color_amps"]="st6"
+			
 		if (WaterCritical):
 			if DEBUG: 
 				print("## FOUND WATER LEAK in RENDER",WaterLoc, file=sys.stderr)
