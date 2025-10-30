@@ -1,6 +1,7 @@
 #! /bin/bash
-VEH='tethys galene daphne pontus triton makai brizo ahi aku opah sim'
+VEH='tethys galene daphne pontus triton makai brizo aku opah sim'
 for v in $VEH; do python3 /var/www/html/widget/auvstatus.py -v $v -f; done
+python3 /var/www/html/widget/auvstatus.py -v ahi -f --archiveimage 
 #for v in $VEH; do rm -f /var/www/html/widget/auv_$v.svg; python3 /var/www/html/widget/auvstatus.py -v $v -f; done
 #for v in $VEH; do python3 /var/www/html/widget/auvstatus.py -v $v -f; done
 

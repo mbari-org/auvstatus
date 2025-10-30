@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.98  - Running out of version numbers! Added --archiveimage option for making animations
 	v 2.97  - Added Battery onReserve indicator and gave AmpH its own color
 	v 2.96  - BatteryThreshold parsing and DefaultWithUndock
 	v 2.95  - Refinements of spark history positioning and mini-legend
@@ -137,7 +138,8 @@ def get_options():
 	parser.add_argument("-b", "--DEBUG",	action="store_true", help="Print debug info")
 	parser.add_argument("-r", "--report",	action="store_true", help="print results")
 	parser.add_argument("-f", "--savefile",	action="store_true", help="save to SVG named by vehicle at default location")
-	parser.add_argument("--archive", action="store_true"	  , help="save archive files also")
+	parser.add_argument("--archive", action="store_true"	  , help="save archive json files to folder")
+	parser.add_argument("--archiveimage", action="store_true" , help="save archive image files also")
 	parser.add_argument("-v", "--vehicle",	default="pontus"  , help="specify vehicle")
 	parser.add_argument("--printhtml",action="store_true"  , help="print auv.html web links")
 	parser.add_argument("-m", "--missions",action="store_true"  , help="spit out mission defaults")
@@ -1403,8 +1405,9 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 				historyString+=f'''<rect desc="tiny-{k}" class="st{k}" x="{hpos}"  y="{ypos}" width="2" height="1.5"/>\n'''
 
 	if DEBUG:
-		print("SPARKD: ",sparkD,file=sys.stderr)
-		print("HISTORY STRING:",historyString,file=sys.stderr)
+		pass
+		#print("SPARKD: ",sparkD,file=sys.stderr)
+		#print("HISTORY STRING:",historyString,file=sys.stderr)
 	
 	if ymax > dep_to_show + 5:
 		dep_to_show = 80
@@ -1440,10 +1443,10 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	else:
 		# subplist = xplist
 		sublist = xlist  
-	if DEBUG:
-			print("xplist",xplist, file=sys.stderr)
-			print("xlist",xlist, file=sys.stderr)
-			# print("ylist",ylist, file=sys.stderr)
+	# if DEBUG:
+	# 		print("xplist",xplist, file=sys.stderr)
+	# 		print("xlist",xlist, file=sys.stderr)
+	# 		# print("ylist",ylist, file=sys.stderr)
 	
 	faked=10
 	pliststring = ''
@@ -1459,11 +1462,11 @@ def addSparkDepth(xlist,ylist,padded=False,w=120,h=20,x0=594,y0=295,need_comm_mi
 	# <text desc="sparknote" transform="matrix(1 0 0 1 {x0+w+2} {y0+10})" class="st12 st9 sparktext">{len(xlist):n} pts</text>
 	
 	# changed orange to be 25% more than needcomms
-	if DEBUG:
-		if (sublist):
-			print("### SPARK TIME (minutes?)", (now-max(sublist)*60000)/(1000*60*60),file=sys.stderr)
-		else:
-			print("### NO DEPTH DATA sublist",file=sys.stderr)
+	# if DEBUG:
+	# 	if (sublist):
+	# 		print("### SPARK TIME (minutes?)", (now-max(sublist)*60000)/(1000*60*60),file=sys.stderr)
+	# 	else:
+	# 		print("### NO DEPTH DATA sublist",file=sys.stderr)
 	if sublist and (now-max(sublist)*60000)/(1000*60*60) > (1.25 * need_comm_mins/60):
 		agecolor = "st27"
 		padcolor = "st27" # padded values if more than an hour: orange
@@ -3016,8 +3019,8 @@ if (not recovered) or Opt.anyway:
 	
 	depthdepth,depthtime,sparkpad = getNewDepth(startTime)
 	
-	if DEBUG: 
-		print("# SPARK time and DEPTH", depthdepth,depthtime, file=sys.stderr)
+	# if DEBUG: 
+	# 	print("# SPARK time and DEPTH", depthdepth,depthtime, file=sys.stderr)
 	if VEHICLE in ["pontus","daphne","makai"]:
 		camcat,camchangetime,pisctext = getNewCameraPower(startTime)
 		if DEBUG:
@@ -3048,6 +3051,7 @@ if (not recovered) or Opt.anyway:
 	satcomms,cellcomms = parseComms(getComms(startTime))
 	
 	if cellcomms < AcousticComms:
+		print(f"Acoustic After Cell:  {AcousticComms}{cellcomms}", file=sys.stderr)
 		cellcomms = AcousticComms
 		
 	if not needcomms: 
@@ -3708,9 +3712,13 @@ else:   #not opt report
 			cdd["color_ubat"] = 'st18'
 			cdd["color_flow"] = 'st18'
 		
-		if AcousticComms:
+		if AcousticComms > cellcomms:
+			if DEBUG:
+				print(f"# Acoustic over cell A{AcousticComms} > C{cellcomms} ", file=sys.stderr)
 			cdd["text_celllabel"] = "Acoustic"
 		else:
+			if DEBUG:
+				print(f"# No Acoustic or before cell A{AcousticComms} < C{cellcomms} ", file=sys.stderr)
 			cdd["text_celllabel"] = "Cell comms"
 	
 		# PARSE PISCIVORE CAMERA
@@ -4158,7 +4166,7 @@ else:   #not opt report
 				with open(Archivename,'w') as archivefile:
 					archivefile.write(json.dumps(cdd))
 				
-			ArchiveImage = False
+			ArchiveImage = Opt.archiveimage
 			
 			if ArchiveImage:
 				ArchiveImage = "{bas}/archive/auv_{veh}".format(bas=basefilepath,veh=VEHICLE) +  "-"  +  str(roundtime) + ".svg"	
