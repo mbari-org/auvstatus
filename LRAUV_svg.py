@@ -1,5 +1,5 @@
 svghead = '''<?xml version="1.0" encoding="utf-8"?>
-<!-- Oct 16 2025 version  -->
+<!-- Oct 31 2025 version  -->
 <svg version="1.2" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="120 155 534 176" xml:space="preserve">
 <style type="text/css">
@@ -62,10 +62,10 @@ svghead = '''<?xml version="1.0" encoding="utf-8"?>
 	.stgreen{fill:#5AC1A488;stroke:none; } <!--PaleGreen No Stroke -->
 	.stpurple{fill:#9091C788;stroke:none; } <!--PalePurple No Stroke -->
 	.stblue{fill:#549fd488;stroke:none; } <!--PaleBlue No Stroke -->
-	.stsat{fill:#EF9D30AA;stroke:none; } <!--PaleOrange No Stroke -->
-	.starg{fill:#549fd4AA;stroke:none; } <!--PaleBlue No Stroke -->
-	.stcel{fill:#5AC1A4AA;stroke:none; } <!--PaleGreen No Stroke -->
-	.stgps{fill:#9091C7AA;stroke:none; } <!--PalePurple No Stroke -->
+	.stsat{fill:#E6B373;stroke:none; } <!--PaleOrange No Stroke -->
+	.starg{fill:#88B0D7;stroke:none; } <!--PaleBlue No Stroke -->
+	.stcel{fill:#92CCB6;stroke:none; } <!--PaleGreen No Stroke -->
+	.stgps{fill:#A6A6CD;stroke:none; } <!--PalePurple No Stroke -->
 	.stplanklens {fill: #d4d2d2;stroke:none;} <!-- Light Gray-->
 	.stplankbody {fill: #a2a0a0;stroke:none;}  <!-- Dark Gray-->
 	</style>
