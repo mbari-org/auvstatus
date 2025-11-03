@@ -2216,11 +2216,11 @@ def parseImptMisc(recordlist,MissionN):
 		## got command configSet AMEcho.enabled 1.000000 bool
 
 		if not GotDVL and (not "(bool)" in Record.get("text","NA")) and (not "requires" in Record.get("text","NA")) and (
-		      ("DVL_micro.loadAtStartup"      in Record.get("text","NA")) or 
-		      ("RDI_Pathfinder.loadAtStartup" in Record.get("text","NA")) or 
-		      ("AMEcho.loadAtStartup"         in Record.get("text","NA")) or 
-		      ("Waterlinked.loadAtStartup"    in Record.get("text","NA")) or 
-		      ("Rowe_600.loadAtStartup"       in Record.get("text","NA"))
+		      ("DVL_micro.loadAtStartup"      in RecordText) or 
+		      ("RDI_Pathfinder.loadAtStartup" in RecordText) or 
+		      ("AMEcho.loadAtStartup"         in RecordText) or 
+		      ("Waterlinked.loadAtStartup"    in RecordText) or 
+		      ("Rowe_600.loadAtStartup"       in RecordText)
 		      ):
 		    # TO CHECK. this might split incorrectly on the space because sometimes config set?
 		    # configSet
@@ -2233,12 +2233,12 @@ def parseImptMisc(recordlist,MissionN):
 			GotDVL = True
 			if DEBUG: 
 				print("DVL Value: ", DVL_on, file=sys.stderr)
-		if not GotDVL and ("configSet AMEcho.enabled" in Record.get("text","NA")):
+		if not GotDVL and ("configSet AMEcho.enabled" in RecordText):
 			DVL_on = bool(float(Record["text"].split(".enabled ")[1].split(" ")[0]))
 			GotDVL = True
 		
 		# ADDING CTD on/off parsing
-		if (not CTDonCommand and not CTDoffCommand) and ("CTD_Seabird.loadAtStartup" in Record["text"]):
+		if (not CTDonCommand and not CTDoffCommand) and ("CTD_Seabird.loadAtStartup" in RecordText):
 			skip = False
 			CTD_command = False
 			try:
