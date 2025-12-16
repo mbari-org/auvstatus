@@ -2242,10 +2242,10 @@ def parseImptMisc(recordlist,MissionN):
 			skip = False
 			CTD_command = False
 			try:
-				CTD_command = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
+				CTD_command = bool(float(RecordText.replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
 			except ValueError:
 				if DEBUG:
-					print("#Error parsing CTD Command: ",VEHICLE, Record["name"] ,"==>",Record["text"],file=sys.stderr)
+					print("#Error parsing CTD Command: ",VEHICLE, Record["name"] ,"==>",RecordText,file=sys.stderr)
 				skip=True
 				
 			if CTD_command and not skip:
@@ -3051,7 +3051,8 @@ if (not recovered) or Opt.anyway:
 	satcomms,cellcomms = parseComms(getComms(startTime))
 	
 	if cellcomms < AcousticComms:
-		print(f"Acoustic After Cell:  {AcousticComms}{cellcomms}", file=sys.stderr)
+		if DEBUG: 
+			print(f"Acoustic After Cell:  {AcousticComms} > {cellcomms}", file=sys.stderr)
 		cellcomms = AcousticComms
 		
 	if not needcomms: 
