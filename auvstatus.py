@@ -126,7 +126,9 @@ import math
 import re
 from collections import deque
 from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote,svgpiscivore,svg_planktivore   # define the svg text?
-from config_auv import servername, basefilepath
+
+# This used to have servername, but that is not being defined below, based on the --inst parameter at the command line
+from config_auv import basefilepath
 
 import ssl
 
@@ -2543,7 +2545,7 @@ def handleURLerror():
 			with open(OutPath.format(bas=basefilepath,veh=VEHICLE),'w') as outfile:
 				outfile.write(svgerrorhead)
 				outfile.write(svgerror.format(text_vehicle=VEHICLE,text_lastupdate=timestring))		
-			print("OUTFILE WRITE ERROR:",VEHICLE, file=sys.stderr)
+			print("WRITING ERROR FILE:",VEHICLE, OutPath.format(bas=basefilepath,veh=VEHICLE), file=sys.stderr)
 		except KeyError:
 			sys.exit("URL ACCESS ERROR and Key Error:"+VEHICLE)
 
@@ -2734,6 +2736,8 @@ sparktext = ""
 ResumeSoon = 0
 lTime = None
 
+if DEBUG:
+	print()
 if Opt.missions:
 	'''utility to show default values for selected missions'''
 	getMissionDefaults()
@@ -2750,8 +2754,9 @@ if Opt.newmissions:
 if Opt.inst == 'whoi':
 	servername = 'lrauv.whoi.edu'
 else:
-	servername = 'tethysdash2.shore.mbari.org'
-	# servername = 'okeanids.mbari.org'
+	# CHANGE SERVERNAME HERE
+	# servername = 'tethysdash2-u.shore.mbari.org'
+	servername = 'okeanids.mbari.org'
 	
 if Opt.printhtml:
 	'''print format of auv.html auto-refreshing file'''
