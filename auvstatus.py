@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.99  - Masking random overflow values for Planktivore ROIs.
 	v 2.98  - Running out of version numbers! Added --archiveimage option for making animations
 	v 2.97  - Added Battery onReserve indicator and gave AmpH its own color
 	v 2.96  - BatteryThreshold parsing and DefaultWithUndock
@@ -185,7 +186,7 @@ def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
 	if not timeafter or int(timeafter) < 1234567890123:
 		timeafter="1234567890123"
 		
-	if "tethysdash" in servername:
+	if ("tethysdash" in servername) or ("localhost" in servername):
 		BaseQuery = "http://{ser}/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
 	else:
 		BaseQuery = "https://{ser}/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
@@ -224,7 +225,7 @@ def runNewStyleQuery(api="",extrastring=""):
 		
 	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
 
-	if "tethysdash" in servername:
+	if ("tethysdash" in servername) or ("localhost" in servername):
 		NewBaseQuery = "http://{ser}/TethysDash/api/{apistring}{e}"
 	else:
 		NewBaseQuery = "https://{ser}/TethysDash/api/{apistring}{e}"
@@ -367,7 +368,7 @@ def getMissionDefaults():
 	missions=["Science/profile_station","Science/sci2","Science/mbts_sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
 	missions=["Science/mbts_sci2","Science/profile_station"]
 	for mission in missions:
-		if "tethysdash" in servername:
+		if ("tethysdash" in servername) or ("localhost" in servername):
 			URL = "http://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)
 		else:
 			URL = "https://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)			
@@ -402,7 +403,7 @@ def getNewMissionDefaults(missionn):
 	missions=["Science/mbts_sci2.tl","Transport/keepstation.tl"]
 	# TEMPORARY FOR DEBUGGING
 	# missionn=missions[1]
-	if "tethysdash" in servername:
+	if ("tethysdash" in servername) or ("localhost" in servername):
 		URL = "http://{}/TethysDash/api/commands/script?path={}".format(servername,missionn)
 	else:
 		URL = "https://{}/TethysDash/api/commands/script?path={}".format(servername,missionn)
@@ -1080,7 +1081,12 @@ def getNewROIs(starttime=1676609209829):
 		Ave_HM    = sum(roi_HM)/len(roi_HM)
 		recent_HM = millis_HM[-1]
 		old_HM    = millis_HM[0]
-
+	
+	if abs(Ave_HM) > 10000:
+		Ave_HM = -999
+	if abs(Ave_LM) > 10000:
+		Ave_LM = -999
+		
 	return Ave_LM,recent_LM,old_LM,Ave_HM,recent_HM,old_HM
 	
 def getNewDepth(starttime=1676609209829):
@@ -2756,6 +2762,9 @@ if Opt.inst == 'whoi':
 else:
 	# CHANGE SERVERNAME HERE
 	# servername = 'tethysdash2-u.shore.mbari.org'
+	# this could be set in the config file. 
+	# if this script and TethysDash are running on the same server
+	# then you can use http://localhost:8080 as a "universal" hostname
 	servername = 'okeanids.mbari.org'
 	
 if Opt.printhtml:
