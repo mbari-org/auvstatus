@@ -6,6 +6,7 @@
 *.csv
 !auv_*archive.svg
 !legend.svg
+.vimrc
 archive/
 charge/
 startcharge.csv
