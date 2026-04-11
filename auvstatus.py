@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-	v 2.99  - Masking random overflow values for Planktivore ROIs.
+	v 2.99  - Masking random overflow values for Planktivore ROIs. Made schedule resume key on latest.
 	v 2.98  - Running out of version numbers! Added --archiveimage option for making animations
 	v 2.97  - Added Battery onReserve indicator and gave AmpH its own color
 	v 2.96  - BatteryThreshold parsing and DefaultWithUndock
@@ -281,7 +281,12 @@ def getNewDeployment():
 		if launchData:
 			startTime = launchData.get('startEvent',{}).get('unixTime',0)
 			deployID = launchData.get('deploymentId',"")
-			recoverTime = launchData.get('recoverEvent',{}).get('unixTime',0)
+			recoverTimePre = launchData.get('recoverEvent',{})
+			if recoverTimePre:
+				recoverTime=recoverTimePre.get('unixTime',0)
+			else:
+				if DEBUG:
+					print("# LAUNCH TIME BUT NO RECOVER",VEHICLE, deployID, file=sys.stderr)
 	except ssl.SSLError:
 		print("# DEPLOYMENT TIMEOUT",VEHICLE, file=sys.stderr)
 	if DEBUG:
@@ -492,7 +497,9 @@ def getCommands(starttime):
 	qString = runQuery(event="command",limit="1000",timeafter=starttime)
 	retstring = ""
 	if qString:
-		retstring = qString	
+		retstring = qString
+	if DEBUG:
+	 	print("# COMMANDS FOUND",qString, file=sys.stderr)
 	return retstring
 	
 def getFaults(starttime):
@@ -1556,9 +1563,10 @@ def parseCommands(recordlist):
 	Soon = 0
 	for Record in recordlist:
 		# Expand this to check other DropWeight associated messages?
-		RecordText = Record.get("text","NA")
-		if "resum" in Record["text"]:
-			Soon=Record["unixTime"]
+		if not Soon:
+			RecordText = Record.get("text","NA")
+			if "resum" in Record["text"]:
+				Soon=Record["unixTime"]
 	return Soon
 
 	 
