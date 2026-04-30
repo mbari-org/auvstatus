@@ -121,7 +121,6 @@ import argparse
 import sys
 import time
 import os
-import urllib.request, urllib.error, urllib.parse
 import json
 import math
 import re
@@ -284,28 +283,17 @@ def getMissionDefaults():
 	missions=["Science/profile_station","Science/sci2","Science/mbts_sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
 	missions=["Science/mbts_sci2","Science/profile_station"]
 	for mission in missions:
-		if ("tethysdash" in servername) or ("localhost" in servername):
-			URL = "http://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)
-		else:
-			URL = "https://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)			
 		print("\n#===========================\n",mission, "\n", file=sys.stderr)
-		try:
-			connection = urllib.request.urlopen(URL,timeout=8)
-			if connection: # here?
-				raw = connection.read()
-				structured = json.loads(raw)
-				connection.close()
-				result = structured['result']
-			
-				print(URL, file=sys.stderr)
-				try: 
-					splitted = str(result).split("{")
-					for item in splitted:
-						print(item, file=sys.stderr)
-				except KeyError:
-					print("NA", file=sys.stderr)
-		except urllib.error.HTTPError:
+		result = client.mission_xml(mission)
+		if result is None:
 			print("# FAILED TO FIND MISSION",mission, file=sys.stderr)
+			continue
+		try:
+			splitted = str(result).split("{")
+			for item in splitted:
+				print(item, file=sys.stderr)
+		except KeyError:
+			print("NA", file=sys.stderr)
 			
 def getNewMissionDefaults(missionn):
 	Speed = None
@@ -471,11 +459,7 @@ def getDataAsc(starttime,mission):
 '''
 
 	Bailout=False
-	if 'tethysdash' in servername:
-		DataURL='http://{ser}/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
-	else:
-		DataURL='https://{ser}/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
-	
+
 	volt = 0
 	amp  = 0
 	volttime = 0
@@ -518,21 +502,16 @@ def getDataAsc(starttime,mission):
 
 		
 		extrapath = pathpart
-		NewURL = DataURL.format(ser=servername,vehicle=VEHICLE,extrapath=extrapath)
-		if DEBUG:
-			print("# DATA ASC URL",NewURL, file=sys.stderr)
-		try:
-			datacon = urllib.request.urlopen(NewURL,timeout=8)
-		except urllib.error.HTTPError: 
+		text = client.shore_asc(extrapath)
+		if text is None:
 			flow=None
 			flowtime=None
 			Tracking=""
 			TrackTime=""
 			break
-		content =  datacon.read().decode('utf-8').splitlines()
-		
+		content = text.splitlines()
 		if DEBUG:
-			print("# OLD DATA QUERY",NewURL, file=sys.stderr)
+			print("# OLD DATA QUERY", extrapath, file=sys.stderr)
 		# pull last X lines from queue. This was causing problems on some missions so increased it
 		lastlines = list(deque(content))
 		#lastlines = list(deque(content))

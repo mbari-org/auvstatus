@@ -22,7 +22,6 @@ import os
 import json
 import re
 import ssl
-import urllib.request, urllib.error, urllib.parse
 from datetime import datetime,timedelta
 
 ''' AVAILABLE STYLES

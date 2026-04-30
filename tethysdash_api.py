@@ -34,8 +34,9 @@ class TethysDashClient:
 			"http" if ("tethysdash" in server or "localhost" in server) else "https"
 		)
 
-	def _url(self, path: str, query: str) -> str:
-		return f"{self._scheme}://{self.server}/TethysDash/api/{path}?{query}"
+	def _url(self, path: str, query: str = "") -> str:
+		base = f"{self._scheme}://{self.server}/TethysDash/api/{path}"
+		return f"{base}?{query}" if query else base
 
 	def _get(self, url: str, *, timeout: int) -> Optional[bytes]:
 		if self.debug:
@@ -121,3 +122,27 @@ class TethysDashClient:
 		if raw is None:
 			return None
 		return ScriptDescriptionResponse.model_validate_json(raw).result
+
+	def mission_xml(self, mission: str) -> Optional[object]:
+		"""Fetch /api/git/mission/{mission}.xml; return the parsed `result` field."""
+		raw = self._get(
+			self._url(f"git/mission/{mission}.xml"), timeout=NEWSTYLE_TIMEOUT
+		)
+		if raw is None:
+			return None
+		return json.loads(raw).get("result")
+
+	def shore_asc(self, sbdlog_path: str) -> Optional[str]:
+		"""Fetch /TethysDash/data/<vehicle>/realtime/sbdlogs/<path>/shore.asc as text.
+
+		Note: this lives under /TethysDash/data/, not /TethysDash/api/, and
+		returns plain ASCII (the on-vehicle SBD log dump), not JSON.
+		"""
+		url = (
+			f"{self._scheme}://{self.server}/TethysDash/data/"
+			f"{self.vehicle}/realtime/sbdlogs/{sbdlog_path}/shore.asc"
+		)
+		raw = self._get(url, timeout=NEWSTYLE_TIMEOUT)
+		if raw is None:
+			return None
+		return raw.decode("utf-8")
