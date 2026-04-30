@@ -12,7 +12,7 @@ v 1.1   : Starting version numbers!
 
 
 from ESPelements import svghead,svgtail
-from auvstatus import runNewStyleQuery,getNewDeployment,runQuery,getDeployment,getRecovery, getPlugged,hours,dates,elapsed
+from auvstatus import client,getNewDeployment,getDeployment,getRecovery, getPlugged,hours,dates,elapsed
 
 import argparse
 import sys
@@ -22,7 +22,6 @@ import os
 import json
 import re
 import ssl
-import urllib.request, urllib.error, urllib.parse
 from datetime import datetime,timedelta
 
 ''' AVAILABLE STYLES
@@ -167,24 +166,23 @@ def makepiechart(percent,xp,yp,radius):
 def getESP(starttime):
 	'''get critical entries, like drop weight
 	ESPComponent'''
-	qString = runQuery(name="ESPComponent",limit="2000",match=".*Selecting.*",timeafter=starttime)
+	qString = client.events(name="ESPComponent", limit=2000, text_matches=".*Selecting.*", after_ms=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
-	
+
 	return retstring
 
 def checkAcoustic(starttime):
-	qString = ""
-	qString = runQuery(name="hs2dash",limit="20",match=".*LRAUVcntSamples.*",timeafter=starttime)
+	qString = client.events(name="hs2dash", limit=20, text_matches=".*LRAUVcntSamples.*", after_ms=starttime)
 	if DEBUG:
 		print("\n### ACOUSTIC ",qString,file=sys.stderr)
 	return qString
 
 def parseAcoustic(records):
 	# TODO!
-	for Record in records:
-		RecordText = Record.get("text","NA")
+	for Record in records or []:
+		RecordText = (Record.text or "NA")
 		if DEBUG and RecordText:
 			print("#ACOUSTIC RECORD: ",RecordText)
 			
@@ -232,7 +230,7 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 
 	
 	for Record in recordlist:
-		RecordText = Record.get("text","NA")
+		RecordText = (Record.text or "NA")
 		Redo = False
 		
 		if "Cartridge" in RecordText:
@@ -270,7 +268,7 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 						if Cartnum not in DoneList:
 							DoneList.append(Cartnum)
 							ESPL[Cartnum] = round(float(mls)/10)
-							TimeList[Cartnum] = Record["unixTime"]					
+							TimeList[Cartnum] = Record.unix_time					
 					else:
 						mls=-100
 						VolumeResult=[-199]
@@ -286,7 +284,7 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 						
 					if not firstnum: # MOST RECENT
 						firstnum = Cartnum
-						firsttime = Record["unixTime"]
+						firsttime = Record.unix_time
 						if mls != "999":
 							big_circle_list[Cartnum] = "stroke_purple"
 						if DEBUG:
@@ -311,7 +309,7 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 					for c,v in list(zip(CartResult,vols))[::-1]:
 						if not firstnum: # MOST RECENT
 							firstnum = int(CartResult[-1])
-							firsttime = Record["unixTime"]
+							firsttime = Record.unix_time
 							big_circle_list[firstnum] = "stroke_purple stroke_dash"
 							if DEBUG:
 								print("FIRST CIRCLE in REDO:",firstnum,file=sys.stderr)
@@ -321,12 +319,12 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 								print("SETTING RESAMPLE BLUE: ",c,file=sys.stderr)
 							
 						ESPL[int(c)]= round(float(v)/10)
-						TimeList[int(c)] = Record["unixTime"]					
+						TimeList[int(c)] = Record.unix_time					
 # 					if not firstnum:
 # 						firstnum = int(c)
 # 						if v != "-99":
 # 							big_circle_list[int(c)] = "stroke_purple stroke_dash"
-# 						firsttime = Record["unixTime"]
+# 						firsttime = Record.unix_time
 					
 	if DEBUG:
 		print("BigCircleList",big_circle_list,file=sys.stderr)

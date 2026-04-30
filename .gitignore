@@ -6,6 +6,8 @@
 *.csv
 !auv_*archive.svg
 !legend.svg
+.venv/
+__pycache__/
 .vimrc
 archive/
 charge/

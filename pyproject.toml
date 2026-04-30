@@ -1,0 +1,8 @@
+[project]
+name = "auvstatus"
+version = "0.1.0"
+description = "LRAUV vehicle-status SVG generator"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.6,<3",
+]

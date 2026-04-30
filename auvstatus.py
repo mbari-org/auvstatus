@@ -121,11 +121,9 @@ import argparse
 import sys
 import time
 import os
-import urllib.request, urllib.error, urllib.parse
 import json
 import math
 import re
-from collections import deque
 from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote,svgpiscivore,svg_planktivore   # define the svg text?
 
 # This used to have servername, but that is not being defined below, based on the --inst parameter at the command line
@@ -134,6 +132,26 @@ from config_auv import basefilepath
 import ssl
 
 ssl._create_default_https_context = ssl._create_unverified_context
+
+from tethysdash_api import TethysDashClient
+from tethysdash_models import (
+    ArgoReceiveEvent,
+    CommandEvent,
+    DataProcessedEvent,
+    DeployEvent,
+    GpsFixEvent,
+    LaunchEvent,
+    LogCriticalEvent,
+    LogFaultEvent,
+    LogImportantEvent,
+    NoteEvent,
+    RecoverEvent,
+    SbdReceiveEvent,
+)
+
+# Module-level handle to the typed API client.  Initialized once `servername`
+# and `VEHICLE` are known, before the first getter is called.
+client: "TethysDashClient | None" = None
 
 def get_options():
 	parser = argparse.ArgumentParser(usage = __doc__)
@@ -153,120 +171,14 @@ def get_options():
 	options = parser.parse_args()
 	return options
 
-def unpackJSON(data):
-	if type(data) == type(b'x'):
-		data = data.decode('utf-8')
-
-	structured = json.loads(data)
-	# if DEBUG:
-	# 	print("### STRUCTURED:",structured, file=sys.stderr)
-	if 'result' in structured:
-		result = structured['result']
-	elif 'chartData' in structured:
-		result = structured['chartData']
-	else:
-		result = structured
-	return result
-
-def runQuery(event="",limit="",name="",match="",timeafter="1234567890123"):
-	limit_str=""
-	if limit:
-		limit_str = "&limit={}".format(limit)
-	if match:
-		match = "&text.matches=" + match
-	if name:
-		name = "&name=" + name
-	if event:
-		event = "&eventTypes=" + event
-		
-	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
-	
-	vehicle = VEHICLE
-
-	if not timeafter or int(timeafter) < 1234567890123:
-		timeafter="1234567890123"
-		
-	if ("tethysdash" in servername) or ("localhost" in servername):
-		BaseQuery = "http://{ser}/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
-	else:
-		BaseQuery = "https://{ser}/TethysDash/api/events?vehicles={v}{e}{n}{tm}{l}&from={t}"
-	URL = BaseQuery.format(ser=servername,v=vehicle,e=event,n=name,tm=match,l=limit_str,t=timeafter)
-	
-	if DEBUG:
-		print("### QUERY:",URL, file=sys.stderr)
-
-	try:
-		connection = urllib.request.urlopen(URL,timeout=12)		
-		if connection:
-			raw = connection.read()
-			structured = json.loads(raw)
-			connection.close()
-			result = structured['result']
-		else:
-			print("# Query timeout",URL, file=sys.stderr)
-			result = ''
-		return result
-	except urllib.error.HTTPError or ssl.SSLError:
-		if ssl.SSLError:
-			print("# QUERY TIMEOUT:",URL, file=sys.stderr)
-		else:
-			print("# FAILURE IN QUERY:",URL, file=sys.stderr)
-		handleURLerror()
-		return None
-
-def runNewStyleQuery(api="",extrastring=""):
-	# example /events? or /data?  
-	# https://okeanids.mbari.org/TethysDash/api/vconfig?vehicle=makai&gitTag=2020-07-18a&since=2020-07-21
-	# https://okeanids.mbari.org/TethysDash/api/deployments/last?vehicle=pontus
-	# https://okeanids.mbari.org/TethysDash/api/data?vehicle=pontus
-
-	if api:
-		apistring = "{a}?vehicle={v}".format(a=api,v=VEHICLE)
-		
-	'''send a generic query to the REST API. Extra parameters can be over packed into limit (2)'''
-
-	if ("tethysdash" in servername) or ("localhost" in servername):
-		NewBaseQuery = "http://{ser}/TethysDash/api/{apistring}{e}"
-	else:
-		NewBaseQuery = "https://{ser}/TethysDash/api/{apistring}{e}"
-		
-	URL = NewBaseQuery.format(ser=servername,apistring=apistring,e=extrastring)
-	
-	if DEBUG:
-		print("### NEW QUERY:",URL, file=sys.stderr)
-
-	try:
-		connection = urllib.request.urlopen(URL,timeout=8)		
-		if connection:
-			datastream = connection.read()
-			result = unpackJSON(datastream)
-		else:
-			print("# Query timeout",URL, file=sys.stderr)
-			result = ''
-		return result
-	except urllib.error.HTTPError or ssl.SSLError:
-		if ssl.SSLError:
-			if DEBUG:
-				print("\n### HTTP ERROR:",URL, file=sys.stderr)
-			if not "PowerOnly" in URL and not "AvgRois" in URL and not "average_current" in URL and not "battery_voltage" in URL and not "battery_charge" in URL and not "data/depth" in URL:
-				print("# NEW QUERY TIMEOUT:",URL, file=sys.stderr)
-				handleURLerror()
-		else:
-			print("# FAILURE IN QUERY:",URL, file=sys.stderr)
-			handleURLerror()
-		return None	
-
 def getDeployment():
 	'''return start time for deployment'''
 	startTime = 0
-	try:
-		launchString = runQuery(event="launch",limit="1")
-		if launchString:
-			startTime = launchString[0]['unixTime']
-			if DEBUG:
-				print("# LAUNCH STRING:",launchString, file=sys.stderr)
-	except ssl.SSLError:
-		print("# DEPLOYMENT TIMEOUT",VEHICLE, file=sys.stderr)
+	launchString = client.events(LaunchEvent, limit=1)
+	if launchString:
+		startTime = launchString[0].unix_time
+		if DEBUG:
+			print("# LAUNCH STRING:",launchString, file=sys.stderr)
 	return startTime
 
 def getNewDeployment():
@@ -276,76 +188,73 @@ def getNewDeployment():
 	startTime = 0
 	recoverTime = 0
 	deployID = ""
-	try:
-		launchData = runNewStyleQuery(api="deployments/last")
-		if launchData:
-			startTime = launchData.get('startEvent',{}).get('unixTime',0)
-			deployID = launchData.get('deploymentId',"")
-			recoverTimePre = launchData.get('recoverEvent',{})
-			if recoverTimePre:
-				recoverTime=recoverTimePre.get('unixTime',0)
-			else:
-				if DEBUG:
-					print("# LAUNCH TIME BUT NO RECOVER",VEHICLE, deployID, file=sys.stderr)
-	except ssl.SSLError:
-		print("# DEPLOYMENT TIMEOUT",VEHICLE, file=sys.stderr)
+	launchData = client.last_deployment()
+	if launchData is None:
+		handleURLerror()
+	if launchData:
+		startTime = launchData.start_event.unix_time if launchData.start_event else 0
+		deployID = launchData.deployment_id or ""
+		if launchData.recover_event:
+			recoverTime = launchData.recover_event.unix_time or 0
+		elif DEBUG:
+			print("# LAUNCH TIME BUT NO RECOVER",VEHICLE, deployID, file=sys.stderr)
 	if DEBUG:
 		print("### DEPLOYMENT TIME:",startTime, file=sys.stderr)
 		print("### DEPLOYMENT ID:",deployID, file=sys.stderr)
 		print("### New Deploy String:",launchData, file=sys.stderr)
 	return startTime,deployID,recoverTime
-	
+
 def getRecovery(starttime):
-	launchString = runQuery(event="recover",limit="1",timeafter=starttime)
+	launchString = client.events(RecoverEvent, limit=1, after_ms=starttime)
 	recover = False
 	if launchString:
-		recover = launchString[0]['unixTime']
-	
+		recover = launchString[0].unix_time
+
 	return recover
 
 def getPlugged(starttime):
-	launchString = runQuery(event="deploy",limit="1",timeafter=starttime)
+	launchString = client.events(DeployEvent, limit=1, after_ms=starttime)
 	plugged = False
 	if launchString:
-		plugged = launchString[0]['unixTime']
-	
+		plugged = launchString[0].unix_time
+
 	return plugged
- 
+
 def getGPS(starttime,mylimit="1"):
 	''' extract the most recent GPS entry'''
 	if DEBUG:
 		print("###\n### RUNNING GPS LIMIT 1 starttime:",starttime, file=sys.stderr)
-	qString = runQuery(event="gpsFix",limit=mylimit,timeafter=starttime)
+	qString = client.events(GpsFixEvent, limit=mylimit, after_ms=starttime)
 	retstring=""
 	if qString:
-		retstring = qString	
+		retstring = qString
 	return retstring
 
 def getArgo(starttime,mylimit="1"):
 	''' extract the most recent GPS entry'''
 	if DEBUG:
 		print("###\n### RUNNING ARGO not limited starttime:",starttime, file=sys.stderr)
-	qString = runQuery(event="argoReceive",limit=mylimit,timeafter=starttime)
+	qString = client.events(ArgoReceiveEvent, limit=mylimit, after_ms=starttime)
 	retstring=""
 	if qString:
-		retstring = qString	
+		retstring = qString
 	return retstring
-	
+
 def getArgo50(starttime,mylimit="100"):
 	''' extract the most recent GPS entry'''
 	if DEBUG:
 		print("###\n### RUNNING ARGO LIMIT 50 starttime:",starttime, file=sys.stderr)
-	qString = runQuery(event="argoReceive",limit=mylimit,timeafter=starttime)
+	qString = client.events(ArgoReceiveEvent, limit=mylimit, after_ms=starttime)
 	retstring=""
 	if qString:
-		retstring = qString	
+		retstring = qString
 	return retstring
 
 def newGetOldGPS(starttime,mylimit="2"):
 	''' extract the most recent GPS entry'''
 	if DEBUG:
 		print("###\n### RUNNING NEW OLD GPS LIMIT ",mylimit," starttime:",starttime, file=sys.stderr)
-	qString = runQuery(event="gpsFix",limit=mylimit,timeafter=starttime)
+	qString = client.events(GpsFixEvent, limit=mylimit, after_ms=starttime)
 	retstring=""
 	if qString and len(qString) > 1:
 		# CHANGING FROM [1] to [-1] to allow getting older records
@@ -353,11 +262,11 @@ def newGetOldGPS(starttime,mylimit="2"):
 		if DEBUG:
 			print ("###\n### NEW OLD GPS:",retstring, file=sys.stderr)
 	return retstring
-	
+
 def newGetEightHourArgoGPS(starttime=""):
 	if DEBUG:
 		print("###\n### QUERY Combined GPS and ARGO LIMIT starttime:",elapsed(starttime-now), file=sys.stderr)
-	records = runQuery(event="gpsFix,argoReceive",limit="",timeafter=starttime)
+	records = client.events(event_types="gpsFix,argoReceive", after_ms=starttime)
 	# if DEBUG:
 	# 	print ("###\n### NEW ARGO+GPS:",records, file=sys.stderr)
 	return records
@@ -373,28 +282,17 @@ def getMissionDefaults():
 	missions=["Science/profile_station","Science/sci2","Science/mbts_sci2","Transport/keepstation","Maintenance/ballast_and_trim","Transport/keepstation_3km","Transport/transit_3km","Science/spiral_cast"]
 	missions=["Science/mbts_sci2","Science/profile_station"]
 	for mission in missions:
-		if ("tethysdash" in servername) or ("localhost" in servername):
-			URL = "http://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)
-		else:
-			URL = "https://{}/TethysDash/api/git/mission/{}.xml".format(servername,mission)			
 		print("\n#===========================\n",mission, "\n", file=sys.stderr)
-		try:
-			connection = urllib.request.urlopen(URL,timeout=8)
-			if connection: # here?
-				raw = connection.read()
-				structured = json.loads(raw)
-				connection.close()
-				result = structured['result']
-			
-				print(URL, file=sys.stderr)
-				try: 
-					splitted = str(result).split("{")
-					for item in splitted:
-						print(item, file=sys.stderr)
-				except KeyError:
-					print("NA", file=sys.stderr)
-		except urllib.error.HTTPError:
+		result = client.mission_xml(mission)
+		if result is None:
 			print("# FAILED TO FIND MISSION",mission, file=sys.stderr)
+			continue
+		try:
+			splitted = str(result).split("{")
+			for item in splitted:
+				print(item, file=sys.stderr)
+		except KeyError:
+			print("NA", file=sys.stderr)
 			
 def getNewMissionDefaults(missionn):
 	Speed = None
@@ -402,126 +300,105 @@ def getNewMissionDefaults(missionn):
 	TimeOut = None
 	Docked = False
 	"""NOTE: This mission name needs the suffix!"""
-	
+
 	'''https://okeanids.mbari.org/TethysDash/api/commands/script?path=Science/altitudeServo_approach_backseat_poweronly.tl'''
 	'''{"description":"Maximum duration of mission","name":"MissionTimeout","unit":"hour","value":"12"},{"description":"How often to surface for commumications","name":"NeedCommsTime","unit":"minute","value":"180"},'''
-	missions=["Science/mbts_sci2.tl","Transport/keepstation.tl"]
-	# TEMPORARY FOR DEBUGGING
-	# missionn=missions[1]
-	if ("tethysdash" in servername) or ("localhost" in servername):
-		URL = "http://{}/TethysDash/api/commands/script?path={}".format(servername,missionn)
-	else:
-		URL = "https://{}/TethysDash/api/commands/script?path={}".format(servername,missionn)
 
-
-	if DEBUG: 
+	if DEBUG:
 		print("\n#===========================\n",missionn, "\n", file=sys.stderr)
-		print("\n#===========================\n",URL, "\n", file=sys.stderr)
-	if missionn:
-		try:
-			connection = urllib.request.urlopen(URL,timeout=8)
-			if connection: # here?
-				raw = connection.read()
-				structured = json.loads(raw)
-				connection.close()
-				try:
-					result = structured['result']['scriptArgs']
-				except KeyError:
-					#print("\n#=Key Error in Mission Defaults=\n",missionn, VEHICLE,structured, "\n", file=sys.stderr)
-					result = structured['result']['inserts'][0]['scriptArgs']
-			
-				# if DEBUG: 
-				# 	print(result, file=sys.stderr)
-				for subfield in result:
-					sfn = subfield.get('name')
-					if "NeedCommsTime" in sfn:
-						'''needcomms expects minutes'''
-						NCTime = subfield.get('value',None)
-						if subfield.get('unit',0)=='hour':
-							NCTime = int(NCTime)*60
-						if DEBUG:
-							print("FOUND NEEDCOMMS TIME in Defaults:",subfield, file=sys.stderr)
-					# Mission Timeout = DockedTime plus 5 mins
-					elif sfn=="DockedTime":
-						TimeOut = subfield.get('value',None)
-						Docked=True
-						if subfield.get('unit',0)=='minute':
-							TimeOut = int(TimeOut)/60
-						if DEBUG:
-							print("FOUND DOCKED TIME:", subfield, file=sys.stderr)				
-					elif sfn=="MissionTimeout" and not Docked:
-						'''Timeout expects hours'''
-						TimeOut = subfield.get('value',None)
-						if subfield.get('unit',0)=='minute':
-							TimeOut = int(TimeOut)/60
-						if DEBUG:
-							print("FOUND DEFAULT MISSION TIMEOUT:", subfield, file=sys.stderr)
-					elif sfn=="Speed":
-						Speed = subfield.get('value',None)
-						if DEBUG:
-							print(f"FOUND SPEED IN NEW DEFAULTS {subfield}", file=sys.stderr)
-				# try: 
-				# 	splitted = str(result).split("{")
-				# 	for item in splitted:
-				# 		print(item, file=sys.stderr)
-				# except KeyError:
-				# 	print("NA", file=sys.stderr)
-				if DEBUG: 
-					print(NCTime,TimeOut,Speed, file=sys.stderr)
-		except urllib.error.HTTPError:
-			print("# FAILED TO FIND NEW MISSION",missionn, file=sys.stderr)
+	if not missionn:
+		return NCTime,TimeOut,Speed,Docked
+
+	desc = client.script_description(missionn)
+	if desc is None:
+		print("# FAILED TO FIND NEW MISSION",missionn, file=sys.stderr)
+		return NCTime,TimeOut,Speed,Docked
+
+	args = desc.script_args
+	if not args and desc.inserts:
+		args = desc.inserts[0].script_args
+	for subfield in (args or []):
+		sfn = subfield.name
+		if sfn and "NeedCommsTime" in sfn:
+			'''needcomms expects minutes'''
+			NCTime = subfield.value
+			if subfield.unit == 'hour':
+				NCTime = int(NCTime) * 60
+			if DEBUG:
+				print("FOUND NEEDCOMMS TIME in Defaults:",subfield, file=sys.stderr)
+		# Mission Timeout = DockedTime plus 5 mins
+		elif sfn == "DockedTime":
+			TimeOut = subfield.value
+			Docked = True
+			if subfield.unit == 'minute':
+				TimeOut = int(TimeOut) / 60
+			if DEBUG:
+				print("FOUND DOCKED TIME:", subfield, file=sys.stderr)
+		elif sfn == "MissionTimeout" and not Docked:
+			'''Timeout expects hours'''
+			TimeOut = subfield.value
+			if subfield.unit == 'minute':
+				TimeOut = int(TimeOut) / 60
+			if DEBUG:
+				print("FOUND DEFAULT MISSION TIMEOUT:", subfield, file=sys.stderr)
+		elif sfn == "Speed":
+			Speed = subfield.value
+			if DEBUG:
+				print(f"FOUND SPEED IN NEW DEFAULTS {subfield}", file=sys.stderr)
+	if DEBUG:
+		print(NCTime,TimeOut,Speed, file=sys.stderr)
 	return NCTime,TimeOut,Speed,Docked
 		
 
 	
 def getNotes(starttime):
 	'''get notes with #widget in the text'''
-	qString = runQuery(event="note",limit="10",timeafter=starttime)
+	qString = client.events(NoteEvent, limit=10, after_ms=starttime)
 	# if DEBUG:
 	# 	print("# NOTESTRING FOUND",qString, file=sys.stderr)
 	retstring = ''
 	if qString:
 		retstring=qString
 	return retstring
-	
+
 def getCritical(starttime):
 	'''get critical entries, like drop weight'''
-	qString = runQuery(event="logCritical",limit="1000",timeafter=starttime)
+	qString = client.events(LogCriticalEvent, limit=1000, after_ms=starttime)
 	retstring = ""
 	if qString:
-		retstring = qString	
+		retstring = qString
 	return retstring
 
 def getCommands(starttime):
 	'''get commands which have been sent'''
-	qString = runQuery(event="command",limit="1000",timeafter=starttime)
+	qString = client.events(CommandEvent, limit=1000, after_ms=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
 	if DEBUG:
 	 	print("# COMMANDS FOUND",qString, file=sys.stderr)
 	return retstring
-	
+
 def getFaults(starttime):
 	'''
-	Software Overcurrent Add swatch to thruster section? 
+	Software Overcurrent Add swatch to thruster section?
 	LCB fault: Software Overcurrent
-	Hardware Overcurrent 
+	Hardware Overcurrent
 	On overcurrent errors, the component varies. Probably worth having a special indicator and report what is flagged
 		LCB Fault
-		
-		
+
+
 		2020-03-06T00:10:13.771Z,1583453413.771 [CBIT](CRITICAL): Communications Fault in component: RDI_Pathfinder
-		
+
 	2020-03-06T00:09:26.051Z,1583453366.051 [RDI_Pathfinder](FAULT): DVL failed to acquire valid data within timeout.'''
-	qString = runQuery(event="logFault",limit="2000",timeafter=starttime)
+	qString = client.events(LogFaultEvent, limit=2000, after_ms=starttime)
 	retstring = ""
 	if qString:
-		retstring = qString	
+		retstring = qString
 	return retstring
 
 def getImportant(starttime,inputname=""):
-	qString = runQuery(event="logImportant",name=inputname,limit="2000",timeafter=starttime)
+	qString = client.events(LogImportantEvent, name=inputname, limit=2000, after_ms=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
@@ -529,22 +406,22 @@ def getImportant(starttime,inputname=""):
 
 def getCBIT(starttime):
 	'''may also hold some DVL info'''
-	qString = runQuery(name="GFScanner",timeafter=starttime)
+	qString = client.events(name="GFScanner", after_ms=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
 	return retstring
 
 def getDrop(starttime):
-	qString = runQuery(name="DropWeight",limit="2000",timeafter=starttime)
+	qString = client.events(name="DropWeight", limit=2000, after_ms=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
 	return retstring
 
-	
+
 def getComms(starttime,mylimit="2000"):
-	qString = runQuery(event="sbdReceive",limit=mylimit,timeafter=starttime)
+	qString = client.events(SbdReceiveEvent, limit=mylimit, after_ms=starttime)
 	retstring = ""
 	if qString:
 		retstring = qString
@@ -581,11 +458,7 @@ def getDataAsc(starttime,mission):
 '''
 
 	Bailout=False
-	if 'tethysdash' in servername:
-		DataURL='http://{ser}/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
-	else:
-		DataURL='https://{ser}/TethysDash/data/{vehicle}/realtime/sbdlogs/{extrapath}/shore.asc'
-	
+
 	volt = 0
 	amp  = 0
 	volttime = 0
@@ -595,139 +468,96 @@ def getDataAsc(starttime,mission):
 	TrackTime = []
 	allpaths =[]
 	NeedTracking = True
-	
+
 	if DEBUG:
 		print("# Running Old Data query...")
-			
-	record = runQuery(event="dataProcessed",limit="10",timeafter=starttime)
-	
+
+	record = client.events(DataProcessedEvent, limit=10, after_ms=starttime)
+
 	if record:
 		for checkpath in record:
-			if not (checkpath['path'] in allpaths):
-				allpaths.append(checkpath['path'])
+			if checkpath.path and checkpath.path not in allpaths:
+				allpaths.append(checkpath.path)
 		if DEBUG:
 			print("# Found (allpaths) Data Path", allpaths,file=sys.stderr)
 	else:
 		if DEBUG:
 			print("# No dataProcessed Path found", file=sys.stderr)
 		return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
-	
-	#moving duplicate checking above		
+
+	#moving duplicate checking above
 	# if (len(allpaths) ==3):   # get three most recent
 	# 	if allpaths[0]==allpaths[1]:   # if first two are the same, drop second
 	# 		z=allpaths.pop(1)
 	# 	else:            # otherwise drop last one
 	# 		z=allpaths.pop(2)
-	
-	firstlast = 0		
-	
+
 	for pathpart in allpaths[:2]:
 		volt = 0
 		amp  = 0
 		volttime=0
 
-		
+
 		extrapath = pathpart
-		NewURL = DataURL.format(ser=servername,vehicle=VEHICLE,extrapath=extrapath)
-		if DEBUG:
-			print("# DATA ASC URL",NewURL, file=sys.stderr)
-		try:
-			datacon = urllib.request.urlopen(NewURL,timeout=8)
-		except urllib.error.HTTPError: 
+		snap = client.shore_asc(extrapath)
+		if snap is None:
 			flow=None
 			flowtime=None
 			Tracking=""
 			TrackTime=""
 			break
-		content =  datacon.read().decode('utf-8').splitlines()
-		
 		if DEBUG:
-			print("# OLD DATA QUERY",NewURL, file=sys.stderr)
-		# pull last X lines from queue. This was causing problems on some missions so increased it
-		lastlines = list(deque(content))
-		#lastlines = list(deque(content))
-		lastlines.reverse() #in place
-		# if DEBUG:
-		# 	print("dimensions of lastlines",len(lastlines), file=sys.stderr)
-		# 	print("# Lastlines (reversed):",lastlines[0:10], file=sys.stderr)
-		# 	for li in lastlines:
-		# 		if "flow" in li:
-		# 			print("#",li, file=sys.stderr)
-		# 
-		# if DEBUG:
-		# 	print("# Lastlines first):",lastlines[0], file=sys.stderr)
-		# trying to avoid parsing the same part twice
-		# THIS doesn't work even if the first entity is the same
-		if lastlines and (firstlast == lastlines[0]):
-			Bailout = True
-			lastlines=[]
-			break
-		elif lastlines:
-			firstlast = lastlines[0]
-		else: # not lastlines
-			Bailout = True
-			lastlines=[]
-			break
-			
+			print("# OLD DATA QUERY",extrapath, file=sys.stderr)
 
-		for nextline in lastlines:
-#			if DEBUG:
-#				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
-			if "platform_battery_" in nextline:
-				if not('BPC1' in nextline):
-					fields = nextline.split("=")	
-					if (volt==0) and ("voltage" in nextline) and (VEHICLE!='ahi'):
-						if DEBUG:
-							print("# Found Data Battery Voltage",fields[2:], file=sys.stderr)
-						volt     = float(fields[3].split(" ")[0])
-						# in seconds not MS
-					if amp == 0 and "charge" in nextline:
-						if DEBUG:
-							print("# Found Data Battery Charge",fields[2:], file=sys.stderr)
-						amp      = float(fields[3].split(" ")[0])
-						volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  
-				else:
-					# VEHICLE=='ahi' and "voltage" in nextline: # Use BPC1
-					fields = nextline.split('>')[1].split("=")
-					if (volt==0) and ("voltage" in nextline) and (VEHICLE=='ahi'):
-						if DEBUG:
-							print("\n# Found AHI Data Battery Voltage",fields, file=sys.stderr)
-						volt     = float(fields[1].split(" ")[0])
-						volttime = int(float(nextline.split('>')[0].split(',')[1].split(" ")[0])*1000)  
-				
+		# Legacy split: non-Ahi reads voltage from unprefixed platform_battery_voltage
+		# lines, Ahi reads it from BPC1>platform_battery_voltage.  Charge is taken
+		# from the unprefixed lines for everyone.
+		if (volt==0) and snap.battery_voltage is not None and (VEHICLE!='ahi'):
+			if DEBUG:
+				print("# Found Data Battery Voltage",snap.battery_voltage, file=sys.stderr)
+			volt     = snap.battery_voltage
+			# in seconds not MS
+		if amp == 0 and snap.battery_charge is not None:
+			if DEBUG:
+				print("# Found Data Battery Charge",snap.battery_charge, file=sys.stderr)
+			amp      = snap.battery_charge
+			volttime = snap.battery_charge_time
+		if (volt==0) and snap.battery_voltage_bpc1 is not None and (VEHICLE=='ahi'):
+			if DEBUG:
+				print("\n# Found Ahi Data Battery Voltage",snap.battery_voltage_bpc1, file=sys.stderr)
+			volt     = snap.battery_voltage_bpc1
+			volttime = snap.battery_voltage_bpc1_time
 
-				
-			if VEHICLE == 'pontus':
-				''' Fault  UBAT flow rate is below the specified threshold of 0.05 l/s.   WetLabsUBAT'''
-				'''WetLabsUBAT.flow_rate=0.333607 l/s'''
-				if (flow == 999) and "WetLabsUBAT.flow_rate" in nextline:
-					if DEBUG:
-						print("# FLOWDATA",nextline.rstrip(), file=sys.stderr)
-					flowfields = nextline.split("=")
-					flow      = int(1000 * float(flowfields[-1].split(" ")[0]))
-					flowtime = int(float(flowfields[0].split(',')[1].split(" ")[0])*1000)
-					if DEBUG:
-						print("# FLOWNUM",flow, file=sys.stderr)
-					
-			if ("acoustic" in mission or "CircleSample" in mission) and NeedTracking:
-				'''2020-10-10T20:41:20.873Z,1602362480.873 Unknown-->Tracking.range_to_contact=389.093750 m'''
-				if len(Tracking) < 2:
-					if "Tracking.range" in nextline:
-						tfields = nextline.split("=")
-						trange  = int(float(tfields[-1].split(" ")[0]))
-						ttime   = int(float(tfields[0].split(',')[1].split(" ")[0])*1000)
-						if trange:
-							Tracking.append(trange)
-							TrackTime.append(ttime)
-				else:
-					NeedTracking = False
+
+		if VEHICLE == 'pontus':
+			''' Fault  UBAT flow rate is below the specified threshold of 0.05 l/s.   WetLabsUBAT'''
+			'''WetLabsUBAT.flow_rate=0.333607 l/s'''
+			if (flow == 999) and snap.flow_rate_ml_per_s is not None:
+				if DEBUG:
+					print("# FLOWDATA",snap.flow_rate_ml_per_s, file=sys.stderr)
+				flow      = snap.flow_rate_ml_per_s
+				flowtime  = snap.flow_rate_time
+				if DEBUG:
+					print("# FLOWNUM",flow, file=sys.stderr)
+
+		if ("acoustic" in mission or "CircleSample" in mission) and NeedTracking:
+			'''2020-10-10T20:41:20.873Z,1602362480.873 Unknown-->Tracking.range_to_contact=389.093750 m'''
+			if len(Tracking) < 2:
+				for trange, ttime in zip(reversed(snap.tracking_ranges_m), reversed(snap.tracking_times)):
+					if len(Tracking) >= 2:
+						break
+					if trange:
+						Tracking.append(trange)
+						TrackTime.append(ttime)
 			else:
 				NeedTracking = False
-						
+		else:
+			NeedTracking = False
 
-			if (volt) and (amp) and (VEHICLE == 'pontus' and flow < 999) and (NeedTracking == False):
-				Bailout = True
-				break
+
+		if (volt) and (amp) and (VEHICLE == 'pontus' and flow < 999) and (NeedTracking == False):
+			Bailout = True
+			break
 		if Bailout == True:
 			break
 	if DEBUG:
@@ -736,14 +566,15 @@ def getDataAsc(starttime,mission):
 
 	return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
 	
-def getNewUBATFlow(starttime):	
+def getNewUBATFlow(starttime):
 	'''Returns the most recent flow rate from the UBAT sensor'''
 	'''PowerOnly.component_avgCurrent_loadControl'''
 	'''https://okeanids.mbari.org/TethysDash/api/data/WetLabsUBAT.flow_rate?vehicle=pontus&from=0&maxlen=2'''
-	record = runNewStyleQuery(api="data/WetLabsUBAT.flow_rate",extrastring="&from=0&maxlen=1")
+	# Legacy URL passed extrastring="&from=0&maxlen=1" so from comes before maxlen.
+	record = client.chart_data("WetLabsUBAT.flow_rate", from_ms=0, max_len=1)
 	if record:
-		flow = record['values'][:]
-		flowtime = record['times'][:]
+		flow = record.values[:]
+		flowtime = record.times[:]
 	else:
 		flow=999
 		flowtime=""
@@ -783,12 +614,12 @@ _.ayeris_particle_counts=996.500000 count/s
 	nowpowtime = False
 	if DEBUG:
 		print(f"# Plank &maxlen=10&from={starttime}", file=sys.stderr)
-	record = runNewStyleQuery(api="data/_.planktivore_HM_AvgRois",extrastring=f"&maxlen=10&from={starttime}")
+	record = client.chart_data("_.planktivore_HM_AvgRois", max_len=10, from_ms=starttime)
 	'''(-ago_cellcomms / (60*1000)) > (needcomms+60):'''
 	if record and nowcat < -998: #nowcat check not needed because no loop
-		nowcat = ampToCat(record['values'][-1])
-		nowpow = "{}".format(int(record['values'][-1])) + "ma"
-		nowpowtime = record['times'][-1]
+		nowcat = ampToCat(record.values[-1])
+		nowpow = "{}".format(int(record.values[-1])) + "ma"
+		nowpowtime = record.times[-1]
 		# -1 to 15, 16-65, 66-125
 		agopowtime = now - nowpowtime
 		if (agopowtime / (60*1000)) > (needcomms+60):
@@ -797,14 +628,14 @@ _.ayeris_particle_counts=996.500000 count/s
 			if DEBUG:
 				print("# PowerOnly too old",elapsed(nowpowtime - now), file=sys.stderr)
 
-		for v,t in zip(record['values'][::-1],record['times'][::-1]):
+		for v,t in zip(record.values[::-1], record.times[::-1]):
 			tc = ampToCat(v)
 			if tc == nowcat:
 				nowpowtime = t
 			else:
 				break
 		if DEBUG:
-			print("# record",record['values'], file=sys.stderr)
+			print("# record",record.values, file=sys.stderr)
 			# print("# ORIGTIME",elapsed(origtime - now), file=sys.stderr)
 			print("# FIRST TIME",elapsed(nowpowtime - now), file=sys.stderr)
 	else:
@@ -812,23 +643,23 @@ _.ayeris_particle_counts=996.500000 count/s
 		nowpowtime=False
 	return nowcat,nowpowtime,nowpow
 
-def getNewCameraPower(starttime):	
+def getNewCameraPower(starttime):
 	nowcat=-999
 	origtime = False
 	nowpowtime = False
 	'''Returns the most recent power consumption for the piscivore cameras'''
-	'''PowerOnly.component_avgCurrent_loadControl''' 
+	'''PowerOnly.component_avgCurrent_loadControl'''
 	'''https://okeanids.mbari.org/TethysDash/api/data/PowerOnly.component_avgCurrent_loadControl?vehicle=pontus
-	# updated to add extra string if values are not being reported? 
+	# updated to add extra string if values are not being reported?
 	https://okeanids.mbari.org/TethysDash/api/data/PowerOnly.component_avgCurrent_loadControl?vehicle=pontus&maxlen=10&from=1701196801652'''
 	if DEBUG:
 		print(f"# NewPowerOnly &maxlen=10&from={starttime}", file=sys.stderr)
-	record = runNewStyleQuery(api="data/PowerOnly.component_avgCurrent_loadControl",extrastring=f"&maxlen=10&from={starttime}")
+	record = client.chart_data("PowerOnly.component_avgCurrent_loadControl", max_len=10, from_ms=starttime)
 	'''(-ago_cellcomms / (60*1000)) > (needcomms+60):'''
 	if record and nowcat < -998: #nowcat check not needed because no loop
-		nowcat = ampToCat(record['values'][-1])
-		nowpow = "{}".format(int(record['values'][-1])) + "ma"
-		nowpowtime = record['times'][-1]
+		nowcat = ampToCat(record.values[-1])
+		nowpow = "{}".format(int(record.values[-1])) + "ma"
+		nowpowtime = record.times[-1]
 		# -1 to 15, 16-65, 66-125
 		agopowtime = now - nowpowtime
 		if (agopowtime / (60*1000)) > (needcomms+60):
@@ -837,14 +668,14 @@ def getNewCameraPower(starttime):
 			if DEBUG:
 				print("# PowerOnly too old",elapsed(nowpowtime - now), file=sys.stderr)
 
-		for v,t in zip(record['values'][::-1],record['times'][::-1]):
+		for v,t in zip(record.values[::-1], record.times[::-1]):
 			tc = ampToCat(v)
 			if tc == nowcat:
 				nowpowtime = t
 			else:
 				break
 		if DEBUG:
-			print("# record",record['values'], file=sys.stderr)
+			print("# record",record.values, file=sys.stderr)
 			# print("# ORIGTIME",elapsed(origtime - now), file=sys.stderr)
 			print("# FIRST TIME",elapsed(nowpowtime - now), file=sys.stderr)
 	else:
@@ -917,7 +748,7 @@ def getNewNavigating(recordlist=[]):
 	if DEBUG:
 		print(f"Parsing Waypoints for current mission",file=sys.stderr)
 	for Record in recordlist:
-		RecordText = Record.get("text","NA")
+		RecordText = (Record.text or "NA")
 		# This will only parse the most recent event in the queue between Reached or Nav
 		if not NavigatingTo and not ReachedWaypoint: 
 			if RecordText.startswith("Navigating to") and not "box" in RecordText:
@@ -932,10 +763,10 @@ def getNewNavigating(recordlist=[]):
 						StationLon = float(textlon)
 					if DEBUG:
 						print("## Got LatLon from Navigating To", StationLat,StationLon, file=sys.stderr)
-					NavigatingTo = Record["unixTime"]
+					NavigatingTo = Record.unix_time
 			if RecordText.lower().startswith("reached waypoint"):
 				if DEBUG:
-					print("## Found Reached Event", RecordText, Record["unixTime"], file=sys.stderr)
+					print("## Found Reached Event", RecordText, Record.unix_time, file=sys.stderr)
 				waresult = wayre.search(RecordText)
 				if waresult:
 					textlat,textlon=waresult.groups()
@@ -944,7 +775,7 @@ def getNewNavigating(recordlist=[]):
 						StationLon = float(textlon)
 				if DEBUG:
 					print("## Got ReachedWaypoint", StationLat,StationLon, file=sys.stderr)
-				ReachedWaypoint = Record["unixTime"]
+				ReachedWaypoint = Record.unix_time
 			WaypointName = LookupWaypoint(StationLat,StationLon)	
  # if not found, use "Station."
 	return StationLat, StationLon, ReachedWaypoint, WaypointName
@@ -970,17 +801,16 @@ def getNewNextWaypoint():
             }
         ],
 	'''
-	wpq = runNewStyleQuery(api="wp")
+	wpq = client.waypoints()
 	if DEBUG:
 		print("## QUERYING FOR WAYPOINTS", file=sys.stderr)
 	if not wpq:
 		return None,None
 	else:
-		wpr = wpq.get('points',None) # (get only First result of this)
-		# List will contain all the waypoints. Only use if there is only one.
+		wpr = wpq.points  # all waypoints; only use if there's exactly one
 		if wpr and len(wpr)==1:
-			wp_lat = wpr[0].get('lat',None)
-			wp_lon = wpr[0].get('lon',None)
+			wp_lat = wpr[0].lat
+			wp_lon = wpr[0].lon
 			if DEBUG:
 				print(f"WAYPOINT LAT AND LON: {wpr} \n {wp_lat} {wp_lon}",file=sys.stderr)
 			return wp_lat,wp_lon
@@ -1003,17 +833,17 @@ def getNewLatLon(starttime=1676609209829):
 	# if we are constraining with a from statement
 	howlongago = int(now - 10+maxdepthseconds*60*1000)  
 
-	rec_lat = runNewStyleQuery(api="data/latitude_fix",extrastring=f"&maxlen=400&from={starttime}")
-	rec_lon = runNewStyleQuery(api="data/longitude_fix",extrastring=f"&maxlen=400&from={starttime}")
-	
+	rec_lat = client.chart_data("latitude_fix", max_len=400, from_ms=starttime)
+	rec_lon = client.chart_data("longitude_fix", max_len=400, from_ms=starttime)
+
 	# if DEBUG:
 	# 	print("# LATLON",rec_lat,rec_lon, file=sys.stderr)
 	if not rec_lat:
 		return choplat,choplon,False
-	
-	latitudes  = rec_lat['values'][:]
-	longitudes = rec_lon['values'][:]
-	millis = rec_lat['times'][:]
+
+	latitudes  = rec_lat.values[:]
+	longitudes = rec_lon.values[:]
+	millis = rec_lat.times[:]
 	elapse_list = [elapsed(m - now) for m in millis]
 
 	from itertools import groupby
@@ -1073,18 +903,18 @@ def getNewROIs(starttime=1676609209829):
 	old_LM=None
 	old_HM=None
 	
-	record_LM = runNewStyleQuery(api="data/_.planktivore_LM_AvgRois",extrastring=f"&maxlen=20&from={starttime}")
-	record_HM = runNewStyleQuery(api="data/_.planktivore_HM_AvgRois",extrastring=f"&maxlen=20&from={starttime}")
+	record_LM = client.chart_data("_.planktivore_LM_AvgRois", max_len=20, from_ms=starttime)
+	record_HM = client.chart_data("_.planktivore_HM_AvgRois", max_len=20, from_ms=starttime)
 	if record_LM:
-		roi_LM    = record_LM['values'][:]
-		millis_LM = record_LM['times'][:]
+		roi_LM    = record_LM.values[:]
+		millis_LM = record_LM.times[:]
 		Ave_LM    = sum(roi_LM)/len(roi_LM)
 		recent_LM = millis_LM[-1]
 		old_LM    = millis_LM[0]
-		
+
 	if record_HM:
-		roi_HM    = record_HM['values'][:]
-		millis_HM = record_HM['times'][:]
+		roi_HM    = record_HM.values[:]
+		millis_HM = record_HM.times[:]
 		Ave_HM    = sum(roi_HM)/len(roi_HM)
 		recent_HM = millis_HM[-1]
 		old_HM    = millis_HM[0]
@@ -1109,13 +939,13 @@ def getNewDepth(starttime=1676609209829):
 	# if we are constraining with a from statement
 	howlongago = int(now - 10+maxdepthseconds*60*1000)  
 
-	record = runNewStyleQuery(api="data/depth",extrastring=f"&maxlen=2000&from={starttime}")
+	record = client.chart_data("depth", max_len=2000, from_ms=starttime)
 	# if DEBUG:
 	# 	print("# DEPTH RECORD",record, file=sys.stderr)
 	if not record:
 		return chopt,chopd,False
-	depthl = record['values'][:]
-	millis = record['times'][:]
+	depthl = record.values[:]
+	millis = record.times[:]
 	if DEBUG:
 		print("# LENGTH DEPTH RECORD",len(millis), file=sys.stderr)
 	
@@ -1180,63 +1010,34 @@ def getNewBattery():
 	#DataURL='https://okeanids.mbari.org/TethysDash/api/data?vehicle={vehicle}'
 	#extrastring=f"&maxlen=800"
 	if VEHICLE != 'sim':
-		VoltFields    = runNewStyleQuery(api="data/battery_voltage",extrastring="&maxlen=5")
+		VoltFields = client.chart_data("battery_voltage", max_len=5)
 		if DEBUG:
 			print("# NEW STYLE VOLT FIELD RECORD",VoltFields, file=sys.stderr)
-	
+
 		if VoltFields:
 			record = VoltFields
-			volt = record['values'][-1]
-			volttime = record['times'][-1]
+			volt = record.values[-1]
+			volttime = record.times[-1]
 		# Temporary removing Ahi due to error
 		#if VEHICLE != 'ahi':
 		if True:
-			AmpFields     = runNewStyleQuery(api="data/battery_charge",extrastring="&maxlen=5")
+			AmpFields = client.chart_data("battery_charge", max_len=5)
 			if AmpFields:
 				record = AmpFields
-				amp = record['values'][-1]
+				amp = record.values[-1]
 				if DEBUG:
 					print("# NEW STYLE AMP RECORD",record, file=sys.stderr)
-	
-		CurrentFields = runNewStyleQuery(api="data/average_current",extrastring="&maxlen=7")
+
+		CurrentFields = client.chart_data("average_current", max_len=7)
 		if CurrentFields:
 			record = CurrentFields
-			currentlist = record['values'][-7:]
+			currentlist = record.values[-7:]
 			if DEBUG:
 				print("\n# CURRENT LIST",currentlist, file=sys.stderr)
-	
+
 			if currentlist:
 				precisecurrent = sum(currentlist)/(len(currentlist)*1000)
 				avgcurrent = round(precisecurrent,1)
-
-	'''# Old strategy
-	BattFields    = runNewStyleQuery(api="data")
-	if BattFields:
-		for record in BattFields:
-			if record['name'] == 'battery_voltage':
-				if DEBUG:
-					print("# NEW STYLE VOLT RECORD",record, file=sys.stderr)
-				volt = record['values'][-1]
-			elif record['name'] == 'battery_charge':
-				amp = record['values'][-1]
-				volttime = record['times'][-1]
-				if DEBUG:
-					print("# NEW STYLE AMP RECORD",record, file=sys.stderr)
-			elif record['name'] == 'average_current':
-				currentlist = record['values'][-7:]
-				if DEBUG:
-					print("\n# CURRENT LIST",currentlist, file=sys.stderr)
-	
-				if currentlist:
-					precisecurrent = sum(currentlist)/(len(currentlist)*1000)
-					avgcurrent = round(precisecurrent,1)
-			# Is this used or replaced by getNewCameraPower?
-			# elif record['name'] == 'PowerOnly.component_avgCurrent_loadControl':
-			# 	cameracurrent = record['values'][-1]
-			# 	cameratime = record['times'][-1]
-			# 	if DEBUG:
-			# 		print("\n# PISCIVORE CURRENT",cameracurrent, file=sys.stderr)
-	'''
 	if DEBUG:
 		print("# Extra New Battery",volt,amp,volttime,avgcurrent, file=sys.stderr)
 		
@@ -1269,8 +1070,8 @@ def parseGPS(recordlist):
 	'''[{u'eventId': 12283560, u'unixTime': 1583301462000, u'vehicleName': u'pontus', u'fix': {u'latitude': 36.757467833070464, u'date': u'Wed Mar 04 05:57:42 GMT 2020', u'longitude': -122.02584799923866}, u'eventType': u'gpsFix'},'''
 	if not recordlist:
 		return((False,False),False)
-	site =    (recordlist[0]['fix']['latitude'],recordlist[0]['fix']['longitude'])
-	gpstime = recordlist[0]['unixTime']
+	site =    (recordlist[0].fix.latitude, recordlist[0].fix.longitude)
+	gpstime = recordlist[0].unix_time
 	return site,gpstime
 	
 def parseARGO(recordlist):
@@ -1282,12 +1083,12 @@ def parseARGO(recordlist):
 	if not recordlist:
 		return(False,False)
 	else:
-		status =    recordlist[0].get('text','')
+		status =    recordlist[0].text or ''
 		if status == "127":
 			argobatt = "Good"
 		elif status == "255":
 			argobatt = "Low"
-		argotime = recordlist[0].get('unixTime',False)
+		argotime = recordlist[0].unix_time or False
 		return argobatt,argotime
 
 def parseARGO50(recordlist):
@@ -1303,13 +1104,13 @@ def parseARGO50(recordlist):
 		return(False,False,False)
 	else:
 		for r in recordlist:
-			status =    r.get('text','')
+			status =    (r.text or '')
 			if (status == "127" and not argogoodtime):
 				if DEBUG:
 					print("ARGO FULL GOOD RECORD",r,file=sys.stderr)
-				argogoodtime = r.get('unixTime',False)
+				argogoodtime = (r.unix_time or False)
 			elif (status == "255" and not argobadtime):
-				argobadtime = r.get('unixTime',False)
+				argobadtime = (r.unix_time or False)
 				if DEBUG:
 					print("ARGO FULL BAD RECORD",r,file=sys.stderr)
 		if argogoodtime > argobadtime:
@@ -1327,14 +1128,14 @@ def extractCommHistory(argoHistory=[],commHistory=[],starttime=1684547199000):
 	comm_D = {'sat':[],'cell':[],'NA':[]}
 	
 	for aR in argoHistory:
-		argo_D[aR.get("eventType","NA")].append(aR['unixTime'])
+		argo_D[(aR.event_type or "NA")].append(aR.unix_time)
 	
 	for cR in commHistory:
 				# Any event that starts with Received.
-		if cR["eventType"]=="sbdReceive" and cR['state'] == 0:
-			comm_D['sat'].append(cR["unixTime"])
-		elif cR["eventType"]=="sbdReceive" and cR['state'] == 2:
-			comm_D['cell'].append(cR["unixTime"])
+		if cR.event_type=="sbdReceive" and cR.state == 0:
+			comm_D['sat'].append(cR.unix_time)
+		elif cR.event_type=="sbdReceive" and cR.state == 2:
+			comm_D['cell'].append(cR.unix_time)
 	
 	return argo_D,comm_D
 	
@@ -1545,9 +1346,9 @@ def parseNotes(recordlist):
 	if recordlist:
 		for Record in recordlist:
 			
-			if (("#sticky" in Record["note"]) or ("#note" in Record["note"])):
-				Note = Record["note"].replace("#sticky","").replace("#note","").lstrip(" :")[:55]
-				NoteTime = Record["unixTime"]
+			if (("#sticky" in Record.note) or ("#note" in Record.note)):
+				Note = Record.note.replace("#sticky","").replace("#note","").lstrip(" :")[:55]
+				NoteTime = Record.unix_time
 				break
 	return Note,NoteTime 
 	
@@ -1555,8 +1356,8 @@ def parseDrop(recordlist):
 	Drop          = False
 	for Record in recordlist:
 		# Expand this to check other DropWeight associated messages?
-		if Record["name"]=="DropWeight":
-			Drop=Record["unixTime"]
+		if Record.name=="DropWeight":
+			Drop=Record.unix_time
 	return Drop
 
 def parseCommands(recordlist):
@@ -1564,9 +1365,9 @@ def parseCommands(recordlist):
 	for Record in recordlist:
 		# Expand this to check other DropWeight associated messages?
 		if not Soon:
-			RecordText = Record.get("text","NA")
-			if "resum" in Record["text"]:
-				Soon=Record["unixTime"]
+			RecordText = (Record.text or "NA")
+			if "resum" in Record.text:
+				Soon=Record.unix_time
 	return Soon
 
 	 
@@ -1590,19 +1391,19 @@ def parseCritical(recordlist):
 	
 	
 	for Record in recordlist:
-		RecordText = Record.get("text","NA")
+		RecordText = (Record.text or "NA")
 		# if DEBUG:
-		#	print >> sys.stderr, "# CRITICAL NAME:",Record["name"],"===> ", Record["text"]
-		if Record["name"]=="DropWeight" and not "loadAtStartup" in RecordText:
-			Drop=Record["unixTime"]
+		#	print >> sys.stderr, "# CRITICAL NAME:",Record.name,"===> ", Record.text
+		if Record.name=="DropWeight" and not "loadAtStartup" in RecordText:
+			Drop=Record.unix_time
 		if RecordText.startswith("Dropped weight"):
-			Drop=Record["unixTime"]
+			Drop=Record.unix_time
 			if DEBUG:
 				print("## FOUND DropRecord",RecordText, file=sys.stderr)
 		
 		"""WATER DETECTED IN PRESSURE HULL: AUX"""
 		if RecordText.startswith("WATER DETECTED"):
-			Water = Record["unixTime"]
+			Water = Record.unix_time
 			if DEBUG: 
 				print("## FOUND WATER LEAK in PARSE",RecordText, file=sys.stderr)
 			if not WaterLoc:
@@ -1618,15 +1419,15 @@ def parseCritical(recordlist):
 					WaterLoc="-"
 				
 		if "environmental failure" in RecordText.lower():
-			Envir = Record["unixTime"]
+			Envir = Record.unix_time
 			
 		if "burnwire activated" in RecordText.lower():
-			Drop = Record["unixTime"]
+			Drop = Record.unix_time
 			
 		if (not ThrusterServo) and ("ThrusterServo" in RecordText and "Hardware Fault" in RecordText):
-			ThrusterServo = Record["unixTime"]
+			ThrusterServo = Record.unix_time
 			
-		if (not CriticalError) and not RecordText.startswith("Could not open") and not Record["name"] == "NAL9602":
+		if (not CriticalError) and not RecordText.startswith("Could not open") and not Record.name == "NAL9602":
 #		  and not "NAL9602" in RecordText and not "Hardware Fault in component" in RecordText:
 			if len(RecordText)> 31:
 				CriticalError = RecordText.replace(" in component","")[:29]
@@ -1634,7 +1435,7 @@ def parseCritical(recordlist):
 					CriticalError += "..."
 			else:
 				CriticalError = RecordText
-			CriticalTime = Record["unixTime"]
+			CriticalTime = Record.unix_time
 			if DEBUG:
 				print("FOUND CRITICAL >",RecordText,"\nDetails:",CriticalError, CriticalTime, elapsed(CriticalTime-now), file=sys.stderr)
 			if (((now - CriticalTime)/3600000) > 6):
@@ -1644,7 +1445,7 @@ def parseCritical(recordlist):
 					print("CRITICAL older than 6 HOURS\n    ##>",RecordText,"\n",CriticalError,
 					     file=sys.stderr)
 			
-		# if Record["name"]=="CBIT" and Record.get("text","NA").startswith("LAST"):
+		# if Record.name=="CBIT" and (Record.text or "NA").startswith("LAST"):
 	return Drop, ThrusterServo, CriticalError, CriticalTime, Water, WaterLoc, Envir
 
 def parseFaults(recordlist):
@@ -1672,60 +1473,60 @@ def parseFaults(recordlist):
 	#	# need to split this record?
 	for Record in recordlist:
 		# if DEBUG:
-		#	print "NAME:",Record["name"],"===> ", Record["text"]
-		RT = Record.get("text","NA")
-		if Record["name"]=="BPC1" and RT.startswith("Battery stick"):
+		#	print "NAME:",Record.name,"===> ", Record.text
+		RT = (Record.text or "NA")
+		if Record.name=="BPC1" and RT.startswith("Battery stick"):
 			if not BadBattery > 100:
-				BadBattery=Record["unixTime"]
+				BadBattery=Record.unix_time
 			if DEBUG:
 				print("## BAD BATTERY in FAULT", file=sys.stderr)
 		'''Failed to receive data from 6 sticks prior to timeout. Missing stick IDs are: 21, 22, 48, 49, 50, 51. [BPC1]'''
-		if Record["name"]=="BPC1" and not BadBatteryText and RT.startswith("Failed to receive data"):
+		if Record.name=="BPC1" and not BadBatteryText and RT.startswith("Failed to receive data"):
 			ma = re.search(r"from (\d+) sticks",RT)
 			if not BadBattery > 100:
-				BadBattery=Record["unixTime"]
+				BadBattery=Record.unix_time
 			if ma:  
 				BadBatteryText ='<text transform="matrix(1 0 0 1 286.0 245)" class="st31 st9 st24" text-anchor="end">{}x</text>'.format(ma.group(1))
 			if DEBUG:
 				print("## BAD STICK REPORT", RT, file=sys.stderr)
 		if (not Software) and "software overcurrent" in RT.lower() or "data fault in component" in RT.lower():
-			Software = Record["unixTime"]
+			Software = Record.unix_time
 		
 		if (not Overload) and "overload error" in RT.lower():
-			Overload = Record["unixTime"]
+			Overload = Record.unix_time
 		
 		if (not Reserve) and "Main Battery Failure" in RT:
-			Reserve = Record["unixTime"]
+			Reserve = Record.unix_time
 		
 		
 		# CHECK this parsefault. Used to say if "overload error" in RT, but I think that was copy/paste
 		if (not PauseFault) and "paused" in RT.lower():
-			PauseFault = Record["unixTime"]
+			PauseFault = Record.unix_time
 			if DEBUG:
 				print("## PAUSE IN FAULT REPORT", PauseFault,elapsed(PauseFault - now), file=sys.stderr)
 		
 		if (not Hardware) and ("thruster uart error" in RT.lower()):
-			Hardware = Record["unixTime"]
+			Hardware = Record.unix_time
 			
 		if (not Overload) and ("hardware overcurrent shutdown" in RT.lower()):
-			Overload = Record["unixTime"]
+			Overload = Record.unix_time
 			
-		if (not CTDError) and ("Failed to acquire real or simulated CTD" in Record["text"]):
-			CTDError = Record["unixTime"]
+		if (not CTDError) and ("Failed to acquire real or simulated CTD" in Record.text):
+			CTDError = Record.unix_time
 			
-		if (not MotorLock) and ("motor stopped spinning" in Record["text"].lower()):
-			MotorLock = Record["unixTime"]
+		if (not MotorLock) and ("motor stopped spinning" in Record.text.lower()):
+			MotorLock = Record.unix_time
 				
-		if Record["text"].upper().startswith("WATER ALARM AUX"):
-			WaterFault = Record["unixTime"]
-		if "Ignoring configuration overrides" in Record["text"]:
-			IgnoreOverride = Record["unixTime"]
+		if Record.text.upper().startswith("WATER ALARM AUX"):
+			WaterFault = Record.unix_time
+		if "Ignoring configuration overrides" in Record.text:
+			IgnoreOverride = Record.unix_time
 			if DEBUG: 
 				print("\n\n## FOUND PERSISTED OVERRIDE",elapsed(IgnoreOverride-now), file=sys.stderr)
 		# THIS ONE needs to take only the most recent DVL entry, in case it was off and now on. See other examples.
 		# Water linked??
-		if not DVLError and Record["name"] in ["DVL_Micro", "Waterlinked","RDI_Pathfinder","AMEcho"] and "failed" in Record.get("text","NA").lower():
-			DVLError=Record["unixTime"]
+		if not DVLError and Record.name in ["DVL_Micro", "Waterlinked","RDI_Pathfinder","AMEcho"] and "failed" in (Record.text or "NA").lower():
+			DVLError=Record.unix_time
 	return BadBattery,BadBatteryText,DVLError,Software,Overload,Hardware,WaterFault,MotorLock,CTDError,PauseFault,IgnoreOverride,Reserve
 
 def parseDVL(recordlist):
@@ -1743,11 +1544,11 @@ def parseDVL(recordlist):
 	ThrusterServo=False
 	for Record in recordlist:
 		# if DEBUG:
-		#	print Record["name"],Record["text"]
-		if Record["name"]=="DropWeight":
-			Drop=Record["unixTime"]
-		if (not ThrusterServo) and Record.get("text","NA")=="ThrusterServo":
-			ThrusterServo = Record["unixTime"]
+		#	print Record.name,Record.text
+		if Record.name=="DropWeight":
+			Drop=Record.unix_time
+		if (not ThrusterServo) and (Record.text or "NA")=="ThrusterServo":
+			ThrusterServo = Record.unix_time
 	return Drop, ThrusterServo 
 
 def parseComms(recordlist):
@@ -1755,10 +1556,10 @@ def parseComms(recordlist):
 	directCommTime = False
 	for Record in recordlist:
 		# Any event that starts with Received.
-		if satCommTime == False and Record["eventType"]=="sbdReceive" and Record['state'] == 0:
-			satCommTime=Record["unixTime"]
-		if directCommTime == False and Record['eventType'] == 'sbdReceive' and Record['state'] == 2:
-			directCommTime=Record["unixTime"]
+		if satCommTime == False and Record.event_type=="sbdReceive" and Record.state == 0:
+			satCommTime=Record.unix_time
+		if directCommTime == False and Record.event_type == 'sbdReceive' and Record.state == 2:
+			directCommTime=Record.unix_time
 		if directCommTime and satCommTime:
 			break
 
@@ -1773,17 +1574,17 @@ def parseMission(recordlist):
 	MissionTime=False
 	## PARSE MISSION NAME
 	for Record in recordlist:
-		# if Record["name"]=="MissionManager":
+		# if Record.name=="MissionManager":
 #		if MissionTime: 
-#			if Record["text"].startswith("Scheduling is paused") or Record["text"].startswith("Resuming mission and schedule"):
+#			if Record.text.startswith("Scheduling is paused") or Record.text.startswith("Resuming mission and schedule"):
 #				MissionTime = False
 #			else:
 #				break
-		if Record["name"]=="MissionManager" and Record["text"].startswith("Started mission"):
+		if Record.name=="MissionManager" and Record.text.startswith("Started mission"):
 			if DEBUG:
 				print("\n\n## MISSION RECORD",Record, file=sys.stderr)
-			MissionName = Record.get("text","mission NA").split("mission ")[1]
-			MissionTime = Record["unixTime"]
+			MissionName = (Record.text or "mission NA").split("mission ")[1]
+			MissionTime = Record.unix_time
 			
 			break
 			# moved break from here. does it break the if or the for??
@@ -1807,13 +1608,13 @@ def parseCBIT(recordlist):
 		for Record in recordlist:
 			# if DEBUG:
 			#	print >> sys.stderr, "# GF RECORD",Record
-			RecordText = Record.get("text","NA")
+			RecordText = (Record.text or "NA")
 			if GF == False:
 				if RecordText.startswith("Ground fault detected") or RecordText.startswith("Low side ground fault detected"):
-					# print "\n####\n",Record["text"]
+					# print "\n####\n",Record.text
 					GF,GF_low = parseGF(RecordText)
 						
-					GFtime = Record["unixTime"]
+					GFtime = Record.unix_time
 					
 					if "Low side" in RecordText or GF_low:
 						GFLow = True
@@ -1826,7 +1627,7 @@ def parseCBIT(recordlist):
 			
 				elif RecordText.startswith("No ground fault"):
 					GF = "OK"
-					GFtime = Record["unixTime"]
+					GFtime = Record.unix_time
 			if DVL == False:
 				if RecordText.startswith("Communications Fault in component: RDI_Pathfinder"):
 					if DEBUG:
@@ -1905,19 +1706,19 @@ def parseGaleneImpt(recordlist):
 	lightre = re.compile(r'MultiRay (\w+) lights (\w+)')
 
 	for Record in recordlist:
-		RecordText = Record.get("text","NA")
+		RecordText = (Record.text or "NA")
 		if not Chiton:
 			if RecordText.startswith("got command set") and ("BackseatDriver.EnableBackseat" in RecordText):
 				ChitonVal = int(RecordText.replace("bool","").split("BackseatDriver.EnableBackseat")[1])
 				Chiton=["OFF","ON"][ChitonVal]
-				ChitonTime = Record["unixTime"]
+				ChitonTime = Record.unix_time
 				if DEBUG:
 					print("Found BACKSEAT in parseGalene",RecordText,file=sys.stderr)
 					
 			elif "PowerOnly.SampleLoad1" in RecordText:
 				ChitonVal = int(RecordText.replace("bool","").split("PowerOnly.SampleLoad1 ")[1].split(";")[0])
 				Chiton=["OFF","ON"][ChitonVal]
-				ChitonTime = Record["unixTime"]
+				ChitonTime = Record.unix_time
 				
 		if not WhiteOn or not RedOn:
 			if ("MultiRay" in RecordText) and ("lights" in RecordText):
@@ -2004,11 +1805,11 @@ def parseImptMisc(recordlist,MissionN):
 		print(f"Parsing Important for Mission {MissionN}",file=sys.stderr)
 	for Record in recordlist:
 		if DEBUG:
-			if "dvl" in Record["text"].lower():
-				print("** ImptMisc:",Record["name"],"<-->",Record.get("text","NO TEXT FIELD"), file=sys.stderr)
+			if "dvl" in Record.text.lower():
+				print("** ImptMisc:",Record.name,"<-->",(Record.text or "NO TEXT FIELD"), file=sys.stderr)
 				
-		if not LogTime and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec') and 'got command restart logs' in Record.get("text","NA"):
-			LogTime = Record["unixTime"]
+		if not LogTime and (Record.name =='CommandLine' or Record.name =='CommandExec') and 'got command restart logs' in (Record.text or "NA"):
+			LogTime = Record.unix_time
 		
 		''' DVL PARSING
 		DVL potential instruments: 
@@ -2019,7 +1820,7 @@ def parseImptMisc(recordlist,MissionN):
 			configSet AMEcho.loadAtStartup 0 bool
 '''
 		## RELOCATED (Duplicated) from parseMission
-		RecordText = Record.get("text","NA")
+		RecordText = (Record.text or "NA")
 		# if not ReachedWaypoint and StationLon == False and RecordText.startswith("got command set") and (".Lon " in RecordText or ".Longitude" in RecordText or ".CenterLongitude" in RecordText):
 		#	if "itude" in RecordText:
 		#		StationLon = RecordText.split("itude ")[1]
@@ -2038,7 +1839,7 @@ def parseImptMisc(recordlist,MissionN):
 		#DropWeight.loadAtStartup=0 bool;
 		if not DropOff and RecordText.strip().startswith("DropWeight.loadAtStartup"):
 			if "=0" in RecordText:
-				DropOff =  Record["unixTime"]
+				DropOff =  Record.unix_time
 			else:
 				DropOff = 1
 			if DEBUG:
@@ -2051,12 +1852,12 @@ def parseImptMisc(recordlist,MissionN):
 				if DEBUG:
 					print("\n## Got UNDOCKING Event from ImptMisc", file=sys.stderr)
 				Docking = 2
-				DockTime = Record["unixTime"]
+				DockTime = Record.unix_time
 			elif RecordText.strip().startswith("Docking sequence complete"):
 				if DEBUG:
 					print("\n## Got DOCKING Event from ImptMisc", file=sys.stderr)
 				Docking = 1
-				DockTime = Record["unixTime"]
+				DockTime = Record.unix_time
 				
 		
 			 
@@ -2065,7 +1866,7 @@ def parseImptMisc(recordlist,MissionN):
 			if RecordText.strip().startswith("Ac Comms: from"):
 				if DEBUG:
 					print("\n## Got ACOUSTIC COMMS from ImptMisc", file=sys.stderr)
-				AcousticTime = Record["unixTime"]
+				AcousticTime = Record.unix_time
 			
 
 		if voltthresh < -100 and RecordText.startswith("IBIT.batteryVoltageThreshold="):
@@ -2083,7 +1884,7 @@ def parseImptMisc(recordlist,MissionN):
 		# 		elif RecordText.startswith("got command set") and ("BackseatDriver.EnableBackseat" in RecordText):
 		# 			# Assume it is turned off at the start of mission
 		# 			# and needs to specifically be turned on
-		# 			if Record["unixTime"]> missionTime:
+		# 			if Record.unix_time> missionTime:
 		# 				ChitonVal = int(RecordText.replace("bool","").split("BackseatDriver.EnableBackseat")[1])
 		# 				Chiton=["OFF","ON"][ChitonVal]
 		# 		# # new camera status stuff
@@ -2103,7 +1904,7 @@ def parseImptMisc(recordlist,MissionN):
 
 		if  ampthresh < -100 and RecordText.startswith("IBIT.batteryCapacityThreshold"):
 			ampthresh = round(float(RecordText.split("IBIT.batteryCapacityThreshold=")[1].split(" ")[0]))
-			ampthreshtime=Record["unixTime"]
+			ampthreshtime=Record.unix_time
 			if DEBUG:
 				print("## Got AmpThresh from ImptMisc", float(ampthresh), elapsed(ampthreshtime-now),file=sys.stderr)
 
@@ -2134,7 +1935,7 @@ def parseImptMisc(recordlist,MissionN):
 			if DEBUG:
 				print("\n## Got DOCKING Mission but not docked message", file=sys.stderr)
 			if not DockTime:
-				DockTime = Record["unixTime"]
+				DockTime = Record.unix_time
 			
 			undockre = re.compile(r'.*OnDock.DockedTime ([\d\.]+) h')
 			# dockrangere = re.compile(r'.*OnDock.RangeTimeout ([\d\.]+) h')
@@ -2180,24 +1981,24 @@ def parseImptMisc(recordlist,MissionN):
 			if bool(re.search('got command schedule resume|got command restart application|scheduling is resumed',RecordText.lower())):
 			# if "got command schedule resume" in RecordText or "Scheduling is resumed" in RecordText:
 				Paused = False
-				PauseTime = Record["unixTime"]
+				PauseTime = Record.unix_time
 				NeedSched = False
 				if DEBUG:
 					print("## Got SCHEDULE RESUME", elapsed(PauseTime-now), file=sys.stderr)
 			elif bool(re.search('got command stop|got command schedule pause |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText) and not ('ESP' in RecordText):
 				Paused = True
-				PauseTime = Record["unixTime"]
+				PauseTime = Record.unix_time
 				NeedSched = False
 				if DEBUG:
 					print("## Got SCHEDULE PAUSE", elapsed(PauseTime-now), file=sys.stderr)
 				
 		# This will only parse the most recent event in the queue between Reached or Nav
 		# if not NavigatingTo and not ReachedWaypoint: 
-		# 	if Record["text"].startswith("Navigating to") and not "box" in Record["text"]:
+		# 	if Record.text.startswith("Navigating to") and not "box" in Record.text:
 		# 		if DEBUG:
-		# 			print("## Found Navigating To Event", Record["text"], file=sys.stderr)
+		# 			print("## Found Navigating To Event", Record.text, file=sys.stderr)
 		# 			'''Navigating to waypoint: 36.750000,-122.022003'''
-		# 		NavRes = wayre.search(Record["text"].replace("arcdeg",""))
+		# 		NavRes = wayre.search(Record.text.replace("arcdeg",""))
 		# 		if NavRes:
 		# 			textlat,textlon = NavRes.groups()
 		# 			if textlat:
@@ -2205,11 +2006,11 @@ def parseImptMisc(recordlist,MissionN):
 		# 				StationLon = float(textlon)
 		# 			if DEBUG:
 		# 				print("## Got LatLon from Navigating To", StationLat,StationLon, file=sys.stderr)
-		# 			NavigatingTo = Record["unixTime"]
-		# 	if Record["text"].lower().startswith("reached waypoint"):
+		# 			NavigatingTo = Record.unix_time
+		# 	if Record.text.lower().startswith("reached waypoint"):
 		# 		if DEBUG:
-		# 			print("## Found Reached Event", Record["text"], Record["unixTime"], file=sys.stderr)
-		# 		waresult = wayre.search(Record["text"])
+		# 			print("## Found Reached Event", Record.text, Record.unix_time, file=sys.stderr)
+		# 		waresult = wayre.search(Record.text)
 		# 		if waresult:
 		# 			textlat,textlon=waresult.groups()
 		# 			if textlat:
@@ -2217,7 +2018,7 @@ def parseImptMisc(recordlist,MissionN):
 		# 				StationLon = float(textlon)
 		# 		if DEBUG:
 		# 			print("## Got ReachedWaypoint", StationLat,StationLon, file=sys.stderr)
-		# 		ReachedWaypoint = Record["unixTime"]
+		# 		ReachedWaypoint = Record.unix_time
 		# 		
 		# 	if StationLat:
 		# 		LookupLL = f"{round(StationLat,3):.3f},{round(StationLon,3):.3f}"
@@ -2231,7 +2032,7 @@ def parseImptMisc(recordlist,MissionN):
 		## configSet AMEcho.loadAtStartup 0 bool
 		## got command configSet AMEcho.enabled 1.000000 bool
 
-		if not GotDVL and (not "(bool)" in Record.get("text","NA")) and (not "requires" in Record.get("text","NA")) and (
+		if not GotDVL and (not "(bool)" in (Record.text or "NA")) and (not "requires" in (Record.text or "NA")) and (
 		      ("DVL_micro.loadAtStartup"      in RecordText) or 
 		      ("RDI_Pathfinder.loadAtStartup" in RecordText) or 
 		      ("AMEcho.loadAtStartup"         in RecordText) or 
@@ -2244,13 +2045,13 @@ def parseImptMisc(recordlist,MissionN):
 		    ## SHOULD ADD A CHECK FOR restart HERE TO SEE IF DVL WENT BACK TO CONFIG that will override these later events
 		    
 			if DEBUG: 
-				print("#>> FOUND DVL: ", Record["name"] ,"===>",Record["text"], "[{}]".format(Record["unixTime"]), file=sys.stderr)
-			DVL_on = bool(float(Record["text"].replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
+				print("#>> FOUND DVL: ", Record.name ,"===>",Record.text, "[{}]".format(Record.unix_time), file=sys.stderr)
+			DVL_on = bool(float(Record.text.replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
 			GotDVL = True
 			if DEBUG: 
 				print("DVL Value: ", DVL_on, file=sys.stderr)
 		if not GotDVL and ("configSet AMEcho.enabled" in RecordText):
-			DVL_on = bool(float(Record["text"].split(".enabled ")[1].split(" ")[0]))
+			DVL_on = bool(float(Record.text.split(".enabled ")[1].split(" ")[0]))
 			GotDVL = True
 		
 		# ADDING CTD on/off parsing
@@ -2261,49 +2062,49 @@ def parseImptMisc(recordlist,MissionN):
 				CTD_command = bool(float(RecordText.replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))
 			except ValueError:
 				if DEBUG:
-					print("#Error parsing CTD Command: ",VEHICLE, Record["name"] ,"==>",RecordText,file=sys.stderr)
+					print("#Error parsing CTD Command: ",VEHICLE, Record.name ,"==>",RecordText,file=sys.stderr)
 				skip=True
 				
 			if CTD_command and not skip:
-				CTDonCommand = Record["unixTime"]
+				CTDonCommand = Record.unix_time
 			elif not skip:
-				CTDoffCommand = Record["unixTime"] 
+				CTDoffCommand = Record.unix_time 
 	
 			
 		'''Change to got command ubat on  got command restart application'''
-		#if VEHICLE == "pontus" and ubatTime == False and Record["name"]=="CommandLine" and "00000" in Record.get("text","NA") and "WetLabsUBAT.loadAtStartup" in Record.get("text","NA"):
+		#if VEHICLE == "pontus" and ubatTime == False and Record.name=="CommandLine" and "00000" in (Record.text or "NA") and "WetLabsUBAT.loadAtStartup" in (Record.text or "NA"):
 		if VEHICLE == "pontus" and ubatTime == False:
-			 # and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec' or Record["name"] =='Important') :
+			 # and (Record.name =='CommandLine' or Record.name =='CommandExec' or Record.name =='Important') :
 			''' Changing this to default to ON unless specifically turned off'''
 			'''WetLabsUBAT.loadAtStartup=0 bool'''
 			if  "WetLabsUBAT.loadAtStartup" in RecordText and not "loadAtStartup (bool)" in RecordText:
 				if DEBUG:
-					print("## Got UBAT Load at startup", RecordText, Record["name"],file=sys.stderr)
+					print("## Got UBAT Load at startup", RecordText, Record.name,file=sys.stderr)
 				ubatBool = bool(float(RecordText.replace("loadAtStartup=","loadAtStartup ").split("loadAtStartup ")[1].split(" ")[0]))			
-				ubatTime   = Record["unixTime"]
+				ubatTime   = Record.unix_time
 				
 			elif  "abling UBAT" in RecordText:
 				ubatBool = RecordText.startswith("Enabl")
-				ubatTime   = Record["unixTime"]
+				ubatTime   = Record.unix_time
 	
 			elif RecordText.startswith("got command ubat "):
 				ubatBool = "on" in RecordText
-				ubatTime   = Record["unixTime"]
+				ubatTime   = Record.unix_time
 				if DEBUG:
 					print("## Got UBAT ON", RecordText, file=sys.stderr)
 					
 			# Disabling this for now	
 			# elif RecordText.startswith("got command restart app") or RecordText.startswith("got command restart system") or RecordText.startswith("got command restart hardware"):
 			# 	ubatBool = True
-			# 	ubatTime   = Record["unixTime"]
+			# 	ubatTime   = Record.unix_time
 				
 			ubatStatus = ["st6","st4"][ubatBool]
 	
 
 		# THIS IS NOT CURRENTLY REPORTED	
-		# if VEHICLE == "pontus" and FlowRate == False and Record["name"]=="CommandLine" and Record.get("text","NA").startswith("WetLabsUBAT.flow_rate"):
-		#	FlowRate = float(Record["text"].split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
-		#	FlowTime   = Record["unixTime"]
+		# if VEHICLE == "pontus" and FlowRate == False and Record.name=="CommandLine" and (Record.text or "NA").startswith("WetLabsUBAT.flow_rate"):
+		#	FlowRate = float(Record.text.split("WetLabsUBAT.flow_rate ")[1].split(" ")[0])
+		#	FlowTime   = Record.unix_time
 
 #	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
 	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,ampthreshtime,FullMission,Docking,DockTime,DockTimeout,SchedT,DropOff,AcousticTime
@@ -2335,10 +2136,10 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 		
 
 	for Record in recordlist:
-		RecordText = Record.get("text","NA")
+		RecordText = (Record.text or "NA")
 		
-#		if DEBUG and Record["name"] != 'CBIT':
-#			print >> sys.stderr, "DEFAULTNAME: ", Record["name"] ,"===>",RecordText, "[{}]".format(Record["unixTime"])
+#		if DEBUG and Record.name != 'CBIT':
+#			print >> sys.stderr, "DEFAULTNAME: ", Record.name ,"===>",RecordText, "[{}]".format(Record.unix_time)
 			
 		## PARSE TIMEOUTS Assumes HOURS
 		## NOTE / TODO: When schedule is stopped or goes to default mission and you do schedule resume, does the timeout start at zero then?
@@ -2352,19 +2153,19 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 					print("# NOTE: FOUND Timeout in ",RecordText, file=sys.stderr)
 			'''got command set profile_station.MissionTimeout 24.000000 hour'''
 			'''got command set sci2.MissionTimeout 24.000000 hour'''
-			TimeoutDuration = float(Record["text"].split("MissionTimeout ")[1].split(" ")[0])
+			TimeoutDuration = float(Record.text.split("MissionTimeout ")[1].split(" ")[0])
 			'''got command set Smear.MissionTimeout 8.000000 hour'''
-			if "minute" in Record["text"]:
+			if "minute" in Record.text:
 				TimeoutDuration = TimeoutDuration/60.0
 				if DEBUG:
 					print("# NOTE: Timeout given in minutes ", file=sys.stderr)
 			if DEBUG:
-				print("# Found TimeOut of ",TimeoutDuration, Record["text"], file=sys.stderr)
-			TimeoutStart    = Record["unixTime"]
+				print("# Found TimeOut of ",TimeoutDuration, Record.text, file=sys.stderr)
+			TimeoutStart    = Record.unix_time
 			
 			"esp samples have 3h timeout"
-		if DEBUG and "sched" in Record["text"]:
-			print("\n#\n# MISSION: found Scheduled item", Record["text"],Record["name"],file=sys.stderr)
+		if DEBUG and "sched" in Record.text:
+			print("\n#\n# MISSION: found Scheduled item", Record.text,Record.name,file=sys.stderr)
 		# removing Started mission from schedule clear
 		if RecordText.startswith('got command schedule clear'):
 			Cleared = True
@@ -2399,9 +2200,9 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			#'''got command schedule "run Science/mbts_sci2.xml"'''
 			#'''## failed to parse schedule: brizo got command schedule "run" 4d401 4 4.000000'''
 			#	'''got command schedule "load Science/circle_acoustic_contact.xml'''
-				#Scheduled = Record["text"].split("/")[1].replace('.xml"','')
+				#Scheduled = Record.text.split("/")[1].replace('.xml"','')
 				if "/" in RecordText[:30]:
-					Scheduled = Record["text"].split("/")[1].split('.')[0]
+					Scheduled = Record.text.split("/")[1].split('.')[0]
 				else:
 					'''got command schedule "set circle_acoustic_contact'''
 					try:
@@ -2424,7 +2225,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 #Scheduled #27 (#1 of 2 with id='3p78c'): "load Science/profile_station.xml;set profile_station.MissionTimeout 14 hour;set profile_station.Lat 36.7970 degree;set profile_station.L'''
 
 
-#'''Scheduled = Record["text"].split("/")[1].split('.')[0]'''
+#'''Scheduled = Record.text.split("/")[1].split('.')[0]'''
 
 		if Scheduled == False and not Cleared and RecordText.startswith('Scheduled #') and ("load" in RecordText) and hash in RecordText:
 			''': "load Science/profile_station.xml'''
@@ -2435,7 +2236,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			if DEBUG:
 				print("## Found Scheduled hash",Scheduled, file=sys.stderr)
 		if ScheduledFresh and Scheduled:
-			ScheduledTime = Record["unixTime"]
+			ScheduledTime = Record.unix_time
 			ScheduledFresh = False
 					
 		# SETTING STATION. Will fail on multi-station missions..?
@@ -2468,7 +2269,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 		if DEBUG:
 			if "SurfacingIntervalDuringListening" in RecordText:
 				print("## NEEDCOMMS SURFACING", RecordText, file=sys.stderr)
-		if NeedComms == False and (Record["name"]=="CommandLine" or Record["name"]=="CommandExec") and RecordText.startswith("got command") and not "chedule" in RecordText and (".NeedCommsTime" in RecordText or "NeedCommsMaxWait" in RecordText or "SurfacingIntervalDuringListening" in RecordText):
+		if NeedComms == False and (Record.name=="CommandLine" or Record.name=="CommandExec") and RecordText.startswith("got command") and not "chedule" in RecordText and (".NeedCommsTime" in RecordText or "NeedCommsMaxWait" in RecordText or "SurfacingIntervalDuringListening" in RecordText):
 			'''    command set keepstation.NeedCommsTime 60.000000 minute	'''
 			'''got command set profile_station.NeedCommsTime 20.000000 minute'''
 			'''got command set trackPatchChl_yoyo.NeedCommsTimeInTransit 45.000000'''
@@ -2481,20 +2282,20 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			'''NeedCommsTimeMarginPatchTracking'''
 			'''FrontSampling.NeedCommsTimeTransit'''
 			if DEBUG:
-				print("#Entering NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
+				print("#Entering NeedComms",Record.text, VEHICLE, NeedComms, file=sys.stderr)
 			try:
-				NeedComms = float(re.split("SurfacingIntervalDuringListening |NeedCommsTimeSampling |NeedCommsTimeProfileStation |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait |NeedCommsTime |NeedCommsTimeYoYo ",Record["text"])[1].split(" ")[0])
+				NeedComms = float(re.split("SurfacingIntervalDuringListening |NeedCommsTimeSampling |NeedCommsTimeProfileStation |NeedCommsTimePatchMapping |NeedCommsTimeInTransect |NeedCommsTimeTransit |NeedCommsTimeInTransit |NeedCommsTimeMarginPatchTracking |NeedCommsTimePatchTracking |NeedCommsMaxWait |NeedCommsTime |NeedCommsTimeYoYo ",Record.text)[1].split(" ")[0])
 			except IndexError:
 				try:  #This one assumes hours instead of minutes. SHOULD Code to check
-					NeedComms = float(Record["text"].split("NeedCommsTimeVeryLong ")[1].split(" ")[0]) 
+					NeedComms = float(Record.text.split("NeedCommsTimeVeryLong ")[1].split(" ")[0]) 
 					if DEBUG:
-						print("#Long NeedComms",Record["text"], VEHICLE, NeedComms, file=sys.stderr)
+						print("#Long NeedComms",Record.text, VEHICLE, NeedComms, file=sys.stderr)
 				except IndexError:	
-					print("#NeedComms but no split",Record["text"], VEHICLE, file=sys.stderr)
-			if NeedComms and "hour" in Record["text"]:
+					print("#NeedComms but no split",Record.text, VEHICLE, file=sys.stderr)
+			if NeedComms and "hour" in Record.text:
 				NeedComms = NeedComms * 60
 			if DEBUG and NeedComms:
-				print("#FOUND NEEDCOMMS In Record zzz",NeedComms, VEHICLE, "\n" , Record["text"], file=sys.stderr)
+				print("#FOUND NEEDCOMMS In Record zzz",NeedComms, VEHICLE, "\n" , Record.text, file=sys.stderr)
 			## ADD FLOW RATE FOR UBAT...
 			
 			### For the moment this will just go from the start of the mission, but once we get SatComms, use that time
@@ -2502,25 +2303,25 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 		## PARSE UBAT (make vehicle-specific
 		## PARSE SPEED # THis used to be ".Speed"
 		## .ApproachSpeedNotFirstTime
-		if Speed == 0 and (Record["name"] =='CommandLine' or Record["name"] =='CommandExec')  and ("set" in RecordText) and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText or "ApproachSpeed" in RecordText or ".Speed " in RecordText) and (not "SpeedControl" in RecordText) and RecordText.startswith("got"):
+		if Speed == 0 and (Record.name =='CommandLine' or Record.name =='CommandExec')  and ("set" in RecordText) and (".speedCmd" in RecordText or ".SpeedTransit" in RecordText or "ApproachSpeed" in RecordText or ".Speed " in RecordText) and (not "SpeedControl" in RecordText) and RecordText.startswith("got"):
 			if (".SpeedTransit" in RecordText):
-				Speed = "%.2f" % (float(Record["text"].split(".SpeedTransit")[1].strip().split(" ")[0]))
+				Speed = "%.2f" % (float(Record.text.split(".SpeedTransit")[1].strip().split(" ")[0]))
 			elif (".ApproachSpeedNotFirstTime" in RecordText):
-				Speed = "%.2f" % (float(Record["text"].split(".ApproachSpeedNotFirstTime")[1].strip().split(" ")[0]))
+				Speed = "%.2f" % (float(Record.text.split(".ApproachSpeedNotFirstTime")[1].strip().split(" ")[0]))
 			elif (".ApproachSpeed" in RecordText):
-				Speed = "%.2f" % (float(Record["text"].split(".ApproachSpeed")[1].strip().split(" ")[0]))
+				Speed = "%.2f" % (float(Record.text.split(".ApproachSpeed")[1].strip().split(" ")[0]))
 			elif (".Speed" in RecordText):
-				Speed = "%.2f" % (float(Record["text"].split(".Speed")[1].strip().split(" ")[0]))
+				Speed = "%.2f" % (float(Record.text.split(".Speed")[1].strip().split(" ")[0]))
 			else:
 				try:
-					Speed = "%.2f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
+					Speed = "%.2f" % (float(Record.text.split(".speedCmd")[1].strip().split(" ")[0]))
 				except ValueError or IndexError:
-					print("Error parsing speed for ",VEHICLE,Record["text"], file=sys.stderr)
+					print("Error parsing speed for ",VEHICLE,Record.text, file=sys.stderr)
 					Speed = "na"
 			
 			if DEBUG:
 				print("# FOUND SPEED:",Speed, file=sys.stderr)
-			# Speed = "%.1f" % (float(Record["text"].split(".Speed")[1].split(" ")[0]))
+			# Speed = "%.1f" % (float(Record.text.split(".Speed")[1].split(" ")[0]))
 	if not all([Speed,NeedComms,TimeoutDuration]):
 		if DEBUG: 
 			print(f"# TRYING NEW DEFAULT RETRIEVAL for {FullMission}\nSp,NeedC,Timeout:{Speed}, {NeedComms}, {TimeoutDuration}",file=sys.stderr)
@@ -2752,29 +2553,33 @@ lTime = None
 
 if DEBUG:
 	print()
+
+if Opt.inst == 'whoi':
+	servername = 'lrauv.whoi.edu'
+else:
+	# CHANGE SERVERNAME HERE
+	# servername = 'tethysdash2-u.shore.mbari.org'
+	# this could be set in the config file.
+	# if this script and TethysDash are running on the same server
+	# then you can use http://localhost:8080 as a "universal" hostname
+	servername = 'okeanids.mbari.org'
+
+# Bind the typed API client now that servername and VEHICLE are known.
+# Getter functions look it up from the module globals at call time.
+client = TethysDashClient(servername, VEHICLE, debug=DEBUG)
+
 if Opt.missions:
 	'''utility to show default values for selected missions'''
 	getMissionDefaults()
 	sys.exit("Done")
-	
+
 ### WHAT IS GOING ON HERE?
 
 if Opt.newmissions:
 	'''test retrieval of mission defaults'''
 	getNewMissionDefaults("Science/mbts_sci2.tl")
 	sys.exit("Done new mission test")
-	
-	
-if Opt.inst == 'whoi':
-	servername = 'lrauv.whoi.edu'
-else:
-	# CHANGE SERVERNAME HERE
-	# servername = 'tethysdash2-u.shore.mbari.org'
-	# this could be set in the config file. 
-	# if this script and TethysDash are running on the same server
-	# then you can use http://localhost:8080 as a "universal" hostname
-	servername = 'okeanids.mbari.org'
-	
+
 if Opt.printhtml:
 	'''print format of auv.html auto-refreshing file'''
 	printhtmlutility()
