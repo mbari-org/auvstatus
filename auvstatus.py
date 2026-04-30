@@ -124,7 +124,6 @@ import os
 import json
 import math
 import re
-from collections import deque
 from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote,svgpiscivore,svg_planktivore   # define the svg text?
 
 # This used to have servername, but that is not being defined below, based on the --inst parameter at the command line
@@ -469,7 +468,7 @@ def getDataAsc(starttime,mission):
 	TrackTime = []
 	allpaths =[]
 	NeedTracking = True
-	
+
 	if DEBUG:
 		print("# Running Old Data query...")
 
@@ -485,118 +484,80 @@ def getDataAsc(starttime,mission):
 		if DEBUG:
 			print("# No dataProcessed Path found", file=sys.stderr)
 		return volt,amp,volttime,flow,flowtime,Tracking,TrackTime
-	
-	#moving duplicate checking above		
+
+	#moving duplicate checking above
 	# if (len(allpaths) ==3):   # get three most recent
 	# 	if allpaths[0]==allpaths[1]:   # if first two are the same, drop second
 	# 		z=allpaths.pop(1)
 	# 	else:            # otherwise drop last one
 	# 		z=allpaths.pop(2)
-	
-	firstlast = 0		
-	
+
 	for pathpart in allpaths[:2]:
 		volt = 0
 		amp  = 0
 		volttime=0
 
-		
+
 		extrapath = pathpart
-		text = client.shore_asc(extrapath)
-		if text is None:
+		snap = client.shore_asc(extrapath)
+		if snap is None:
 			flow=None
 			flowtime=None
 			Tracking=""
 			TrackTime=""
 			break
-		content = text.splitlines()
 		if DEBUG:
-			print("# OLD DATA QUERY", extrapath, file=sys.stderr)
-		# pull last X lines from queue. This was causing problems on some missions so increased it
-		lastlines = list(deque(content))
-		#lastlines = list(deque(content))
-		lastlines.reverse() #in place
-		# if DEBUG:
-		# 	print("dimensions of lastlines",len(lastlines), file=sys.stderr)
-		# 	print("# Lastlines (reversed):",lastlines[0:10], file=sys.stderr)
-		# 	for li in lastlines:
-		# 		if "flow" in li:
-		# 			print("#",li, file=sys.stderr)
-		# 
-		# if DEBUG:
-		# 	print("# Lastlines first):",lastlines[0], file=sys.stderr)
-		# trying to avoid parsing the same part twice
-		# THIS doesn't work even if the first entity is the same
-		if lastlines and (firstlast == lastlines[0]):
-			Bailout = True
-			lastlines=[]
-			break
-		elif lastlines:
-			firstlast = lastlines[0]
-		else: # not lastlines
-			Bailout = True
-			lastlines=[]
-			break
-			
+			print("# OLD DATA QUERY",extrapath, file=sys.stderr)
 
-		for nextline in lastlines:
-#			if DEBUG:
-#				print >> sys.stderr, "#Battery nextline:",nextline.rstrip()
-			if "platform_battery_" in nextline:
-				if not('BPC1' in nextline):
-					fields = nextline.split("=")	
-					if (volt==0) and ("voltage" in nextline) and (VEHICLE!='ahi'):
-						if DEBUG:
-							print("# Found Data Battery Voltage",fields[2:], file=sys.stderr)
-						volt     = float(fields[3].split(" ")[0])
-						# in seconds not MS
-					if amp == 0 and "charge" in nextline:
-						if DEBUG:
-							print("# Found Data Battery Charge",fields[2:], file=sys.stderr)
-						amp      = float(fields[3].split(" ")[0])
-						volttime = int(float(fields[0].split(',')[1].split(" ")[0])*1000)  
-				else:
-					# VEHICLE=='ahi' and "voltage" in nextline: # Use BPC1
-					fields = nextline.split('>')[1].split("=")
-					if (volt==0) and ("voltage" in nextline) and (VEHICLE=='ahi'):
-						if DEBUG:
-							print("\n# Found AHI Data Battery Voltage",fields, file=sys.stderr)
-						volt     = float(fields[1].split(" ")[0])
-						volttime = int(float(nextline.split('>')[0].split(',')[1].split(" ")[0])*1000)  
-				
+		# Legacy split: non-Ahi reads voltage from unprefixed platform_battery_voltage
+		# lines, Ahi reads it from BPC1>platform_battery_voltage.  Charge is taken
+		# from the unprefixed lines for everyone.
+		if (volt==0) and snap.battery_voltage is not None and (VEHICLE!='ahi'):
+			if DEBUG:
+				print("# Found Data Battery Voltage",snap.battery_voltage, file=sys.stderr)
+			volt     = snap.battery_voltage
+			# in seconds not MS
+		if amp == 0 and snap.battery_charge is not None:
+			if DEBUG:
+				print("# Found Data Battery Charge",snap.battery_charge, file=sys.stderr)
+			amp      = snap.battery_charge
+			volttime = snap.battery_charge_time
+		if (volt==0) and snap.battery_voltage_bpc1 is not None and (VEHICLE=='ahi'):
+			if DEBUG:
+				print("\n# Found Ahi Data Battery Voltage",snap.battery_voltage_bpc1, file=sys.stderr)
+			volt     = snap.battery_voltage_bpc1
+			volttime = snap.battery_voltage_bpc1_time
 
-				
-			if VEHICLE == 'pontus':
-				''' Fault  UBAT flow rate is below the specified threshold of 0.05 l/s.   WetLabsUBAT'''
-				'''WetLabsUBAT.flow_rate=0.333607 l/s'''
-				if (flow == 999) and "WetLabsUBAT.flow_rate" in nextline:
-					if DEBUG:
-						print("# FLOWDATA",nextline.rstrip(), file=sys.stderr)
-					flowfields = nextline.split("=")
-					flow      = int(1000 * float(flowfields[-1].split(" ")[0]))
-					flowtime = int(float(flowfields[0].split(',')[1].split(" ")[0])*1000)
-					if DEBUG:
-						print("# FLOWNUM",flow, file=sys.stderr)
-					
-			if ("acoustic" in mission or "CircleSample" in mission) and NeedTracking:
-				'''2020-10-10T20:41:20.873Z,1602362480.873 Unknown-->Tracking.range_to_contact=389.093750 m'''
-				if len(Tracking) < 2:
-					if "Tracking.range" in nextline:
-						tfields = nextline.split("=")
-						trange  = int(float(tfields[-1].split(" ")[0]))
-						ttime   = int(float(tfields[0].split(',')[1].split(" ")[0])*1000)
-						if trange:
-							Tracking.append(trange)
-							TrackTime.append(ttime)
-				else:
-					NeedTracking = False
+
+		if VEHICLE == 'pontus':
+			''' Fault  UBAT flow rate is below the specified threshold of 0.05 l/s.   WetLabsUBAT'''
+			'''WetLabsUBAT.flow_rate=0.333607 l/s'''
+			if (flow == 999) and snap.flow_rate_ml_per_s is not None:
+				if DEBUG:
+					print("# FLOWDATA",snap.flow_rate_ml_per_s, file=sys.stderr)
+				flow      = snap.flow_rate_ml_per_s
+				flowtime  = snap.flow_rate_time
+				if DEBUG:
+					print("# FLOWNUM",flow, file=sys.stderr)
+
+		if ("acoustic" in mission or "CircleSample" in mission) and NeedTracking:
+			'''2020-10-10T20:41:20.873Z,1602362480.873 Unknown-->Tracking.range_to_contact=389.093750 m'''
+			if len(Tracking) < 2:
+				for trange, ttime in zip(reversed(snap.tracking_ranges_m), reversed(snap.tracking_times)):
+					if len(Tracking) >= 2:
+						break
+					if trange:
+						Tracking.append(trange)
+						TrackTime.append(ttime)
 			else:
 				NeedTracking = False
-						
+		else:
+			NeedTracking = False
 
-			if (volt) and (amp) and (VEHICLE == 'pontus' and flow < 999) and (NeedTracking == False):
-				Bailout = True
-				break
+
+		if (volt) and (amp) and (VEHICLE == 'pontus' and flow < 999) and (NeedTracking == False):
+			Bailout = True
+			break
 		if Bailout == True:
 			break
 	if DEBUG:

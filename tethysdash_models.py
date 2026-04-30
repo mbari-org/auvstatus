@@ -128,3 +128,23 @@ class SbdReceiveEvent(Event):
 
 class DataProcessedEvent(Event):
 	event_type: Literal["dataProcessed"] = Field(alias="eventType")
+
+
+# -----------------------------------------------------------------------------
+# This models the shore.asc data entries. It is not actually part of the API
+# spec.
+
+class ShoreAscSnapshot(LaxBaseModel):
+	# `platform_battery_voltage` and `BPC1>platform_battery_voltage` are kept
+	# separate so the legacy Ahi-vs-others split (Ahi reads voltage from BPC1
+	# lines, everyone else from the unprefixed lines) can be honored downstream.
+	battery_voltage: float | None = None
+	battery_voltage_time: int | None = None
+	battery_voltage_bpc1: float | None = None
+	battery_voltage_bpc1_time: int | None = None
+	battery_charge: float | None = None
+	battery_charge_time: int | None = None
+	flow_rate_ml_per_s: int | None = None
+	flow_rate_time: int | None = None
+	tracking_ranges_m: list[int] = Field(default_factory=list)
+	tracking_times: list[int] = Field(default_factory=list)

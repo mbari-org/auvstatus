@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 import urllib.error
 import urllib.parse
@@ -13,6 +14,7 @@ from tethysdash_models import (
 	DeploymentResponse,
 	Event,
 	ScriptDescriptionResponse,
+	ShoreAscSnapshot,
 	WaypointInfo,
 	WpInfoResponse,
 	WpMissionDescription,
@@ -23,6 +25,53 @@ EventT = TypeVar("EventT", bound=Event)
 EVENTS_TIMEOUT = 12
 NEWSTYLE_TIMEOUT = 8
 EARLIEST_FROM_MS = 1234567890123  # legacy floor for the events `from` param
+
+
+# A shore.asc line looks like one of:
+#   2020-03-04T20:58:38.153Z,1583355518.153 Unknown==>platform_battery_charge=126.440002 Ah
+#   2020-10-10T20:41:20.873Z,1602362480.873 Unknown-->Tracking.range_to_contact=389.093750 m
+#   2023-10-25T01:52:45.597Z,1698198765.597 Unknown==>BPC1>platform_battery_voltage=15.262939 V
+# Capture: 1=unix_seconds, 2=optional component (e.g. "BPC1"), 3=key, 4=value, 5=unit.
+_SHORE_LINE_RE = re.compile(
+	r"^[\d\-T:.Z]+,(\d+\.\d+)\s+\S+?(?:==>|-->)"
+	r"(?:(\w+)>)?"
+	r"([\w.]+)=(\S+)\s*(\S*)\s*$"
+)
+
+
+def _parse_shore_asc(text: str) -> ShoreAscSnapshot:
+	snap = ShoreAscSnapshot()
+	for line in text.splitlines():
+		m = _SHORE_LINE_RE.match(line)
+		if not m:
+			continue
+		unix_sec, component, key, value_str, _unit = m.groups()
+		try:
+			value = float(value_str)
+		except ValueError:
+			continue
+		ts_ms = int(float(unix_sec) * 1000)
+		if key == "platform_battery_voltage":
+			# Legacy split: Ahi reads voltage from BPC1>platform_battery_voltage,
+			# everyone else from the unprefixed line.  Track them separately.
+			if component == "BPC1":
+				snap.battery_voltage_bpc1 = value
+				snap.battery_voltage_bpc1_time = ts_ms
+			else:
+				snap.battery_voltage = value
+				snap.battery_voltage_time = ts_ms
+		elif key == "platform_battery_charge":
+			snap.battery_charge = value
+			snap.battery_charge_time = ts_ms
+		elif key == "WetLabsUBAT.flow_rate":
+			snap.flow_rate_ml_per_s = int(1000 * value)
+			snap.flow_rate_time = ts_ms
+		elif key == "Tracking.range_to_contact":
+			r = int(value)
+			if r:
+				snap.tracking_ranges_m.append(r)
+				snap.tracking_times.append(ts_ms)
+	return snap
 
 
 class TethysDashClient:
@@ -132,11 +181,13 @@ class TethysDashClient:
 			return None
 		return json.loads(raw).get("result")
 
-	def shore_asc(self, sbdlog_path: str) -> Optional[str]:
-		"""Fetch /TethysDash/data/<vehicle>/realtime/sbdlogs/<path>/shore.asc as text.
+	def shore_asc(self, sbdlog_path: str) -> Optional[ShoreAscSnapshot]:
+		"""Fetch /TethysDash/data/<vehicle>/realtime/sbdlogs/<path>/shore.asc
+		and return a parsed snapshot of the metrics auvstatus tracks
+		(battery, flow rate, acoustic tracking).
 
 		Note: this lives under /TethysDash/data/, not /TethysDash/api/, and
-		returns plain ASCII (the on-vehicle SBD log dump), not JSON.
+		the body is plain ASCII (the on-vehicle SBD log dump), not JSON.
 		"""
 		url = (
 			f"{self._scheme}://{self.server}/TethysDash/data/"
@@ -145,4 +196,4 @@ class TethysDashClient:
 		raw = self._get(url, timeout=NEWSTYLE_TIMEOUT)
 		if raw is None:
 			return None
-		return raw.decode("utf-8")
+		return _parse_shore_asc(raw.decode("utf-8"))
