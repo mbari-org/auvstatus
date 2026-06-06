@@ -2507,8 +2507,8 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 				Speed = "%.2f" % (float(Record["text"].split(".SpeedTransit")[1].strip().split(" ")[0]))
 			elif (".ApproachSpeedNotFirstTime" in RecordText):
 				Speed = "%.2f" % (float(Record["text"].split(".ApproachSpeedNotFirstTime")[1].strip().split(" ")[0]))
-			elif (".ApproachSpeed" in RecordText):
-				Speed = "%.2f" % (float(Record["text"].split(".ApproachSpeed")[1].strip().split(" ")[0]))
+			elif ("ApproachSpeed" in RecordText):
+				Speed = "%.2f" % (float(Record["text"].split("ApproachSpeed")[1].strip().split(" ")[0]))
 			elif (".Speed" in RecordText):
 				Speed = "%.2f" % (float(Record["text"].split(".Speed")[1].strip().split(" ")[0]))
 			else:
