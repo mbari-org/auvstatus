@@ -1,5 +1,5 @@
 #! /bin/bash
-VEH='tethys ahi galene daphne pontus triton makai brizo aku opah pyxis sim'
+VEH='tethys ahi galene daphne pontus triton makai brizo aku opah sim'
 for v in $VEH; do python3 /var/www/html/widget/auvstatus.py -v $v -f; done
 #python3 /var/www/html/widget/auvstatus.py -v ahi -f --archiveimage 
 

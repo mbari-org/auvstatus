@@ -378,3 +378,252 @@ svgerror ='''<rect desc="backgroundbox" class="st0" width="512" height="154"/>
 		
 </svg>
 '''
+birthday = '''   <style>
+      .art0 {
+        fill: #f9cbdf;
+      }
+
+      .art0, .art1 {
+        stroke-miterlimit: 10;
+      }
+
+      .art0, .art1, .art2 {
+        stroke: #000;
+      }
+
+      .art3 {
+        fill: #52b596;
+      }
+
+      .art4 {
+        fill: #d65091;
+      }
+
+      .art5 {
+        fill: #695ddf;
+      }
+
+      .art6 {
+        fill: #bd8cbf;
+      }
+
+      .art7, .art8 {
+        font-family: Helvetica-Bold, Helvetica;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .art9 {
+        fill: #3b82dc;
+      }
+
+      .art8 {
+        fill: #fff;
+      }
+
+      .art10 {
+        fill: #82ca9c;
+      }
+
+      .art11 {
+        fill: #5dcbc8;
+      }
+
+      .art12 {
+        fill: #f5cd7c;
+      }
+
+      .art13 {
+        fill: #faac56;
+      }
+
+      .art1 {
+        fill: #6dcff6;
+      }
+
+      .art2 {
+        fill: none;
+      }
+
+      .art14 {
+        fill: #d3765c;
+      }
+
+      .art15 {
+        fill: #f067a6;
+      }
+
+      .art16 {
+        fill: #00bdf2;
+      }
+	    .arty0, .arty1, .arty2, .arty3, .arty4, .arty5, .arty6 {
+        stroke-miterlimit: 10;
+      }
+
+      .arty0, .arty5 {
+        stroke: #000;
+      }
+      .arty4 {
+        stroke: #5dcbc8;
+      }
+
+      .arty1 {
+        stroke: #f067a6;
+      }
+
+      .arty1, .arty2, .arty3, .arty4, .arty6 {
+        fill: none;
+        stroke-width: 2px;
+      }
+
+ 
+
+      .arty2 {
+        stroke: #f5cd7c;
+      }
+	  .arty3 {
+        stroke: #3b82dc;
+      }
+    .arty6 {
+        stroke: #d3765c;
+      }
+
+    </style>
+
+ <g transform="matrix(1 0 0 1 120.9 155)">
+  <polygon class="art0" points="425 36.1 410.5 75.1 444.3 76.7 425 36.1"/>
+  <polygon class="art16" points="436.6 60.4 435.2 57.5 417 57.5 416 60.4 436.6 60.4"/>
+  <polygon class="art13" points="418.5 53.6 433.3 53.6 431 48.7 420.3 48.7 418.5 53.6"/>
+  <polygon class="art10" points="428.5 43.5 425 36.1 422.3 43.5 428.5 43.5"/>
+  <polygon class="art6" points="412.6 69.5 410.5 75.1 444.3 76.7 440.9 69.5 412.6 69.5"/>
+  <path class="art1" d="M425,30.3c-1.9,0-3.5,1.6-3.5,3.5s1.6,3.5,3.5,3.5,3.5-1.6,3.5-3.5-1.6-3.5-3.5-3.5Z"/>
+  <polygon class="art3" points="303.6 28.1 311.2 11.4 295.2 11.4 303.6 28.1"/>
+  <polygon class="art4" points="319.9 28.1 327.5 11.4 311.5 11.4 319.9 28.1"/>
+  <polygon class="art12" points="368.7 28.1 376.3 11.4 360.3 11.4 368.7 28.1"/>
+  <polygon class="art5" points="336.2 28.1 343.8 11.4 327.8 11.4 336.2 28.1"/>
+  <polygon class="art11" points="352.4 28.1 360 11.4 344 11.4 352.4 28.1"/>
+  <polygon class="art12" points="233 13.2 241.8 30.8 250.5 11.4 233.8 11.4 233 13.2"/>
+  <polygon class="art5" points="200.5 11.4 209.2 28.7 217 11.4 217 11.4 200.5 11.4"/>
+  <polygon class="art9" points="287.4 28.1 294.9 11.4 279 11.4 287.4 28.1"/>
+  <polygon class="art15" points="191 30.3 199.5 11.4 181.5 11.4 191 30.3"/>
+  <polygon class="art11" points="217.1 11.4 217 11.4 225.8 29 233 13.2 232.1 11.4 217.1 11.4"/>
+  <polygon class="art11" points="471.9 11.4 471.2 12.8 479.8 29.9 487.5 12.8 486.8 11.4 471.9 11.4"/>
+  <polygon class="art14" points="260 29.2 268 11.4 251 11.4 260 29.2"/>
+  <polygon class="art5" points="456.6 11.4 455.5 13.9 463.5 29.9 471.2 12.8 470.5 11.4 456.6 11.4"/>
+  <polygon class="art12" points="487.5 12.8 496.1 29.9 504.4 11.4 488.2 11.4 487.5 12.8"/>
+  <polygon class="art15" points="439.4 11.4 439.2 11.8 448.3 29.9 455.5 13.9 454.3 11.4 439.4 11.4"/>
+  <polygon class="art9" points="401.3 28.1 408.8 11.4 392.9 11.4 401.3 28.1"/>
+  <polygon class="art3" points="421.7 11.4 431 29.9 439.2 11.8 439 11.4 421.7 11.4"/>
+  <polygon class="art14" points="385 28.1 392.6 11.4 376.6 11.4 385 28.1"/>
+  <text class="art8" transform="translate(187 18.9)"><tspan x="0" y="0">H</tspan></text>
+  <text class="art8" transform="translate(204.2 18.9)"><tspan x="0" y="0">A</tspan></text>
+  <text class="art8" transform="translate(221.4 18.9)"><tspan x="0" y="0">P</tspan></text>
+  <text class="art7" transform="translate(238.1 18.9)"><tspan x="0" y="0">P</tspan></text>
+  <text class="art8" transform="translate(254.8 18.9)"><tspan x="0" y="0">Y</tspan></text>
+  <text class="art8" transform="translate(284.1 18.9)"><tspan x="0" y="0">B</tspan></text>
+  <text class="art8" transform="translate(301.3 18.9)"><tspan x="0" y="0">I</tspan></text>
+  <text class="art8" transform="translate(314.1 18.9)"><tspan x="0" y="0">R</tspan></text>
+  <text class="art8" transform="translate(331.3 18.9)"><tspan x="0" y="0">T</tspan></text>
+  <text class="art8" transform="translate(347.4 18.9)"><tspan x="0" y="0">H</tspan></text>
+  <text class="art7" transform="translate(364.6 18.9)"><tspan x="0" y="0">D</tspan></text>
+  <text class="art8" transform="translate(381.8 18.9)"><tspan x="0" y="0">A</tspan></text>
+  <text class="art8" transform="translate(398.1 18.9)"><tspan x="0" y="0">Y</tspan></text>
+  <text class="art8" transform="translate(427.4 18.9)"><tspan x="0" y="0">B</tspan></text>
+  <text class="art8" transform="translate(444.6 18.9)"><tspan x="0" y="0">R</tspan></text>
+  <text class="art8" transform="translate(461.8 18.9)"><tspan x="0" y="0">I</tspan></text>
+  <text class="art8" transform="translate(474.6 18.9)"><tspan x="0" y="0">A</tspan></text>
+  <text class="art7" transform="translate(491.8 18.9)"><tspan x="0" y="0">N</tspan></text>
+   <path class="arty4" d="M44.8,99.3c-14,5.7-28.3-3.1-41.1,1.6"/>
+  <path class="arty3" d="M41,113c-13.2,1.8-15.5-5.9-36.2,3"/>
+  <path class="arty1" d="M44.8,109.6c-6.7-2.8-13.6,1.8-24.4,2.2-5.3.2-8.5-.7-14.8-5.9"/>
+  <path class="arty6" d="M41.9,102.2c-6.7-2.8-31,5.9-38.2-1.3"/>
+  <path class="arty2" d="M44.8,105.9c-6.7-2.8-10.5,2.6-21.5,2.6s-15.1-4.9-15.1-6.9"/>
+
+</g>'''
+
+birthday2 = '''<!-- HAPPY BIRTHDAY BRIAN pennant banner across the top of the widget -->
+<g desc="birthday_banner">
+  <path d="M255,165 Q300,163 365,165 Q430,168 510,164 Q570,162 620,166" style="fill:none;stroke:#636E72;stroke-width:0.7;"/>
+  <polygon points="257,164 273,164 265,179" style="fill:#E84393;stroke:#C0392B;stroke-width:0.4;"/><text x="265" y="174" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">H</text>
+  <polygon points="276,164 292,164 284,179" style="fill:#6C5CE7;stroke:#5A4BD1;stroke-width:0.4;"/><text x="284" y="174" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">A</text>
+  <polygon points="295,164 311,164 303,179" style="fill:#00CEC9;stroke:#00B5B0;stroke-width:0.4;"/><text x="303" y="174" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">P</text>
+  <polygon points="314,164 330,164 322,179" style="fill:#FDCB6E;stroke:#E0B04E;stroke-width:0.4;"/><text x="322" y="174" text-anchor="middle" style="fill:#333;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">P</text>
+  <polygon points="333,164 349,164 341,179" style="fill:#E17055;stroke:#C9604A;stroke-width:0.4;"/><text x="341" y="174" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">Y</text>
+  <polygon points="365,165 381,165 373,180" style="fill:#0984E3;stroke:#0770C4;stroke-width:0.4;"/><text x="373" y="175" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">B</text>
+  <polygon points="384,166 400,166 392,181" style="fill:#00B894;stroke:#009D7E;stroke-width:0.4;"/><text x="392" y="176" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">I</text>
+  <polygon points="403,167 419,167 411,182" style="fill:#E84393;stroke:#C0392B;stroke-width:0.4;"/><text x="411" y="177" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">R</text>
+  <polygon points="422,167 438,167 430,182" style="fill:#6C5CE7;stroke:#5A4BD1;stroke-width:0.4;"/><text x="430" y="177" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">T</text>
+  <polygon points="441,167 457,167 449,182" style="fill:#00CEC9;stroke:#00B5B0;stroke-width:0.4;"/><text x="449" y="177" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">H</text>
+  <polygon points="460,166 476,166 468,181" style="fill:#FDCB6E;stroke:#E0B04E;stroke-width:0.4;"/><text x="468" y="176" text-anchor="middle" style="fill:#333;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">D</text>
+  <polygon points="479,165 495,165 487,180" style="fill:#E17055;stroke:#C9604A;stroke-width:0.4;"/><text x="487" y="175" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">A</text>
+  <polygon points="498,164 514,164 506,179" style="fill:#0984E3;stroke:#0770C4;stroke-width:0.4;"/><text x="506" y="174" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">Y</text>
+  <polygon points="530,163 546,163 538,178" style="fill:#00B894;stroke:#009D7E;stroke-width:0.4;"/><text x="538" y="173" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">B</text>
+  <polygon points="549,163 565,163 557,178" style="fill:#E84393;stroke:#C0392B;stroke-width:0.4;"/><text x="557" y="173" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">R</text>
+  <polygon points="568,163 584,163 576,178" style="fill:#6C5CE7;stroke:#5A4BD1;stroke-width:0.4;"/><text x="576" y="173" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">I</text>
+  <polygon points="587,164 603,164 595,179" style="fill:#00CEC9;stroke:#00B5B0;stroke-width:0.4;"/><text x="595" y="174" text-anchor="middle" style="fill:#fff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">A</text>
+  <polygon points="606,165 622,165 614,180" style="fill:#FDCB6E;stroke:#E0B04E;stroke-width:0.4;"/><text x="614" y="175" text-anchor="middle" style="fill:#333;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;font-size:7px;font-weight:bold;">N</text>
+</g>
+
+<!-- Festive ribbons streaming off the tail -->
+<g desc="party_ribbons">
+  <path d="M155,254 Q145,250 138,253 Q130,257 126,252 Q122,248 118,251" style="fill:none;stroke:#E84393;stroke-width:1.8;stroke-linecap:round;opacity:0.9;"/>
+  <path d="M155,257 Q142,255 136,259 Q128,264 122,258 Q116,253 110,256" style="fill:none;stroke:#FDCB6E;stroke-width:1.5;stroke-linecap:round;opacity:0.9;"/>
+  <path d="M155,260 Q143,262 137,257 Q130,251 124,255 Q117,260 112,254" style="fill:none;stroke:#6C5CE7;stroke-width:1.6;stroke-linecap:round;opacity:0.9;"/>
+  <path d="M155,263 Q144,266 136,262 Q128,257 121,262 Q114,268 108,264" style="fill:none;stroke:#00CEC9;stroke-width:1.4;stroke-linecap:round;opacity:0.9;"/>
+  <path d="M155,266 Q146,270 139,266 Q131,261 125,267 Q118,273 113,268" style="fill:none;stroke:#E17055;stroke-width:1.7;stroke-linecap:round;opacity:0.9;"/>
+  <path d="M155,269 Q143,273 135,270 Q127,266 120,272 Q113,278 107,273" style="fill:none;stroke:#0984E3;stroke-width:1.3;stroke-linecap:round;opacity:0.9;"/>
+  <path d="M155,256 Q140,248 132,252 Q124,257 117,250 Q111,244 105,248" style="fill:none;stroke:#00B894;stroke-width:1.5;stroke-linecap:round;opacity:0.85;"/>
+</g>
+
+<!-- Party hat sitting on top of the AUV (over the CTD/top of body) -->
+<g desc="partyhat" transform="translate(552,232)">
+  <polygon points="0,-38 -12,0 12,0" style="fill:#E84393;stroke:#C0392B;stroke-width:0.8;"/>
+  <polygon points="-3.8,-26 3.8,-26 7.6,-14 -7.6,-14" style="fill:#FDCB6E;stroke:none;"/>
+  <polygon points="-9.5,-9 9.5,-9 11.4,-3 -11.4,-3" style="fill:#00CEC9;stroke:none;"/>
+  <circle cx="0" cy="-40" r="3" style="fill:#FDCB6E;stroke:#E17055;stroke-width:0.5;"/>
+</g>
+
+<!-- Skateboard in front of the AUV -->
+<g desc="skateboard" transform="translate(420,304) scale(1.4)">
+  <rect x="-20" y="-3" width="40" height="5" rx="3" style="fill:#E17055;stroke:#C0392B;stroke-width:0.4;"/>
+  <rect x="-16" y="-1" width="32" height="1.5" rx="0.5" style="fill:#FDCB6E;stroke:none;"/>
+  <rect x="-14" y="2" width="8" height="2" rx="0.5" style="fill:#888;stroke:#555;stroke-width:0.2;"/>
+  <rect x="6" y="2" width="8" height="2" rx="0.5" style="fill:#888;stroke:#555;stroke-width:0.2;"/>
+  <circle cx="-12" cy="5.5" r="2.2" style="fill:#333;stroke:#111;stroke-width:0.2;"/>
+  <circle cx="-8" cy="5.5" r="2.2" style="fill:#333;stroke:#111;stroke-width:0.2;"/>
+  <circle cx="8" cy="5.5" r="2.2" style="fill:#333;stroke:#111;stroke-width:0.2;"/>
+  <circle cx="12" cy="5.5" r="2.2" style="fill:#333;stroke:#111;stroke-width:0.2;"/>
+</g>
+
+<!-- Plate with bagel in front of the AUV -->
+<g desc="bagel_plate" transform="translate(500,302) scale(1.4)">
+  <ellipse cx="0" cy="5" rx="14" ry="4" style="fill:#E8E8E8;stroke:#BBB;stroke-width:0.3;"/>
+  <ellipse cx="0" cy="4" rx="11" ry="3" style="fill:#F5F5F5;stroke:none;"/>
+  <ellipse cx="0" cy="2" rx="8" ry="5" style="fill:#D4A054;stroke:#B8863C;stroke-width:0.3;"/>
+  <ellipse cx="0" cy="1.5" rx="3" ry="2.2" style="fill:#F5F5F5;stroke:#DDD;stroke-width:0.2;"/>
+  <path d="M-7,0 Q-7,-2 -4,-3 Q0,-4 4,-3 Q7,-2 7,0" style="fill:#E8B86D;stroke:none;"/>
+  <ellipse cx="-4" cy="-1.5" rx="0.8" ry="0.5" transform="rotate(-20,-4,-1.5)" style="fill:#F5E6C8;stroke:none;"/>
+  <ellipse cx="0" cy="-2.5" rx="0.8" ry="0.5" transform="rotate(15,0,-2.5)" style="fill:#F5E6C8;stroke:none;"/>
+  <ellipse cx="3.5" cy="-1.8" rx="0.8" ry="0.5" transform="rotate(-10,3.5,-1.8)" style="fill:#F5E6C8;stroke:none;"/>
+  <ellipse cx="-2" cy="-3" rx="0.7" ry="0.4" transform="rotate(25,-2,-3)" style="fill:#F5E6C8;stroke:none;"/>
+  <ellipse cx="5" cy="-0.5" rx="0.7" ry="0.4" transform="rotate(-30,5,-0.5)" style="fill:#F5E6C8;stroke:none;"/>
+</g>
+
+<!-- Birthday cake in front of the AUV -->
+<g desc="birthdaycake" transform="translate(592,296)">
+  <ellipse cx="0" cy="16" rx="22" ry="3" style="fill:#D4D2D2;stroke:#999;stroke-width:0.4;"/>
+  <rect x="-16" y="2" width="32" height="14" rx="2" style="fill:#F8C291;stroke:#E58E26;stroke-width:0.5;"/>
+  <path d="M-16,5 Q-14,8 -10,5 Q-6,8 -2,5 Q2,8 6,5 Q10,8 14,5 Q16,7 16,5" style="fill:#FFEAA7;stroke:none;"/>
+  <rect x="-11" y="-8" width="22" height="12" rx="2" style="fill:#FAB1A0;stroke:#E17055;stroke-width:0.5;"/>
+  <path d="M-11,-5 Q-9,-2 -6,-5 Q-3,-2 0,-5 Q3,-2 6,-5 Q9,-2 11,-5" style="fill:#FFEAA7;stroke:none;"/>
+  <rect x="-11" y="-8" width="22" height="3" rx="1" style="fill:#FFEAA7;stroke:none;"/>
+  <rect x="-7" y="-16" width="2" height="9" style="fill:#6C5CE7;stroke:none;"/>
+  <rect x="-1" y="-18" width="2" height="11" style="fill:#E84393;stroke:none;"/>
+  <rect x="5" y="-15" width="2" height="8" style="fill:#00CEC9;stroke:none;"/>
+  <ellipse cx="-6" cy="-18" rx="1.8" ry="3" style="fill:#FDCB6E;stroke:#E17055;stroke-width:0.3;"/>
+  <ellipse cx="0" cy="-20" rx="1.8" ry="3" style="fill:#FDCB6E;stroke:#E17055;stroke-width:0.3;"/>
+  <ellipse cx="6" cy="-17" rx="1.8" ry="3" style="fill:#FDCB6E;stroke:#E17055;stroke-width:0.3;"/>
+  <ellipse cx="-6" cy="-18" rx="0.8" ry="1.5" style="fill:#fff;stroke:none;"/>
+  <ellipse cx="0" cy="-20" rx="0.8" ry="1.5" style="fill:#fff;stroke:none;"/>
+  <ellipse cx="6" cy="-17" rx="0.8" ry="1.5" style="fill:#fff;stroke:none;"/>
+</g>'''

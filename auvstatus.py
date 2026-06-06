@@ -126,7 +126,7 @@ import json
 import math
 import re
 from collections import deque
-from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote,svgpiscivore,svg_planktivore   # define the svg text?
+from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote,svgpiscivore,svg_planktivore,birthday,birthday2   # define the svg text?
 
 # This used to have servername, but that is not being defined below, based on the --inst parameter at the command line
 from config_auv import basefilepath
@@ -2514,7 +2514,7 @@ def parseDefaults(recordlist,mission_defaults,FullMission,MissionTime):
 			else:
 				try:
 					Speed = "%.2f" % (float(Record["text"].split(".speedCmd")[1].strip().split(" ")[0]))
-				except ValueError or IndexError:
+				except (ValueError,IndexError):
 					print("Error parsing speed for ",VEHICLE,Record["text"], file=sys.stderr)
 					Speed = "na"
 			
@@ -4171,6 +4171,9 @@ else:   #not opt report
 						
 				if VEHICLE=="galene":
 					outfile.write(svggalene)
+			
+			# outfile.write(birthday2)
+
 			outfile.write(svgtail)
 			
 		#adding JSON version of cdd state dictionary
