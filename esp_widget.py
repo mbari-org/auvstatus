@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 '''
+v 1.2.4 : Changed percentage calculation to be out of 3000 ml.
 v 1.2.4 : Added spares left indicator
 v 1.2.3 : Moved SPR string above % pumped
 v 1.2.2 : Added toxin report if SPR is present (replacing % pumped)
@@ -269,7 +270,8 @@ SPRsummary:15.8RIU,177RIU,175RIU,237RIU,none,none,2.16ng/L after 3231s
 						mls = VolumeResult[-1]
 						if Cartnum not in DoneList:
 							DoneList.append(Cartnum)
-							ESPL[Cartnum] = round(float(mls)/10)
+							# Changed to divide by 30 because 3000 is new max
+							ESPL[Cartnum] = round(float(mls)/30)
 							TimeList[Cartnum] = Record["unixTime"]					
 					else:
 						mls=-100

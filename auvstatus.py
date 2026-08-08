@@ -1947,7 +1947,7 @@ def parseImptMisc(recordlist,MissionN):
 	FlowTime = False
 	
 	LogTime = False
-	DVL_on = False
+	DVL_on = "NA"
 	GotDVL = False
 	
 	StationLat = False
@@ -1981,23 +1981,24 @@ def parseImptMisc(recordlist,MissionN):
 	
 
 	# CONFIGURE DVL config defaults
-	GetDVLStartup = {
-		'makai':True,
-		'pontus':True, 
-		'tethys':True,
-		'daphne':False,
-		'brizo':True,
-		'ahi':True,
-		'galene':False,
-		'triton':True,
-		'opah':False, #check this!!
-		'polaris':True,
-		'proxima':True,
-		'stella':True,
-		'pyxis':True
-	}
-	
-	DVL_on = GetDVLStartup.get(VEHICLE,False)
+	# GetDVLStartup = {
+	# 	'makai':True,
+	# 	'pontus':True, 
+	# 	'tethys':True,
+	# 	'daphne':False,
+	# 	'brizo':True,
+	# 	'ahi':False,
+	# 	'galene':False,
+	# 	'triton':True,
+	# 	'opah':False, #check this!!
+	# 	'polaris':True,
+	# 	'proxima':True,
+	# 	'stella':True,
+	# 	'pyxis':True
+	# }
+	# 
+	# DVL_on = GetDVLStartup.get(VEHICLE,False)
+	# DVL_on = "NA"
 	# NEW get DVL from grepping (or other) out of https://okeanids.mbari.org/TethysDash/api/vconfig?vehicle=daphne
 
 	if DEBUG:
@@ -3981,6 +3982,9 @@ else:   #not opt report
 		if DVLError and ((now - DVLError)/3600000 < 6) and not GotDVL:
 			DVLcolor = 'st6'
 			cdd["text_dvlstatus"]="ERROR"
+		elif DVLon == "NA":
+			DVLcolor = 'st11'
+			cdd["text_dvlstatus"]="NA"	
 		elif DVLon:
 			DVLcolor = 'st4'
 			cdd["text_dvlstatus"]="ON"
