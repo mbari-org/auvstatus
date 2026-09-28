@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.99.2- Use Reached Waypoint for reckoning estimate. Bug fixes on DropWeight
 	v 2.99.1- Added Planktivore ROIs to Opah
 	v 2.99  - Masking random overflow values for Planktivore ROIs. Made schedule resume key on latest.
 	v 2.98  - Running out of version numbers! Added --archiveimage option for making animations
@@ -951,7 +952,8 @@ def getNewNavigating(recordlist=[]):
 	return StationLat, StationLon, ReachedWaypoint, WaypointName
 
 def getReachedWaypointBetween(recordlist, oldtime, newtime):
-	'''Most recent "Reached waypoint" with coordinates between two GPS fixes'''
+	'''Most recent "Reached waypoint" with coordinates between two GPS fixes
+	 Third value returned is UseReached.'''
 	wayre = re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
 	for Record in recordlist or []:
 		t = Record.get("unixTime", 0)
@@ -959,8 +961,8 @@ def getReachedWaypointBetween(recordlist, oldtime, newtime):
 		if oldtime < t < newtime and RecordText.lower().startswith("reached waypoint"):
 			wr = wayre.search(RecordText)
 			if wr:
-				return (float(wr.group(1)), float(wr.group(2))), t
-	return None, None
+				return (float(wr.group(1)), float(wr.group(2))), t ,"+WP"
+	return None, None, ""
 
 def getNewNextWaypoint():
 	wpq = ""
@@ -2954,7 +2956,9 @@ if (not recovered) or Opt.anyway:
 	important = getImportant(startTime)
 
 	# If a Reached Waypoint falls between the two GPS fixes, reckon speed/bearing from it instead
-	wpsite, wptime = getReachedWaypointBetween(important, oldgpstime, gpstime)
+	
+	wpsite, wptime, UseReachedWPtext= getReachedWaypointBetween(important, oldgpstime, gpstime)
+	
 	if wpsite and (gpstime - wptime) > 10*60*1000:   # skip very short legs
 		if DEBUG:
 			print("## Using Reached Waypoint for speed/bearing", wpsite, hours(wptime), file=sys.stderr)
@@ -3305,6 +3309,7 @@ else:   #not opt report
 	
 	cdd["color_missiontext"] = ""  # no color = black. can make it red
 	cdd["text_celllabel"]= ""
+	cdd["extra_reckoned"]=""   # text after static reckoned label
 	
 	# These are made invisible
 	invisiblecolors=["color_bigcable",
@@ -3449,7 +3454,7 @@ else:   #not opt report
 			cdd["color_highgf"]="st25"
 			cdd["color_lowgf"]="st18"
 			
-
+	cdd["extra_reckoned"]=UseReachedWPtext
 		
 	cdd["text_gf"] = gf
 

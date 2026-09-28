@@ -267,6 +267,7 @@ svgtext = '''
 <text transform="matrix(1 0 0 1 485 281)" class="st12 st9 st13">FAULT</text>
 </g>
 
+<text desc="reckoned_label" transform="matrix(1 0 0 1 592 286)" class="st12 st9 st24">reckoned{extra_reckoned}<title>Speed estimated from last two GPS fixes</title></text>
 
 
 <!-- Static labels -->  
@@ -275,7 +276,6 @@ svgtext = '''
 '''
 svglabels='''
 <!-- create new variable for these -->
-<text desc="reckoned_label" transform="matrix(1 0 0 1 592 286)" class="st12 st9 st24">reckoned<title>Speed estimated from last two GPS fixes</title></text>
 <text desc="speeded_label" transform="matrix(1 0 0 1 199 275)" class="st12 st9 st24">command</text>
 
 <text transform="matrix(1 0 0 1 334 258.2642)" text-anchor="end" class="st9 st10">Volts:</text>
