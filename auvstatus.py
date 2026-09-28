@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.99.1- Added Planktivore ROIs to Opah
 	v 2.99  - Masking random overflow values for Planktivore ROIs. Made schedule resume key on latest.
 	v 2.98  - Running out of version numbers! Added --archiveimage option for making animations
 	v 2.97  - Added Battery onReserve indicator and gave AmpH its own color
@@ -1001,7 +1002,7 @@ def getNewNextWaypoint():
 		
 	
 
-def getNewLatLon(starttime=1676609209829):
+def getNewLatLon(starttime=1676609209829):  #NOT USED?
 	'''https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=pontus&maxlen=200
 	   https://okeanids.mbari.org/TethysDash/api/data/depth?vehicle=triton&maxlen=2&from=1676609209829
 '''
@@ -2053,10 +2054,10 @@ def parseImptMisc(recordlist,MissionN):
 			if "=0" in RecordText:
 				DropOff =  Record["unixTime"]
 			else:
-				DropOff = 1
+				DropOff = False
 			if DEBUG:
-				print("\n## Got DROPWEIGHT OFF/ON COMMAND", RecordText, DropOff, file=sys.stderr)
-			
+				print("\n## Got DROPWEIGHT OFF/ON COMMAND", RecordText,"DROPOFF", DropOff, file=sys.stderr)
+
 		
 		
 		if not Docking:
@@ -2975,7 +2976,7 @@ if (not recovered) or Opt.anyway:
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
 
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ScheduledUndock,AcousticComms,DropWeightOff  = parseImptMisc(important,missionName)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ScheduledUndock,DropWeightOff,AcousticComms  = parseImptMisc(important,missionName)
 			
 	gf,gftime,gflow = parseCBIT(gfrecords)
 
@@ -3070,7 +3071,7 @@ if (not recovered) or Opt.anyway:
 			print("## PISCIVORE STATS:",camcat,camchangetime,pisctext, file=sys.stderr)
 	
 	# ADDING Ahi - Planktivore ROIs
-	if VEHICLE == "ahi":
+	if VEHICLE in ("ahi","opah"):
 		lROI,lTime,lfTime,hROI,hTime,hfTime = getNewROIs(startTime)
 		if DEBUG and lTime and lfTime and lROI:
 			print(f"## AHI Regions of Interest:\n\t{elapsed(lTime-now)},{elapsed(lfTime-now)},{lROI}\n\t{elapsed(hTime-now)},{hROI}", file=sys.stderr)
@@ -3422,7 +3423,7 @@ else:   #not opt report
 	###
 	###   GROUND FAULT DISPLAY
 	###
-	if VEHICLE=="ahi" and lTime:
+	if (VEHICLE in ("ahi","opah")) and lTime:
 			cdd["text_roiago"] = elapsed(lTime-now)
 			cdd["text_LM"] = f"{lROI:.1f}"
 			cdd["text_HM"] = f"{hROI:.1f}"
@@ -4139,14 +4140,17 @@ else:   #not opt report
 
 		cdd["color_drop"] = ['st4','st6'][(dropWeight>1)]
 		# if time for dropweight alert is older than the dropweight having been turned off
-		if DropWeightOff > 1 and (dropWeight > DropWeightOff):
+		if DropWeightOff > 1 and (dropWeight - DropWeightOff > 300000): # 5 minutes  I think this is wrong. The second line overrides.
 			cdd["color_drop"] = 'st11'
 		if DropWeightOff > 100:
 			cdd["text_droptime"] = "OFF: " + elapsed(DropWeightOff-now)
+			cdd["color_drop"] = 'st11'
 		elif dropWeight > 100:
 			cdd["text_droptime"] = elapsed(dropWeight-now)
 		else:
 			cdd["text_droptime"] =""
+		if DEBUG:
+			print("#DropWeightOffText",cdd["text_droptime"],cdd["color_drop"], "| DropTime:DropOffTime",dropWeight,":",DropWeightOff,file=sys.stderr)
 			
 			
 
@@ -4185,7 +4189,7 @@ else:   #not opt report
 							text_camago = cdd["text_camago"], 
 							text_piscamp= cdd["text_piscamp"])
 						)
-				if VEHICLE == "ahi":
+				if VEHICLE in ("ahi","opah"):
 					# Trying pre-formatted
 					outfile.write(svg_planktivore.format(
 						text_LM = cdd["text_LM"],
