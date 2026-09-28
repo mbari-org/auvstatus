@@ -949,6 +949,18 @@ def getNewNavigating(recordlist=[]):
  # if not found, use "Station."
 	return StationLat, StationLon, ReachedWaypoint, WaypointName
 
+def getReachedWaypointBetween(recordlist, oldtime, newtime):
+	'''Most recent "Reached waypoint" with coordinates between two GPS fixes'''
+	wayre = re.compile(r'point: ?([\d\.\-]+)[ ,]+([\d\.\-]+)')
+	for Record in recordlist or []:
+		t = Record.get("unixTime", 0)
+		RecordText = Record.get("text", "")
+		if oldtime < t < newtime and RecordText.lower().startswith("reached waypoint"):
+			wr = wayre.search(RecordText)
+			if wr:
+				return (float(wr.group(1)), float(wr.group(2))), t
+	return None, None
+
 def getNewNextWaypoint():
 	wpq = ""
 	'''https://okeanids.mbari.org/TethysDash/api/wp?vehicle=pontus
@@ -2939,6 +2951,14 @@ if (not recovered) or Opt.anyway:
 
 # FULL RANGE OF RECORDS
 	important = getImportant(startTime)
+
+	# If a Reached Waypoint falls between the two GPS fixes, reckon speed/bearing from it instead
+	wpsite, wptime = getReachedWaypointBetween(important, oldgpstime, gpstime)
+	if wpsite and (gpstime - wptime) > 10*60*1000:   # skip very short legs
+		if DEBUG:
+			print("## Using Reached Waypoint for speed/bearing", wpsite, hours(wptime), file=sys.stderr)
+		deltadist,deltat,speedmadegood,bearing = distance(site,gpstime,wpsite,wptime)
+
 	querytime = 0
 	# mission time is off if schedule paused (default) and resumed. Detect this and go back further?
 	missionName,missionTime = parseMission(important)
