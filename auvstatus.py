@@ -1957,6 +1957,7 @@ def parseImptMisc(recordlist,MissionN):
 	NeedSched = True
 	Paused = False
 	PauseTime=False
+	ResumeTime=False
 	
 	FlowRate = False
 	FlowTime = False
@@ -2193,14 +2194,17 @@ def parseImptMisc(recordlist,MissionN):
 			Docking = 3
 
 		if NeedSched:
-			if bool(re.search(r'got command schedule resume|got command restart (app|sys)|scheduling is resumed',RecordText.lower())):
+			# SBIT "git:" is logged on every reboot. Treat it as a resume, because restarts
+			# don't always log "got command restart", and a restart clears any pause. After an unintentional reboot,
+			# "Scheduling is paused" comes a few seconds after it, so the pause still wins.
+			if bool(re.search(r'got command schedule resume|got command restart (app|sys)|scheduling is resumed',RecordText.lower())) or (Record["name"] == "SBIT" and RecordText.startswith("git:")):
 			# if "got command schedule resume" in RecordText or "Scheduling is resumed" in RecordText:
 				Paused = False
-				PauseTime = 9999999999999
+				ResumeTime = Record["unixTime"]
 				NeedSched = False
 				if DEBUG:
-					print("## Got SCHEDULE RESUME")
-			elif bool(re.search('got command stop|got command schedule pause |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText) and not ('ESP' in RecordText):
+					print("## Got SCHEDULE RESUME", elapsed(ResumeTime-now), file=sys.stderr)
+			elif bool(re.search('got command stop|got command schedule pause|scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText) and not ('ESP' in RecordText):
 				Paused = True
 				PauseTime = Record["unixTime"]
 				NeedSched = False
@@ -2322,7 +2326,7 @@ def parseImptMisc(recordlist,MissionN):
 		#	FlowTime   = Record["unixTime"]
 
 #	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL, StationLat, StationLon, ReachedWaypoint, WaypointName, CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh, FullMission
-	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ampthresh,voltthresh,ampthreshtime,FullMission,Docking,DockTime,DockTimeout,SchedT,DropOff,AcousticTime
+	return ubatStatus, ubatTime, LogTime, DVL_on, GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ResumeTime,ampthresh,voltthresh,ampthreshtime,FullMission,Docking,DockTime,DockTimeout,SchedT,DropOff,AcousticTime
 
 	
 
@@ -2885,7 +2889,10 @@ argoet=''
 missiondot="st18" #next to mission: invisible
 Paused = True
 PauseTime = False
+ResumeTime = False
 PauseFault = False
+CriticalError = False
+CriticalTime = False
 argogoodtime=False
 
 DockStatus = False # 1 = on dock, 2 = undocked
@@ -2981,7 +2988,7 @@ if (not recovered) or Opt.anyway:
 	if DEBUG:
 		print(f"## Found NEXT WAYPOINTS {nextLat,nextLon}", file=sys.stderr)
 
-	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ScheduledUndock,DropWeightOff,AcousticComms  = parseImptMisc(important,missionName)
+	ubatStatus,ubatTime,logtime,DVLon,GotDVL,CTDonCommand,CTDoffCommand,Paused,PauseTime,ResumeTime,Ampthreshnum,Voltthreshnum,AmpthreshTime,FullMission,DockStatus,DockingTime,DockingTimeout,ScheduledUndock,DropWeightOff,AcousticComms  = parseImptMisc(important,missionName)
 			
 	gf,gftime,gflow = parseCBIT(gfrecords)
 
@@ -4095,14 +4102,17 @@ else:   #not opt report
 		# If there was a critical since the last schedule pause or schedule resume event, 
 		# then the schedule is effectively paused.
 		if DEBUG:
-			print("\n### CRITICAL PAUSED ###  \nComparing Critical {}; to Pause {}; Paused {}; and PauseFault {}".format(CriticalTime,PauseTime,Paused,PauseFault),file=sys.stderr)
+			print("\n### CRITICAL PAUSED ###  \nComparing Critical {}; to Pause {}; Resume {}; Paused {}; and PauseFault {}".format(CriticalTime,PauseTime,ResumeTime,Paused,PauseFault),file=sys.stderr)
 			
-		# PauseTime starts as 9999+
-		# Trying again with Faults and Criticals coming after UnPausing
-		# Bad logic here
+		# A critical or pause fault newer than the last resume (or with no resume
+		# in the window) means the schedule is effectively paused.
+		# PauseTime then becomes the time of that stop, for the ResumeSoon check.
 		if not Paused: 
-			if ((PauseTime < CriticalTime) or (PauseTime < PauseFault)):
+			LastResume = ResumeTime or 0
+			LatestStop = max(CriticalTime or 0, PauseFault or 0)
+			if LatestStop > LastResume:
 				Paused=True
+				PauseTime = LatestStop
 		
 		if Paused:
 			ResumeSoon = parseCommands(getCommands(PauseTime-100000))
