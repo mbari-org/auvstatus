@@ -2196,10 +2196,10 @@ def parseImptMisc(recordlist,MissionN):
 			if bool(re.search(r'got command schedule resume|got command restart (app|sys)|scheduling is resumed',RecordText.lower())):
 			# if "got command schedule resume" in RecordText or "Scheduling is resumed" in RecordText:
 				Paused = False
-				PauseTime = Record["unixTime"]
+				PauseTime = 9999999999999
 				NeedSched = False
 				if DEBUG:
-					print("## Got SCHEDULE RESUME", elapsed(PauseTime-now), file=sys.stderr)
+					print("## Got SCHEDULE RESUME")
 			elif bool(re.search('got command stop|got command schedule pause |scheduling is paused',RecordText.lower())) and not ('schedule clear' in RecordText) and not ('restart logs' in RecordText) and not ('ESP' in RecordText):
 				Paused = True
 				PauseTime = Record["unixTime"]
@@ -4099,6 +4099,7 @@ else:   #not opt report
 			
 		# PauseTime starts as 9999+
 		# Trying again with Faults and Criticals coming after UnPausing
+		# Bad logic here
 		if not Paused: 
 			if ((PauseTime < CriticalTime) or (PauseTime < PauseFault)):
 				Paused=True
