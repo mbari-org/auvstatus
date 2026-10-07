@@ -2763,6 +2763,7 @@ gflow=False
 Tracking = []
 TrackTime = []
 sparktext = ""
+UseReachedWPtext=""
 ResumeSoon = 0
 lTime = None
 
