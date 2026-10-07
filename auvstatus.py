@@ -2193,7 +2193,7 @@ def parseImptMisc(recordlist,MissionN):
 			Docking = 3
 
 		if NeedSched:
-			if bool(re.search('got command schedule resume|got command restart application|scheduling is resumed',RecordText.lower())):
+			if bool(re.search(r'got command schedule resume|got command restart (app|sys)|scheduling is resumed',RecordText.lower())):
 			# if "got command schedule resume" in RecordText or "Scheduling is resumed" in RecordText:
 				Paused = False
 				PauseTime = Record["unixTime"]
