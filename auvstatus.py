@@ -131,7 +131,8 @@ from collections import deque
 from LRAUV_svg import svgtext,svghead,svgpontus,svggalene,svgbadbattery,svgtail,svglabels,svgerror,svgerrorhead,svgwaterleak,svgstickynote,svgpiscivore,svg_planktivore,birthday,birthday2   # define the svg text?
 
 # This used to have servername, but that is not being defined below, based on the --inst parameter at the command line
-from config_auv import basefilepath
+from config_auv import basefilepath,payload
+
 
 import ssl
 
@@ -3406,7 +3407,7 @@ else:   #not opt report
 	"text_vehicle","text_lastupdate","text_flowago","text_scheduled","text_arrivestation",
 	"text_stationdist","text_currentdist",	"text_criticaltime","text_batteryunits",
 	"text_leak","text_leakago","text_missionago","text_cameraago","text_waypoint",
-	"text_criticalerror","text_camago","text_piscamp","text_argoago","text_roiago","text_LM","text_HM"]
+	"text_criticalerror","text_camago","text_piscamp","text_argoago","text_roiago","text_LM","text_HM","text_payload"]
 	for tname in specialnames:
 		cdd[tname]=''
 	
@@ -3563,6 +3564,7 @@ else:   #not opt report
 	###
 
 	cdd["text_vehicle"] = VEHICLE.upper()
+	cdd["text_payload"] = payload.get(VEHICLE.lower(),"")
 	cdd["text_lastupdate"] = time.strftime('%H:%M')
 	# Green = 5 if in defaults Lets go orange for not in
 	# cdd["color_missiondefault"] = ['st27','st25'][missionName in mission_defaults] 
