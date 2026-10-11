@@ -1978,8 +1978,13 @@ def parseImptMisc(recordlist,MissionN):
 	DockTimeout = None
 	SchedT = None
 	
-	voltthresh = -999
-	ampthresh  = -999
+	# presumed to be defaults
+	voltthresh = 13.7
+	ampthresh  = 50
+	
+	NewVoltThresh = False
+	NewAmpThresh  = False
+	
 	ampthreshtime = 0
 	FullMission = ""
 	
@@ -2086,8 +2091,6 @@ def parseImptMisc(recordlist,MissionN):
 				AcousticTime = Record["unixTime"]
 			
 
-		if voltthresh < -100 and RecordText.startswith("IBIT.batteryVoltageThreshold="):
-			voltthresh = float(RecordText.split("IBIT.batteryVoltageThreshold=")[1].split(" ")[0])
 
 			if DEBUG:
 				print("## Got VoltThresh from ImptMisc", voltthresh, file=sys.stderr)
@@ -2117,11 +2120,17 @@ def parseImptMisc(recordlist,MissionN):
 		# 				RedOn = LightResult.groups()[1]
 		# 			if DEBUG:
 		# 				print("LED STATUS",RecordText,WhiteOn,RedOn,LightResult,file=sys.stderr)
-					
-
-		if  ampthresh < -100 and RecordText.startswith("IBIT.batteryCapacityThreshold"):
+		
+		
+		# Deleting voltthresh < -100 and so the numeric value matches the defaults. 		
+		if  not NewVoltThresh and RecordText.startswith("IBIT.batteryVoltageThreshold="):
+			voltthresh = float(RecordText.split("IBIT.batteryVoltageThreshold=")[1].split(" ")[0])
+			NewVoltThresh = True
+			
+		if  not NewAmpThresh and RecordText.startswith("IBIT.batteryCapacityThreshold"):
 			ampthresh = round(float(RecordText.split("IBIT.batteryCapacityThreshold=")[1].split(" ")[0]))
 			ampthreshtime=Record["unixTime"]
+			NewAmpThresh = True
 			if DEBUG:
 				print("## Got AmpThresh from ImptMisc", float(ampthresh), elapsed(ampthreshtime-now),file=sys.stderr)
 
@@ -2978,8 +2987,8 @@ if (not recovered) or Opt.anyway:
 	missionName,missionTime = parseMission(important)
 	if DEBUG:
 		print(f"## MISSION AND TIME {missionName},{missionTime}", dates(missionTime),hours(missionTime),file=sys.stderr)
-	Ampthreshnum=-999
-	Voltthreshnum = -999
+	Ampthreshnum=50
+	Voltthreshnum = 13.7
 	IgnoreOverride = 0
 	AmpthreshTime = 0
 	DropWeightOff = -1

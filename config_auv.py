@@ -11,5 +11,6 @@ payload = {
   "ahi"    : "PLANKTIVORE",
   "aku"    : "ACOUSTICS",
   "tethys" : "DOCK",
+  "daphne" : "SIPPER",
   "triton" : ""
 }
