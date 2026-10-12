@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
+	v 2.99.3- Volt Threshold red when close
 	v 2.99.2- Use Reached Waypoint for reckoning estimate. Bug fixes on DropWeight
 	v 2.99.1- Added Planktivore ROIs to Opah
 	v 2.99  - Masking random overflow values for Planktivore ROIs. Made schedule resume key on latest.
@@ -3988,7 +3989,7 @@ else:   #not opt report
 		
 		if Voltthreshnum > -100:
 			cdd["text_voltthresh"] = f"{Voltthreshnum:.1f}"
-			cdd["color_voltthresh"] = ['st12','st31'][volt - Voltthreshnum < 1.0]
+			cdd["color_voltthresh"] = ['st12','st31'][volt - Voltthreshnum < 0.4]
 		
 		# IgnoreOverride is a time that an ignoring persisted message came through
 		# If it is more recent than the Amp thresh then they are back to default.
